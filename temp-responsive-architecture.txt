@@ -1,0 +1,852 @@
+Directory Structure:
+
+├── components
+│   └── adaptive
+│       ├── AdaptiveGrid.tsx
+│       ├── AdaptiveModal.tsx
+│       └── AdaptiveNavigation.tsx
+├── config
+│   ├── constants.ts
+│   ├── features.ts
+│   └── responsive.ts
+├── contexts
+│   └── DeviceContext.tsx
+├── hooks
+│   ├── responsive
+│   │   ├── useBreakpoint.ts
+│   │   ├── useOrientation.ts
+│   │   └── useViewport.ts
+│   ├── use-hydration.ts
+│   ├── use-mobile.tsx
+│   └── use-toast.ts
+└── lib
+    └── utils.ts
+
+
+
+---
+File: components/adaptive/AdaptiveGrid.tsx
+---
+
+"use client"
+
+import { useDevice } from "@/contexts/DeviceContext"
+import type { ReactNode } from "react"
+
+interface AdaptiveGridProps {
+  children: ReactNode
+  className?: string
+  mobileColumns?: number
+  tabletColumns?: number
+  desktopColumns?: number
+}
+
+export function AdaptiveGrid({
+  children,
+  className = "",
+  mobileColumns = 1,
+  tabletColumns = 2,
+  desktopColumns = 3,
+}: AdaptiveGridProps) {
+  const { isMobile, isTablet, isDesktop } = useDevice()
+
+  let gridCols = "grid-cols-1"
+
+  if (isMobile) {
+    gridCols = `grid-cols-${mobileColumns}`
+  } else if (isTablet) {
+    gridCols = `grid-cols-${tabletColumns}`
+  } else if (isDesktop) {
+    gridCols = `grid-cols-${desktopColumns}`
+  }
+
+  return (
+    <div className={`grid gap-4 ${gridCols} ${className}`} role="grid" aria-label="Asset grid">
+      {children}
+    </div>
+  )
+}
+
+
+
+---
+File: components/adaptive/AdaptiveModal.tsx
+---
+
+"use client"
+
+import { useDevice } from "@/contexts/DeviceContext"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
+import type { ReactNode } from "react"
+
+interface AdaptiveModalProps {
+  isOpen: boolean
+  onClose: () => void
+  title: string
+  children: ReactNode
+  className?: string
+}
+
+export function AdaptiveModal({ isOpen, onClose, title, children, className }: AdaptiveModalProps) {
+  const { isMobile } = useDevice()
+
+  if (isMobile) {
+    return (
+      <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DrawerContent className={`bg-[#182634] border-[#223649] ${className}`}>
+          <DrawerHeader>
+            <DrawerTitle className="text-white">{title}</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-4">{children}</div>
+        </DrawerContent>
+      </Drawer>
+    )
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className={`bg-[#182634] border-[#223649] text-white max-w-4xl max-h-[90vh] overflow-y-auto ${className}`}
+      >
+        <DialogHeader>
+          <DialogTitle className="text-white">{title}</DialogTitle>
+        </DialogHeader>
+        {children}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+
+
+---
+File: components/adaptive/AdaptiveNavigation.tsx
+---
+
+"use client"
+
+import { useDevice } from "@/contexts/DeviceContext"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Check, ChevronDown, ChevronUp } from "lucide-react"
+import type { ReactNode } from "react"
+
+interface NavigationItem {
+  id: string
+  title: string
+  duration?: number
+  isComplete?: boolean
+  children?: ReactNode
+}
+
+interface AdaptiveNavigationProps {
+  items: NavigationItem[]
+  activeItem: string
+  onItemChange: (itemId: string) => void
+  expandedItems?: Set<string>
+  onToggleExpanded?: (itemId: string) => void
+}
+
+export function AdaptiveNavigation({
+  items,
+  activeItem,
+  onItemChange,
+  expandedItems,
+  onToggleExpanded,
+}: AdaptiveNavigationProps) {
+  const { isMobile } = useDevice()
+
+  if (isMobile) {
+    return (
+      <div className="space-y-4" role="navigation" aria-label="Scene navigation">
+        {items.map((item) => (
+          <div key={item.id} className="border border-gray-600 rounded-lg overflow-hidden">
+            <button
+              className="w-full text-left p-4 flex items-center justify-between hover:bg-[#223649] transition-colors"
+              onClick={() => onToggleExpanded?.(item.id)}
+              aria-expanded={expandedItems?.has(item.id)}
+              aria-controls={`content-${item.id}`}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                    item.isComplete ? "bg-green-500 text-white" : "bg-[#314d68] text-gray-300"
+                  }`}
+                >
+                  {item.isComplete ? <Check className="h-4 w-4" /> : items.indexOf(item) + 1}
+                </div>
+                <div>
+                  <h3 className="text-white text-base font-medium">{item.title}</h3>
+                  <p className="text-xs text-gray-400 mt-1">{item.isComplete ? "Complete" : "In progress"}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {item.duration && (
+                  <span
+                    className="text-xs px-2 py-1 rounded"
+                    style={{
+                      backgroundColor: item.duration === 5 ? "#0d7ff2" : "#314d68",
+                      color: "white",
+                    }}
+                  >
+                    {item.duration}s
+                  </span>
+                )}
+                {expandedItems?.has(item.id) ? (
+                  <ChevronUp className="h-5 w-5 text-gray-400" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 text-gray-400" />
+                )}
+              </div>
+            </button>
+
+            {expandedItems?.has(item.id) && (
+              <div id={`content-${item.id}`} className="p-4 border-t border-gray-600">
+                {item.children}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <Tabs value={activeItem} onValueChange={onItemChange} className="w-full">
+      <TabsList
+        className="grid w-full bg-[#223649] p-1"
+        style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}
+      >
+        {items.map((item) => (
+          <TabsTrigger
+            key={item.id}
+            value={item.id}
+            className="flex items-center gap-2 data-[state=active]:bg-[#0d7ff2] data-[state=active]:text-white text-gray-300"
+          >
+            <div
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                item.isComplete ? "bg-green-500 text-white" : "bg-[#314d68] text-gray-300"
+              }`}
+            >
+              {item.isComplete ? <Check className="h-3 w-3" /> : items.indexOf(item) + 1}
+            </div>
+            <span className="hidden sm:inline">{item.title}</span>
+            {item.duration && (
+              <span className="text-xs px-1 py-0.5 rounded bg-[#314d68] text-gray-300">{item.duration}s</span>
+            )}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
+  )
+}
+
+
+
+---
+File: config/constants.ts
+---
+
+export const DURATIONS = [5, 10] as const
+
+export const MOCK_VIDEO_URL = "/mock.mp4"
+
+export const MAX_DURATION = 60
+
+export const DEFAULT_SCENES = [
+  {
+    id: "scene-1",
+    title: "Opening Welcome",
+    description: "A warm, intimate greeting featuring couple's names",
+    duration: 10,
+    cinematicStyles: { ambiance: "", cameraMovement: "", colorTone: "", visualStyle: "" },
+  },
+  {
+    id: "scene-2",
+    title: "Event Details",
+    description: "Essential information with elegant typography",
+    duration: 10,
+    cinematicStyles: { ambiance: "", cameraMovement: "", colorTone: "", visualStyle: "" },
+  },
+  {
+    id: "scene-3",
+    title: "Call to Action",
+    description: "Heartfelt invitation with RSVP request",
+    duration: 10,
+    cinematicStyles: { ambiance: "", cameraMovement: "", colorTone: "", visualStyle: "" },
+  },
+] as const
+
+export const PROJECT_ASSETS = [
+  { id: "asset-1", name: "Romantic Couple", url: "/romantic-couple.png", type: "project" },
+  { id: "asset-2", name: "Wedding Sunset", url: "/elegant-wedding-sunset.png", type: "project" },
+  { id: "asset-3", name: "Wedding Rings", url: "/wedding-rings-macro.png", type: "project" },
+  { id: "asset-4", name: "Wedding Party", url: "/happy-wedding-party.png", type: "project" },
+  { id: "asset-5", name: "Wedding Invitation", url: "/elegant-wedding-invitation.png", type: "project" },
+  { id: "asset-6", name: "Birthday Invitation", url: "/fun-birthday-invitation.png", type: "project" },
+] as const
+
+
+
+---
+File: config/features.ts
+---
+
+export const FEATURES = {
+  enableAIChat: true,
+  enableLazyLoading: true,
+  useNewArchitecture: false, // Toggle for gradual migration
+  enableVideoGeneration: true,
+  enableAssetUpload: true,
+} as const
+
+export type FeatureFlag = keyof typeof FEATURES
+
+
+
+---
+File: config/responsive.ts
+---
+
+export const BREAKPOINTS = {
+  sm: 640,
+  md: 768,
+  lg: 1024,
+  xl: 1280,
+} as const
+
+export const ORIENTATIONS = ["portrait", "landscape"] as const
+
+export type Breakpoint = keyof typeof BREAKPOINTS
+export type Orientation = (typeof ORIENTATIONS)[number]
+
+
+
+---
+File: contexts/DeviceContext.tsx
+---
+
+"use client"
+
+import { createContext, useContext, type ReactNode } from "react"
+import { useBreakpoint, useIsMobile, useIsTablet, useIsDesktop } from "@/hooks/responsive/useBreakpoint"
+import { useOrientation } from "@/hooks/responsive/useOrientation"
+import { useViewport } from "@/hooks/responsive/useViewport"
+import type { Orientation } from "@/config/responsive"
+
+interface DeviceContextValue {
+  // Breakpoints
+  isMobile: boolean
+  isTablet: boolean
+  isDesktop: boolean
+
+  // Specific breakpoint checks
+  isSmUp: boolean
+  isMdUp: boolean
+  isLgUp: boolean
+  isXlUp: boolean
+
+  // Orientation and viewport
+  orientation: Orientation
+  viewport: { width: number; height: number }
+
+  // Utility methods
+  isBreakpoint: (breakpoint: "sm" | "md" | "lg" | "xl") => boolean
+}
+
+const DeviceContext = createContext<DeviceContextValue | undefined>(undefined)
+
+interface DeviceProviderProps {
+  children: ReactNode
+}
+
+export function DeviceProvider({ children }: DeviceProviderProps) {
+  const isMobile = useIsMobile()
+  const isTablet = useIsTablet()
+  const isDesktop = useIsDesktop()
+
+  const isSmUp = useBreakpoint("sm")
+  const isMdUp = useBreakpoint("md")
+  const isLgUp = useBreakpoint("lg")
+  const isXlUp = useBreakpoint("xl")
+
+  const orientation = useOrientation()
+  const viewport = useViewport()
+
+  const isBreakpoint = (breakpoint: "sm" | "md" | "lg" | "xl") => {
+    switch (breakpoint) {
+      case "sm":
+        return isSmUp
+      case "md":
+        return isMdUp
+      case "lg":
+        return isLgUp
+      case "xl":
+        return isXlUp
+      default:
+        return false
+    }
+  }
+
+  const value: DeviceContextValue = {
+    isMobile,
+    isTablet,
+    isDesktop,
+    isSmUp,
+    isMdUp,
+    isLgUp,
+    isXlUp,
+    orientation,
+    viewport,
+    isBreakpoint,
+  }
+
+  return <DeviceContext.Provider value={value}>{children}</DeviceContext.Provider>
+}
+
+export function useDevice(): DeviceContextValue {
+  const context = useContext(DeviceContext)
+  if (context === undefined) {
+    throw new Error("useDevice must be used within a DeviceProvider")
+  }
+  return context
+}
+
+
+
+---
+File: hooks/responsive/useBreakpoint.ts
+---
+
+"use client"
+
+import { useEffect, useState } from "react"
+import { BREAKPOINTS, type Breakpoint } from "@/config/responsive"
+import { debugResponsive } from "@/lib/monitoring/analytics"
+
+export function useBreakpoint(breakpoint: Breakpoint): boolean {
+  const [matches, setMatches] = useState(false)
+
+  useEffect(() => {
+    // Handle SSR
+    if (typeof window === "undefined") return
+
+    const mediaQuery = window.matchMedia(`(min-width: ${BREAKPOINTS[breakpoint]}px)`)
+
+    // Set initial value
+    setMatches(mediaQuery.matches)
+
+    // Debug in development
+    if (process.env.NODE_ENV === "development") {
+      debugResponsive(`useBreakpoint(${breakpoint})`, `matches: ${mediaQuery.matches}`)
+    }
+
+    const handler = (event: MediaQueryListEvent) => {
+      setMatches(event.matches)
+      if (process.env.NODE_ENV === "development") {
+        debugResponsive(`useBreakpoint(${breakpoint}) changed`, `matches: ${event.matches}`)
+      }
+    }
+
+    // Use modern addEventListener if available, fallback to deprecated addListener
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handler)
+      return () => mediaQuery.removeEventListener("change", handler)
+    } else {
+      // @ts-ignore - fallback for older browsers
+      mediaQuery.addListener(handler)
+      return () => mediaQuery.removeListener(handler)
+    }
+  }, [breakpoint])
+
+  return matches
+}
+
+// Convenience hooks for common breakpoints
+const useIsMobile = () => {
+  const isMd = useBreakpoint("md")
+  return !isMd
+}
+
+const useIsTablet = () => {
+  const isMd = useBreakpoint("md")
+  const isLg = useBreakpoint("lg")
+  return isMd && !isLg
+}
+
+const useIsDesktop = () => {
+  const isLg = useBreakpoint("lg")
+  return isLg
+}
+
+export { useIsMobile, useIsTablet, useIsDesktop }
+
+
+
+---
+File: hooks/responsive/useOrientation.ts
+---
+
+"use client"
+
+import { useEffect, useState } from "react"
+import type { Orientation } from "@/config/responsive"
+import { debugResponsive } from "@/lib/monitoring/analytics"
+
+export function useOrientation(): Orientation {
+  const [orientation, setOrientation] = useState<Orientation>("portrait")
+
+  useEffect(() => {
+    // Handle SSR
+    if (typeof window === "undefined") return
+
+    const updateOrientation = () => {
+      const newOrientation = window.innerHeight > window.innerWidth ? "portrait" : "landscape"
+      setOrientation(newOrientation)
+
+      if (process.env.NODE_ENV === "development") {
+        debugResponsive("useOrientation", `${newOrientation} (${window.innerWidth}x${window.innerHeight})`)
+      }
+    }
+
+    // Set initial orientation
+    updateOrientation()
+
+    // Listen for orientation changes
+    window.addEventListener("resize", updateOrientation)
+    window.addEventListener("orientationchange", updateOrientation)
+
+    return () => {
+      window.removeEventListener("resize", updateOrientation)
+      window.removeEventListener("orientationchange", updateOrientation)
+    }
+  }, [])
+
+  return orientation
+}
+
+
+
+---
+File: hooks/responsive/useViewport.ts
+---
+
+"use client"
+
+import { useEffect, useState } from "react"
+import { debugResponsive } from "@/lib/monitoring/analytics"
+
+interface ViewportSize {
+  width: number
+  height: number
+}
+
+export function useViewport(): ViewportSize {
+  const [size, setSize] = useState<ViewportSize>({ width: 0, height: 0 })
+
+  useEffect(() => {
+    // Handle SSR
+    if (typeof window === "undefined") return
+
+    const updateSize = () => {
+      const newSize = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      }
+      setSize(newSize)
+
+      if (process.env.NODE_ENV === "development") {
+        debugResponsive("useViewport", `${newSize.width}x${newSize.height}`)
+      }
+    }
+
+    // Set initial size
+    updateSize()
+
+    // Debounce resize events to improve performance
+    let timeoutId: NodeJS.Timeout
+    const debouncedUpdateSize = () => {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(updateSize, 100)
+    }
+
+    window.addEventListener("resize", debouncedUpdateSize)
+    return () => {
+      window.removeEventListener("resize", debouncedUpdateSize)
+      clearTimeout(timeoutId)
+    }
+  }, [])
+
+  return size
+}
+
+
+
+---
+File: hooks/use-hydration.ts
+---
+
+"use client"
+
+import { useEffect } from "react"
+import { useSceneStore } from "@/stores/scene-store"
+import { useVideoStore } from "@/stores/video-store"
+
+export function useHydration() {
+  const sceneStore = useSceneStore()
+  const videoStore = useVideoStore()
+
+  useEffect(() => {
+    console.log("[v0] Running post-hydration state restoration...")
+
+    // Only hydrate once and only on client side
+    if (typeof window !== "undefined" && !sceneStore.isHydrated) {
+      sceneStore.hydrateFromStorage()
+    }
+
+    if (typeof window !== "undefined" && !videoStore.isHydrated) {
+      videoStore.hydrateFromStorage()
+    }
+  }, [sceneStore, videoStore])
+
+  return {
+    isHydrated: sceneStore.isHydrated && videoStore.isHydrated,
+  }
+}
+
+
+
+---
+File: hooks/use-mobile.tsx
+---
+
+import * as React from 'react'
+
+const MOBILE_BREAKPOINT = 768
+
+export function useIsMobile() {
+  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+
+  React.useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+    const onChange = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    }
+    mql.addEventListener('change', onChange)
+    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    return () => mql.removeEventListener('change', onChange)
+  }, [])
+
+  return !!isMobile
+}
+
+
+
+---
+File: hooks/use-toast.ts
+---
+
+'use client'
+
+// Inspired by react-hot-toast library
+import * as React from 'react'
+
+import type { ToastActionElement, ToastProps } from '@/components/ui/toast'
+
+const TOAST_LIMIT = 1
+const TOAST_REMOVE_DELAY = 1000000
+
+type ToasterToast = ToastProps & {
+  id: string
+  title?: React.ReactNode
+  description?: React.ReactNode
+  action?: ToastActionElement
+}
+
+const actionTypes = {
+  ADD_TOAST: 'ADD_TOAST',
+  UPDATE_TOAST: 'UPDATE_TOAST',
+  DISMISS_TOAST: 'DISMISS_TOAST',
+  REMOVE_TOAST: 'REMOVE_TOAST',
+} as const
+
+let count = 0
+
+function genId() {
+  count = (count + 1) % Number.MAX_SAFE_INTEGER
+  return count.toString()
+}
+
+type ActionType = typeof actionTypes
+
+type Action =
+  | {
+      type: ActionType['ADD_TOAST']
+      toast: ToasterToast
+    }
+  | {
+      type: ActionType['UPDATE_TOAST']
+      toast: Partial<ToasterToast>
+    }
+  | {
+      type: ActionType['DISMISS_TOAST']
+      toastId?: ToasterToast['id']
+    }
+  | {
+      type: ActionType['REMOVE_TOAST']
+      toastId?: ToasterToast['id']
+    }
+
+interface State {
+  toasts: ToasterToast[]
+}
+
+const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
+
+const addToRemoveQueue = (toastId: string) => {
+  if (toastTimeouts.has(toastId)) {
+    return
+  }
+
+  const timeout = setTimeout(() => {
+    toastTimeouts.delete(toastId)
+    dispatch({
+      type: 'REMOVE_TOAST',
+      toastId: toastId,
+    })
+  }, TOAST_REMOVE_DELAY)
+
+  toastTimeouts.set(toastId, timeout)
+}
+
+export const reducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case 'ADD_TOAST':
+      return {
+        ...state,
+        toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
+      }
+
+    case 'UPDATE_TOAST':
+      return {
+        ...state,
+        toasts: state.toasts.map((t) =>
+          t.id === action.toast.id ? { ...t, ...action.toast } : t,
+        ),
+      }
+
+    case 'DISMISS_TOAST': {
+      const { toastId } = action
+
+      // ! Side effects ! - This could be extracted into a dismissToast() action,
+      // but I'll keep it here for simplicity
+      if (toastId) {
+        addToRemoveQueue(toastId)
+      } else {
+        state.toasts.forEach((toast) => {
+          addToRemoveQueue(toast.id)
+        })
+      }
+
+      return {
+        ...state,
+        toasts: state.toasts.map((t) =>
+          t.id === toastId || toastId === undefined
+            ? {
+                ...t,
+                open: false,
+              }
+            : t,
+        ),
+      }
+    }
+    case 'REMOVE_TOAST':
+      if (action.toastId === undefined) {
+        return {
+          ...state,
+          toasts: [],
+        }
+      }
+      return {
+        ...state,
+        toasts: state.toasts.filter((t) => t.id !== action.toastId),
+      }
+  }
+}
+
+const listeners: Array<(state: State) => void> = []
+
+let memoryState: State = { toasts: [] }
+
+function dispatch(action: Action) {
+  memoryState = reducer(memoryState, action)
+  listeners.forEach((listener) => {
+    listener(memoryState)
+  })
+}
+
+type Toast = Omit<ToasterToast, 'id'>
+
+function toast({ ...props }: Toast) {
+  const id = genId()
+
+  const update = (props: ToasterToast) =>
+    dispatch({
+      type: 'UPDATE_TOAST',
+      toast: { ...props, id },
+    })
+  const dismiss = () => dispatch({ type: 'DISMISS_TOAST', toastId: id })
+
+  dispatch({
+    type: 'ADD_TOAST',
+    toast: {
+      ...props,
+      id,
+      open: true,
+      onOpenChange: (open) => {
+        if (!open) dismiss()
+      },
+    },
+  })
+
+  return {
+    id: id,
+    dismiss,
+    update,
+  }
+}
+
+function useToast() {
+  const [state, setState] = React.useState<State>(memoryState)
+
+  React.useEffect(() => {
+    listeners.push(setState)
+    return () => {
+      const index = listeners.indexOf(setState)
+      if (index > -1) {
+        listeners.splice(index, 1)
+      }
+    }
+  }, [state])
+
+  return {
+    ...state,
+    toast,
+    dismiss: (toastId?: string) => dispatch({ type: 'DISMISS_TOAST', toastId }),
+  }
+}
+
+export { useToast, toast }
+
+
+
+---
+File: lib/utils.ts
+---
+
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
