@@ -1,13 +1,11 @@
 "use client"
 import { motion } from "framer-motion"
-import { MetricCard } from "./MetricCard"
 import { QuickActions } from "./QuickActions"
 import { RecentActivity } from "./RecentActivity"
 import { SessionList } from "./SessionList"
 import { AgentLibrary } from "./AgentLibrary"
 import { useDevice } from "@/contexts/DeviceProvider"
-import { useLocalAnalytics } from "@/hooks/dashboard/useLocalAnalytics"
-import { MessageSquare, Users, TrendingUp, Clock, BarChart3, Settings } from "lucide-react"
+import { BarChart3, Settings } from "lucide-react"
 
 interface DashboardContentProps {
   currentView: string
@@ -15,46 +13,9 @@ interface DashboardContentProps {
 
 export function DashboardContent({ currentView }: DashboardContentProps) {
   const { isMobile } = useDevice()
-  const metrics = useLocalAnalytics()
 
   const renderOverview = () => (
     <div className="space-y-6">
-      {/* Metrics Grid */}
-      <div className={`grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"}`}>
-        <MetricCard
-          title="Total Debates"
-          value={metrics.totalDebates.toString()}
-          change="+12% from last month"
-          changeType="positive"
-          icon={MessageSquare}
-          index={0}
-        />
-        <MetricCard
-          title="Active Agents"
-          value={metrics.activeAgents.toString()}
-          change="+2 this week"
-          changeType="positive"
-          icon={Users}
-          index={1}
-        />
-        <MetricCard
-          title="Avg. Session Time"
-          value={`${metrics.avgSessionTime}m`}
-          change="-5% from last week"
-          changeType="negative"
-          icon={Clock}
-          index={2}
-        />
-        <MetricCard
-          title="Engagement Rate"
-          value={`${metrics.engagementRate}%`}
-          change="+3% from last month"
-          changeType="positive"
-          icon={TrendingUp}
-          index={3}
-        />
-      </div>
-
       {/* Quick Actions and Recent Activity */}
       <div className={`grid gap-6 ${isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"}`}>
         <QuickActions />
