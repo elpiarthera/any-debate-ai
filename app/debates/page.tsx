@@ -239,7 +239,7 @@ export default function DebatesPage() {
                 </Button>
               )}
 
-              <Link href="/overview">
+              <Link href="/dashboard">
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
