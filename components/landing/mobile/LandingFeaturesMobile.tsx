@@ -10,7 +10,8 @@ const features = [
   {
     icon: Sparkles,
     title: "AI-Powered Debates",
-    description: "Multiple AI models debate your challenge from different perspectives",
+    description:
+      "Multiple AI models debate your challenge from different perspectives, uncovering insights you'd never find alone",
     benefits: [
       "Uncover blind spots automatically",
       "Get diverse viewpoints instantly",
@@ -22,14 +23,16 @@ const features = [
   {
     icon: Users,
     title: "Agent Builder",
-    description: "Create custom AI agents with 50+ roles, 8 personas, and 16+ thinking frameworks",
+    description:
+      "Create custom AI agents with 50+ roles, 8 personas, and 16+ thinking frameworks—or use pre-built teams",
     benefits: ["6,400+ agent combinations", "Pre-built agent teams", "Save custom configurations"],
     cta: "Build Agents",
   },
   {
     icon: FileText,
     title: "Smart Artifacts",
-    description: "30+ templates for documents, tables, checklists, and charts with version history",
+    description:
+      "Generate documents, tables, checklists, and charts mid-debate from 30+ templates with full version history",
     benefits: ["Auto-generate reports", "Track version changes", "Export in multiple formats"],
     cta: "See Templates",
     badge: "New",
@@ -37,21 +40,23 @@ const features = [
   {
     icon: MessageSquare,
     title: "Advanced Chat",
-    description: "Search messages, create threads, add reactions, and bookmark important insights",
+    description:
+      "Search messages, create threads, add reactions, and bookmark important insights for seamless collaboration",
     benefits: ["Full-text message search", "3-level nested replies", "18 emoji reactions"],
     cta: "Explore Chat",
   },
   {
     icon: Download,
     title: "Export Everything",
-    description: "Download debates as PDF, Markdown, or JSON with custom formatting",
+    description:
+      "Download debates as PDF, Markdown, or JSON with custom formatting—share insights without losing context",
     benefits: ["Multi-format export", "Selective content export", "Batch export sessions"],
     cta: "Export Options",
   },
   {
     icon: LayoutDashboard,
     title: "Dashboard & Analytics",
-    description: "Track metrics, organize projects, and manage debate sessions",
+    description: "Track metrics, organize projects, and manage debate sessions from one central command center",
     benefits: ["Comprehensive metrics", "Project organization", "Activity tracking"],
     cta: "View Dashboard",
   },

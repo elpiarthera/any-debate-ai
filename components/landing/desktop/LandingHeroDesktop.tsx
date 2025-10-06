@@ -2,9 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Play, ArrowRight } from "lucide-react"
-import { UrgencyBanner } from "../UrgencyBanner"
-import { TrustSignals } from "../TrustSignals"
+import { Play, ArrowRight, Sparkles } from "lucide-react"
 import { trackCTAClick } from "@/lib/analytics"
 
 interface LandingHeroDesktopProps {
@@ -14,51 +12,51 @@ interface LandingHeroDesktopProps {
 
 export function LandingHeroDesktop({ onStartDemo, onWatchDemo }: LandingHeroDesktopProps) {
   return (
-    <section className="relative overflow-hidden" data-section="hero">
-      <div className="max-w-7xl mx-auto px-6 pt-16 pb-24">
+    <section
+      className="relative overflow-hidden bg-gradient-to-b from-background via-background to-muted/20"
+      data-section="hero"
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+
+      <div className="relative max-w-7xl mx-auto px-6 pt-24 pb-32">
         <motion.div
           className="text-center max-w-5xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          {/* Urgency Banner */}
           <motion.div
-            className="mb-8"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 mb-8"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
           >
-            <UrgencyBanner type="limited-spots" message="Only 47 spots left in our beta program" />
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary">Collective AI Intelligence</span>
           </motion.div>
 
-          {/* Headline - Desktop: Larger text */}
           <motion.h1
-            className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 text-balance leading-tight"
+            className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-7 text-balance leading-[1.1] tracking-tight"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            Make Better Decisions in{" "}
-            <span className="bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
-              5 Minutes, Not 5 Days
-            </span>
+            One AI Can Be Wrong. <br />
+            <span className="text-primary">A Team of AIs Gets It Right.</span>
           </motion.h1>
 
-          {/* Subheadline - Desktop: Larger text */}
           <motion.p
-            className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto text-pretty"
+            className="text-lg sm:text-xl text-muted-foreground mb-12 max-w-3xl mx-auto text-pretty leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            Stop struggling with analysis paralysis. Get instant insights from 4 AI experts debating your toughest
-            challenges—no meetings, no delays, no guesswork.
+            The world's best AI models working together. <br />
+            Better decisions through collective intelligence.
           </motion.p>
 
-          {/* CTAs - Desktop: Side-by-side */}
           <motion.div
-            className="flex flex-row justify-center gap-4 mb-10"
+            className="flex flex-row justify-center gap-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
@@ -66,35 +64,27 @@ export function LandingHeroDesktop({ onStartDemo, onWatchDemo }: LandingHeroDesk
             <Button
               size="lg"
               onClick={() => {
-                trackCTAClick("hero", "primary", "Start Your First Debate Now")
+                trackCTAClick("hero", "primary", "Try AnyDebate")
                 onStartDemo()
               }}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-full px-8 py-6 text-lg min-h-[56px] group"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-8 h-14 text-lg shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
             >
-              <Play className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
-              <div className="flex flex-col items-start">
-                <span>Start Your First Debate Now</span>
-                <span className="text-xs opacity-80">No card required • 2-min setup</span>
-              </div>
+              <Play className="h-5 w-5 mr-2" />
+              Try AnyDebate
             </Button>
 
             <Button
               size="lg"
               variant="outline"
               onClick={() => {
-                trackCTAClick("hero", "secondary", "Watch 90-Second Demo")
+                trackCTAClick("hero", "secondary", "Watch Demo")
                 onWatchDemo()
               }}
-              className="font-semibold rounded-full px-8 py-6 text-lg min-h-[56px]"
+              className="font-medium rounded-lg px-8 h-14 text-lg border-border/50 hover:border-border"
             >
-              Watch 90-Second Demo
-              <ArrowRight className="h-5 w-5 ml-2" />
+              Watch Demo
+              <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
-          </motion.div>
-
-          {/* Trust Signals */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-            <TrustSignals />
           </motion.div>
         </motion.div>
       </div>

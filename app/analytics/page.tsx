@@ -4,6 +4,7 @@ import { MetricCard } from "@/components/dashboard/MetricCard"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { useLocalAnalytics } from "@/hooks/dashboard/useLocalAnalytics"
 import { MessageSquare, Users, TrendingUp, Clock } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 
 export default function AnalyticsPage() {
   const { isMobile } = useDevice()
@@ -11,7 +12,7 @@ export default function AnalyticsPage() {
 
   return (
     <DashboardLayout title="Analytics" subtitle="Track your debate performance and insights">
-      <div className={`${isMobile ? "p-4" : "p-6"}`}>
+      <div className={`${isMobile ? "p-4" : "p-6"} space-y-6`}>
         <div className={`grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"}`}>
           <MetricCard
             title="Total Debates"
@@ -46,6 +47,17 @@ export default function AnalyticsPage() {
             index={3}
           />
         </div>
+
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <div className="text-center space-y-2">
+              <h3 className="text-xl font-semibold text-muted-foreground">Advanced Analytics Coming Soon</h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                Detailed charts, trends, and insights will be available here soon.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   )

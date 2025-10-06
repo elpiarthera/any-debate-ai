@@ -4,19 +4,19 @@ import { motion } from "framer-motion"
 import { X, CheckCircle } from "lucide-react"
 
 const painPoints = [
-  "Endless meetings that go nowhere",
-  "Analysis paralysis from too many options",
-  "Missing critical perspectives and blind spots",
-  "Weeks wasted on strategic planning",
-  "Decisions made on gut feeling, not data",
+  "Copy-pasting between ChatGPT, Claude, and Gemini for different perspectives",
+  "Manually shuttling responses back and forth between AI models",
+  "Losing context and conversation flow across multiple browser tabs",
+  "Spending hours orchestrating multi-AI conversations yourself",
+  "Missing insights because AIs don't respond to each other",
 ]
 
 const solutions = [
-  "4 AI experts debate your challenge in minutes",
-  "Uncover blind spots you'd never see alone",
-  "Get actionable recommendations, not just opinions",
-  "Make confident decisions in 5 minutes",
-  "Data-driven insights with clear reasoning",
+  "AI agents debate each other automatically—no copy-paste needed",
+  "Get multiple expert perspectives in one conversation",
+  "Agents challenge each other's assumptions in real-time",
+  "Save hours by automating the multi-AI perspective gathering",
+  "See all viewpoints side-by-side with full context preserved",
 ]
 
 export function LandingProblemSolutionDesktop() {
@@ -32,7 +32,7 @@ export function LandingProblemSolutionDesktop() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-2xl font-semibold">Struggling with Complex Decisions?</h3>
+            <h3 className="text-2xl font-semibold">Tired of Copy-Pasting Between AI Models?</h3>
             <ul className="space-y-4">
               {painPoints.map((point, index) => (
                 <motion.li
@@ -57,7 +57,7 @@ export function LandingProblemSolutionDesktop() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-2xl font-semibold">Get Instant Expert Insights</h3>
+            <h3 className="text-2xl font-semibold">Let AI Agents Debate Automatically</h3>
             <ul className="space-y-4">
               {solutions.map((solution, index) => (
                 <motion.li

@@ -1,0 +1,95 @@
+"use client"
+
+import { motion } from "framer-motion"
+import { Card } from "@/components/ui/card"
+import { Columns3, MessageSquare, Users } from "lucide-react"
+
+const modes = [
+  {
+    icon: Columns3,
+    title: "Compare Mode",
+    subtitle: "Get Multiple Perspectives Instantly",
+    description: "Send one prompt. See how different AI models approach the same problem side-by-side.",
+    example:
+      "Ask about database architecture → See GPT-4's approach, Claude's perspective, Gemini's solution, all at once.",
+    color: "from-blue-500 to-cyan-500",
+  },
+  {
+    icon: MessageSquare,
+    title: "Debate Mode",
+    subtitle: "Let AI Models Critique Each Other",
+    description: "@mention specific AI models to evaluate and critique each other's responses in threaded discussions.",
+    example:
+      "GPT-4 proposes a solution → @Claude to critique it → @Gemini to add perspective → Refine based on multiple critiques.",
+    color: "from-purple-500 to-pink-500",
+  },
+  {
+    icon: Users,
+    title: "Auto-Debate Mode",
+    subtitle: "Watch AI Teams Debate Autonomously",
+    description: "Configure AI models with roles, personas, and frameworks. Watch them debate like a real team.",
+    example:
+      "CEO (strategic) vs CFO (financial) vs Designer (UX) vs Engineer (technical) → Comprehensive analysis in minutes.",
+    color: "from-orange-500 to-red-500",
+  },
+]
+
+export function LandingThreeModesSection() {
+  return (
+    <section className="py-16 border-t border-border/20" data-section="three-modes">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Header */}
+        <motion.div
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-2xl font-bold mb-4 text-balance leading-tight">
+            Three Ways to Leverage Collective AI Intelligence
+          </h2>
+          <p className="text-base text-muted-foreground text-pretty px-2">
+            Choose the right mode for your needs—from quick comparisons to autonomous team debates.
+          </p>
+        </motion.div>
+
+        {/* Modes */}
+        <div className="space-y-6">
+          {modes.map((mode, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <Card className="bg-card/50 border-border/50 p-6 overflow-hidden relative">
+                {/* Gradient accent */}
+                <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${mode.color}`} />
+
+                <div className="flex items-start gap-4 mb-4">
+                  <div
+                    className={`flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br ${mode.color} flex items-center justify-center`}
+                  >
+                    <mode.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-1">{mode.title}</h3>
+                    <p className="text-sm text-primary font-medium">{mode.subtitle}</p>
+                  </div>
+                </div>
+
+                <p className="text-sm text-foreground mb-3 text-pretty">{mode.description}</p>
+
+                <div className="bg-muted/50 rounded-lg p-4 border border-border/50">
+                  <p className="text-xs text-muted-foreground font-medium mb-1">Example:</p>
+                  <p className="text-sm text-foreground text-pretty">{mode.example}</p>
+                </div>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

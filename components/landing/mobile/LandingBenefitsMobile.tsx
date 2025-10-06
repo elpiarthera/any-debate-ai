@@ -3,57 +3,42 @@
 import { motion } from "framer-motion"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Clock, Brain, TrendingUp, MessageSquare, Zap, Shield } from "lucide-react"
+import { Brain, Clock, MessageSquare, FileText, TrendingUp } from "lucide-react"
 
 const benefits = [
   {
-    icon: Clock,
-    benefit: "Save 10+ Hours Per Week",
-    description: "Stop wasting time in endless meetings. Get expert insights in minutes, not days.",
-    feature: "Powered by 4 AI agents working in parallel",
-    metric: "87% faster decisions",
-  },
-  {
     icon: Brain,
-    benefit: "Uncover Hidden Blind Spots",
+    benefit: "Uncover Blind Spots You'd Never See Alone",
     description:
-      "Surface insights and perspectives you'd never consider alone. Challenge your assumptions systematically.",
-    feature: "Multi-perspective analysis from specialized agents",
-    metric: "3x more perspectives",
+      "Multiple AI agents challenge each other's assumptions and reveal perspectives you'd miss with a single AI. Get comprehensive viewpoint coverage automatically.",
+    outcome: "Make better decisions with complete perspective coverage",
   },
   {
-    icon: TrendingUp,
-    benefit: "Make Confident Decisions",
-    description: "Get clear, actionable recommendations backed by comprehensive analysis. No more analysis paralysis.",
-    feature: "Structured debate with evidence-based insights",
-    metric: "95% confidence boost",
+    icon: Clock,
+    benefit: "Save Hours of Manual Copy-Pasting",
+    description:
+      "Stop shuttling responses between ChatGPT, Claude, and Gemini. AI agents debate each other automatically while you focus on the insights.",
+    outcome: "Automate multi-AI perspective gathering",
   },
   {
     icon: MessageSquare,
-    benefit: "Collaborate Seamlessly",
-    description: "Share debates, artifacts, and insights with your team. Build on each other's thinking in real-time.",
-    feature: "Shared workspace with live collaboration",
-    metric: "60% better alignment",
+    benefit: "Richer Debates Than Manual Copy-Paste",
+    description:
+      "Agents respond directly to each other's arguments, building on ideas and challenging assumptions in real-time. Context never gets lost.",
+    outcome: "Get deeper insights from AI-to-AI conversations",
   },
   {
-    icon: Zap,
-    benefit: "Automate Strategic Thinking",
-    description: "Set up automated debate workflows that run on schedule. Wake up to fresh insights every morning.",
-    feature: "Auto-debate mode with customizable agents",
-    metric: "24/7 analysis",
-  },
-  {
-    icon: Shield,
-    benefit: "Enterprise-Grade Security",
-    description: "Your data stays private and secure. SOC 2 compliant with end-to-end encryption.",
-    feature: "Bank-level security and compliance",
-    metric: "100% data privacy",
+    icon: FileText,
+    benefit: "Generate Actionable Artifacts During Debates",
+    description:
+      "Create documents, comparison tables, and decision charts mid-debate. Export everything to PDF, Markdown, JSON, or CSV to share with your team.",
+    outcome: "Turn debates into shareable deliverables instantly",
   },
 ]
 
 export function LandingBenefitsMobile() {
   return (
-    <section className="py-20 border-t border-border/20 bg-muted/30" data-section="benefits">
+    <section className="py-20 border-t border-border/20 bg-background" data-section="benefits">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <motion.div
@@ -63,13 +48,13 @@ export function LandingBenefitsMobile() {
           viewport={{ once: true }}
         >
           <h2 className="text-2xl font-bold mb-4 text-balance leading-tight">
-            Everything You Need to{" "}
+            Stop Wasting Time,{" "}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Make Better Decisions
+              Start Deciding
             </span>
           </h2>
           <p className="text-base text-muted-foreground text-pretty px-4">
-            Transform how your team approaches complex problems with our comprehensive AI collaboration platform
+            Automate multi-AI perspective gathering and get better insights faster
           </p>
         </motion.div>
 
@@ -87,10 +72,9 @@ export function LandingBenefitsMobile() {
                 <benefit.icon className="h-10 w-10 text-primary mb-4" />
                 <h3 className="text-lg font-semibold mb-3">{benefit.benefit}</h3>
                 <p className="text-sm text-muted-foreground text-pretty mb-4">{benefit.description}</p>
-                <p className="text-xs text-muted-foreground/80 mb-3">{benefit.feature}</p>
                 <Badge variant="secondary" className="text-xs">
                   <TrendingUp className="h-3 w-3 mr-1" />
-                  {benefit.metric}
+                  {benefit.outcome}
                 </Badge>
               </Card>
             </motion.div>
