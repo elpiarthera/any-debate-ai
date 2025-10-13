@@ -2014,11 +2014,11 @@ const mockChatInsights = [
 ];
 \`\`\`
 
-**Status**: ✅ Completed
-**Completed**: October 13, 2025
-**Time Spent**: 1 hour
+**Status**:  not started
+**Completed**: TBD
+**Time Spent**: x hour
 
-**Files Created**:
+**Files to create**:
 - `components/chat/save-chat-as-memory-form.tsx` - Form to save chat history as memory
 
 **Features Implemented**:
