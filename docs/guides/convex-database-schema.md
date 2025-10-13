@@ -262,6 +262,46 @@ AnyDebate Database (Convex)
 │   │   ├── updatedAt: number
 │   │   └── canceledAt: number (optional)
 │   │
+│   ├──< 💰 creditBalances (1:1)
+│   │   ├── _id: Id<"creditBalances">
+│   │   ├── organizationId: string (unique, indexed) → organizations.clerkOrganizationId
+│   │   ├── totalCredits: number
+│   │   ├── usedCredits: number
+│   │   ├── remainingCredits: number
+│   │   ├── subscriptionCredits: number
+│   │   ├── purchasedCredits: number
+│   │   ├── lastResetAt: number
+│   │   ├── nextResetAt: number
+│   │   ├── updatedAt: number
+│   │   └── metadata: object
+│   │       └── resetFrequency: "monthly" | "never"
+│   │
+│   ├──< 💵 invoices (1:N)
+│   │   ├── _id: Id<"invoices">
+│   │   ├── organizationId: string (indexed) → organizations.clerkOrganizationId
+│   │   ├── polarInvoiceId: string (unique, indexed)
+│   │   ├── subscriptionId: string (optional, indexed) → subscriptions._id
+│   │   ├── invoiceNumber: string (unique)
+│   │   ├── status: "draft" | "open" | "paid" | "void" | "uncollectible"
+│   │   ├── amount: number
+│   │   ├── currency: string
+│   │   ├── description: string (optional)
+│   │   ├── invoiceDate: number
+│   │   ├── dueDate: number (optional)
+│   │   ├── paidAt: number (optional)
+│   │   ├── invoiceUrl: string (optional, Polar hosted invoice URL)
+│   │   ├── pdfUrl: string (optional, downloadable PDF URL)
+│   │   ├── metadata: object
+│   │   │   ├── planName: string (optional)
+│   │   │   ├── billingPeriod: string (optional, "YYYY-MM")
+│   │   │   └── items: object[] (optional, line items)
+│   │   │       ├── description: string
+│   │   │       ├── quantity: number
+│   │   │       ├── unitPrice: number
+│   │   │       └── amount: number
+│   │   ├── createdAt: number
+│   │   └── updatedAt: number
+│   │
 │   └──< 📊 usageTracking (1:N)
 │       ├── _id: Id<"usageTracking">
 │       ├── organizationId: string (indexed) → organizations.clerkOrganizationId
@@ -296,6 +336,59 @@ AnyDebate Database (Convex)
 │   │   └── defaultAgents: string[] (agent IDs)
 │   ├── totalSessions: number
 │   ├── lastActiveAt: number
+│   ├── createdAt: number
+│   └── updatedAt: number
+│
+├── 💼 roles
+│   ├── _id: Id<"roles">
+│   ├── id: string (unique, indexed)
+│   ├── name: string
+│   ├── category: string (indexed)
+│   ├── description: string
+│   ├── expertise: string[]
+│   ├── systemPrompt: string
+│   ├── icon: string
+│   ├── isSystem: boolean (indexed)
+│   ├── isActive: boolean (indexed)
+│   ├── organizationId: string (optional, indexed) → organizations.clerkOrganizationId
+│   ├── workspaceId: string (optional, indexed) → workspaces._id
+│   ├── usageCount: number
+│   ├── createdAt: number
+│   └── updatedAt: number
+│
+├── 🎭 personas
+│   ├── _id: Id<"personas">
+│   ├── id: string (unique, indexed)
+│   ├── name: string
+│   ├── description: string
+│   ├── traits: string[]
+│   ├── communicationStyle: string
+│   ├── decisionMaking: string
+│   ├── systemPromptModifier: string
+│   ├── icon: string
+│   ├── isSystem: boolean (indexed)
+│   ├── isActive: boolean (indexed)
+│   ├── organizationId: string (optional, indexed) → organizations.clerkOrganizationId
+│   ├── workspaceId: string (optional, indexed) → workspaces._id
+│   ├── usageCount: number
+│   ├── createdAt: number
+│   └── updatedAt: number
+│
+├── 🧠 frameworks
+│   ├── _id: Id<"frameworks">
+│   ├── id: string (unique, indexed)
+│   ├── name: string
+│   ├── description: string
+│   ├── methodology: string
+│   ├── bestFor: string[]
+│   ├── steps: string[]
+│   ├── systemPromptModifier: string
+│   ├── icon: string
+│   ├── isSystem: boolean (indexed)
+│   ├── isActive: boolean (indexed)
+│   ├── organizationId: string (optional, indexed) → organizations.clerkOrganizationId
+│   ├── workspaceId: string (optional, indexed) → workspaces._id
+│   ├── usageCount: number
 │   ├── createdAt: number
 │   └── updatedAt: number
 │
@@ -388,18 +481,33 @@ AnyDebate Database (Convex)
 │   ├── sessionId: string (indexed) → sessions._id
 │   ├── messageId: string (optional, indexed) → messages._id
 │   ├── userId: string (indexed) → users.clerkUserId
+│   ├── type: "document" | "data-table" | "checklist" | "chart" | "code" | "image" | "pdf" | "export"
 │   ├── title: string
 │   ├── description: string (optional)
-│   ├── type: "document" | "data-table" | "checklist" | "chart" | "code" | "image" | "pdf" | "export"
 │   ├── content: string (optional, for text-based artifacts)
-│   ├── fileStorageId: string (optional) → Convex file storage
+│   ├── folderId: string (optional, indexed) → folders._id
+│   ├── tags: string[]
+│   ├── isFavorite: boolean
+│   ├── isPinned: boolean
+│   ├── lastAccessedAt: number
+│   ├── collaborators: string[] (optional)
+│   ├── reactions: object
+│   │   ├── likes: number
+│   │   └── dislikes: number
+│   ├── fileId: string (optional) → Convex file storage
 │   ├── metadata: object
 │   │   ├── size: number (optional, file size in bytes)
-│   │   ├── version: string (optional)
-│   │   ├── exports: string[] (optional, export formats)
+│   │   ├── version: number (optional)
+│   │   ├── exports: object[] (optional)
+│   │   │   ├── format: string
+│   │   │   ├── url: string
+│   │   │   └── timestamp: number
 │   │   ├── author: string (optional)
 │   │   ├── tags: string[] (optional)
-│   │   └── mimeType: string (optional)
+│   │   ├── mimeType: string (optional)
+│   │   ├── wordCount: number (optional)
+│   │   ├── rowCount: number (optional)
+│   │   └── itemCount: number (optional)
 │   ├── createdAt: number
 │   └── updatedAt: number
 │
@@ -536,26 +644,50 @@ AnyDebate Database (Convex)
 │   ├── createdAt: number
 │   └── updatedAt: number
 │
-└── 🤝 collaborationEvents
-    ├── _id: Id<"collaborationEvents">
-    ├── organizationId: string (indexed) → organizations.clerkOrganizationId
-    ├── workspaceId: string (indexed) → workspaces._id
-    ├── sessionId: string (indexed) → sessions._id
-    ├── artifactId: string (indexed) → artifacts._id
-    ├── userId: string (optional, indexed) → users.clerkUserId
-    ├── agentId: string (optional, indexed) → agents._id
-    ├── eventType: "edit" | "comment" | "cursor" | "view" | "create" | "delete"
-    ├── description: string
-    ├── metadata: object
-    │   ├── field: string (optional, which field was edited)
-    │   ├── oldValue: string (optional)
-    │   ├── newValue: string (optional)
-    │   ├── position: object (optional, cursor position)
-    │   │   ├── x: number
-    │   │   └── y: number
-    │   └── color: string (optional, cursor color)
-    ├── timestamp: number
-    └── createdAt: number
+├── 🤝 collaborationEvents
+│   ├── _id: Id<"collaborationEvents">
+│   ├── organizationId: string (indexed) → organizations.clerkOrganizationId
+│   ├── workspaceId: string (indexed) → workspaces._id
+│   ├── sessionId: string (indexed) → sessions._id
+│   ├── artifactId: string (indexed) → artifacts._id
+│   ├── userId: string (optional, indexed) → users.clerkUserId
+│   ├── agentId: string (optional, indexed) → agents._id
+│   ├── eventType: "edit" | "comment" | "cursor" | "view" | "create" | "delete"
+│   ├── description: string
+│   ├── metadata: object
+│   │   ├── field: string (optional, which field was edited)
+│   │   ├── oldValue: string (optional)
+│   │   ├── newValue: string (optional)
+│   │   ├── position: object (optional, cursor position)
+│   │   │   ├── x: number
+│   │   │   └── y: number
+│   │   └── color: string (optional, cursor color)
+│   ├── timestamp: number
+│   └── createdAt: number
+│
+├── 📁 folders
+│   ├── _id: Id<"folders">
+│   ├── organizationId: string (indexed) → organizations.clerkOrganizationId
+│   ├── workspaceId: string (indexed) → workspaces._id
+│   ├── userId: string (indexed) → users.clerkUserId
+│   ├── name: string
+│   ├── description: string (optional)
+│   ├── color: string (optional)
+│   ├── icon: string (optional)
+│   ├── parentId: string (optional, indexed) → folders._id
+│   ├── createdAt: number
+│   └── updatedAt: number
+│
+├── 🏷️ tags
+│   ├── _id: Id<"tags">
+│   ├── organizationId: string (indexed) → organizations.clerkOrganizationId
+│   ├── workspaceId: string (indexed) → workspaces._id
+│   ├── userId: string (indexed) → users.clerkUserId
+│   ├── name: string
+│   ├── color: string
+│   ├── count: number
+│   ├── createdAt: number
+│   └── updatedAt: number
 \`\`\`
 
 ### Legend
@@ -575,9 +707,10 @@ AnyDebate Database (Convex)
 - 📚 Bookmark Collections (organized bookmarks)
 - 🎯 Activities (user activity log)
 - 💳 Subscription data (Polar integration)
-- 📊 Usage tracking (token metering)
 - 💰 Credit balances (billing)
-- 💼 Professional roles (agent configuration)
+- 💵 Invoices (payment history)
+- 📊 Usage tracking (token metering)
+- 💼 Roles (agent configuration)
 - 🎭 Personality personas (agent configuration)
 - 🧠 Thinking frameworks (agent configuration)
 - 📁 Folders (artifact organization)
@@ -622,6 +755,7 @@ This document defines the complete Convex database schema for AnyDebate AI. The 
 - **Artifact Management**: Folders, tags, templates, and version history for organized artifact storage.
 - **Real-time Collaboration Tracking**: Events for edits, comments, cursors, and views.
 - **Persistent AI Memory**: Storing and retrieving knowledge across different scopes for agents.
+- **Billing and Payment History**: Tracking subscriptions, credit balances, and invoices.
 
 ### Key Design Decisions
 
@@ -1481,83 +1615,7 @@ artifactTemplates: defineTable({
 
 ---
 
-### 12. Artifact Templates
-
-**Purpose**: Store reusable artifact templates (system and custom)
-
-\`\`\`typescript
-artifactTemplates: defineTable({
-  // Organization isolation
-  organizationId: v.string(),
-  
-  // Workspace reference
-  workspaceId: v.id('workspaces'),
-  
-  // User reference (creator)
-  userId: v.string(),
-  
-  // Template metadata
-  name: v.string(),
-  description: v.string(),
-  type: v.union(
-    v.literal('document'),
-    v.literal('data-table'),
-    v.literal('checklist'),
-    v.literal('chart')
-  ),
-  icon: v.string(),
-  category: v.string(),
-  tags: v.array(v.string()),
-  
-  // Template data (JSON stringified artifact data)
-  data: v.string(),
-  
-  // System vs custom template
-  isSystem: v.boolean(),
-  
-  // Usage tracking
-  usageCount: v.number(),
-  
-  // Timestamps
-  createdAt: v.number(),
-  updatedAt: v.number(),
-})
-  .index('by_organization', ['organizationId'])
-  .index('by_workspace', ['workspaceId'])
-  .index('by_user', ['userId'])
-  .index('by_type', ['type'])
-  .index('by_category', ['category'])
-  .index('by_workspace_and_type', ['workspaceId', 'type'])
-  .index('by_workspace_and_category', ['workspaceId', 'category'])
-  .index('by_system', ['isSystem'])
-  .index('by_usage', ['usageCount'])
-\`\`\`
-
-**Fields**:
-- `organizationId`: Multi-tenancy isolation
-- `workspaceId`: Links to the workspace
-- `userId`: Creator of the template
-- `name`: Template name
-- `description`: Template description
-- `type`: Artifact type (document, data-table, checklist, chart)
-- `icon`: Template icon (emoji or icon name)
-- `category`: Template category (General, Business, Development, etc.)
-- `tags`: Array of tags for categorization
-- `data`: JSON stringified artifact data structure
-- `isSystem`: Whether this is a built-in system template
-- `usageCount`: Number of times template has been used
-- `createdAt`: Timestamp of template creation
-- `updatedAt`: Timestamp of last update
-
-**Notes**:
-- 20 built-in system templates (5 per artifact type)
-- Users can create custom templates from existing artifacts
-- System templates have `isSystem: true` and are read-only
-- Custom templates are workspace-scoped
-
----
-
-### 13. Artifact Versions
+### 12. Artifact Versions
 
 **Purpose**: Track version history for artifacts (version control and restore)
 
@@ -1629,7 +1687,7 @@ artifactVersions: defineTable({
 
 ---
 
-### 14. Templates
+### 13. Templates
 
 **Purpose**: Store debate templates
 
@@ -1720,7 +1778,7 @@ templates: defineTable({
 
 ---
 
-### 15. Agent Team Presets
+### 14. Agent Team Presets
 
 **Purpose**: Store pre-configured agent team presets for quick start
 
@@ -1793,7 +1851,7 @@ agentTeamPresets: defineTable({
 
 ---
 
-### 16. Quick Start Scenarios
+### 15. Quick Start Scenarios
 
 **Purpose**: Store quick start scenarios that combine presets with suggested topics
 
@@ -1864,7 +1922,7 @@ quickStartScenarios: defineTable({
 
 ---
 
-### 17. Projects
+### 16. Projects
 
 **Purpose**: Group sessions into projects
 
@@ -1911,7 +1969,7 @@ projects: defineTable({
 
 ---
 
-### 18. Bookmarks
+### 17. Bookmarks
 
 **Purpose**: Save messages for future reference
 
@@ -1971,7 +2029,7 @@ bookmarks: defineTable({
 
 ---
 
-### 19. Bookmark Collections
+### 18. Bookmark Collections
 
 **Purpose**: Organize bookmarks into collections
 
@@ -2023,7 +2081,7 @@ bookmarkCollections: defineTable({
 
 ---
 
-### 20. Activities
+### 19. Activities
 
 **Purpose**: Track user activities for dashboard recent activity feed
 
@@ -2094,7 +2152,7 @@ activities: defineTable({
 
 ---
 
-### 21. Session Comparisons
+### 20. Session Comparisons
 
 **Purpose**: Store side-by-side session comparisons for analysis
 
@@ -2142,7 +2200,7 @@ sessionComparisons: defineTable({
 
 ---
 
-### 22. Subscriptions
+### 21. Subscriptions
 
 **Purpose**: Track Polar subscription status and billing
 
@@ -2207,7 +2265,149 @@ subscriptions: defineTable({
 
 ---
 
-### 23. Usage Tracking
+### 22. Credit Balances
+
+**Purpose**: Track credit balances for organizations
+
+\`\`\`typescript
+creditBalances: defineTable({
+  // Organization isolation (one balance per org)
+  organizationId: v.string(),
+  
+  // Credit details
+  totalCredits: v.number(),
+  usedCredits: v.number(),
+  remainingCredits: v.number(),
+  subscriptionCredits: v.number(), // Monthly allocation from Polar
+  purchasedCredits: v.number(), // One-time purchases from Polar
+  
+  // Reset timestamps
+  lastResetAt: v.number(),
+  nextResetAt: v.number(),
+  
+  // Timestamps
+  updatedAt: v.number(),
+  
+  // Metadata
+  metadata: v.object({
+    resetFrequency: v.union(
+      v.literal('monthly'),
+      v.literal('never')
+    ),
+  }),
+})
+  .index('by_organization', ['organizationId'])
+\`\`\`
+
+**Fields**:
+- `organizationId`: One balance per organization
+- `totalCredits`: Total credits available
+- `usedCredits`: Credits already used
+- `remainingCredits`: Credits left
+- `subscriptionCredits`: Monthly credits allocated
+- `purchasedCredits`: Credits purchased one-time
+- `lastResetAt`: Timestamp of last reset
+- `nextResetAt`: Timestamp of next reset
+- `updatedAt`: Timestamp of last update
+- `metadata`: Additional details (resetFrequency)
+
+**Notes**:
+- Tracks credit balances for organizations
+- Supports monthly and never reset frequencies
+- Used for billing calculations
+
+---
+
+### 23. Invoices
+
+**Purpose**: Track payment history and invoices from Polar
+
+\`\`\`typescript
+invoices: defineTable({
+  // Organization isolation
+  organizationId: v.string(),
+  
+  // Polar integration
+  polarInvoiceId: v.string(),
+  
+  // Subscription reference (optional, for subscription invoices)
+  subscriptionId: v.optional(v.id('subscriptions')),
+  
+  // Invoice details
+  invoiceNumber: v.string(),
+  status: v.union(
+    v.literal('draft'),
+    v.literal('open'),
+    v.literal('paid'),
+    v.literal('void'),
+    v.literal('uncollectible')
+  ),
+  
+  // Amount details
+  amount: v.number(),
+  currency: v.string(),
+  description: v.optional(v.string()),
+  
+  // Dates
+  invoiceDate: v.number(),
+  dueDate: v.optional(v.number()),
+  paidAt: v.optional(v.number()),
+  
+  // URLs
+  invoiceUrl: v.optional(v.string()), // Polar hosted invoice URL
+  pdfUrl: v.optional(v.string()), // Downloadable PDF URL
+  
+  // Metadata
+  metadata: v.object({
+    planName: v.optional(v.string()),
+    billingPeriod: v.optional(v.string()), // Format: "YYYY-MM"
+    items: v.optional(v.array(v.object({
+      description: v.string(),
+      quantity: v.number(),
+      unitPrice: v.number(),
+      amount: v.number(),
+    }))),
+  }),
+  
+  // Timestamps
+  createdAt: v.number(),
+  updatedAt: v.number(),
+})
+  .index('by_organization', ['organizationId'])
+  .index('by_polar_invoice_id', ['polarInvoiceId'])
+  .index('by_subscription', ['subscriptionId'])
+  .index('by_status', ['status'])
+  .index('by_invoice_date', ['invoiceDate'])
+  .index('by_organization_and_status', ['organizationId', 'status'])
+\`\`\`
+
+**Fields**:
+- `organizationId`: Multi-tenancy isolation
+- `polarInvoiceId`: Polar's invoice ID (unique)
+- `subscriptionId`: Links to subscription (optional, for recurring invoices)
+- `invoiceNumber`: Human-readable invoice number (e.g., "INV-2025-001")
+- `status`: Invoice status (draft, open, paid, void, uncollectible)
+- `amount`: Invoice amount in cents
+- `currency`: Currency code (e.g., "USD")
+- `description`: Optional invoice description
+- `invoiceDate`: When the invoice was issued
+- `dueDate`: When payment is due (optional)
+- `paidAt`: When the invoice was paid (optional)
+- `invoiceUrl`: Polar hosted invoice URL for viewing
+- `pdfUrl`: Downloadable PDF URL
+- `metadata`: Additional invoice details (plan name, billing period, line items)
+- `createdAt`: Timestamp of invoice creation
+- `updatedAt`: Timestamp of last update
+
+**Notes**:
+- Created via Polar webhooks when invoices are generated
+- Used for payment history display in billing page
+- Supports both subscription and one-time payment invoices
+- PDF URLs allow users to download invoices for accounting
+
+---
+
+### 24. Usage Tracking
 
 **Purpose**: Track token usage for billing and analytics
 
@@ -2286,59 +2486,6 @@ usageTracking: defineTable({
 - Immutable event log
 - Used for billing and analytics
 - Synced with Polar meters
-
----
-
-### 24. Credit Balances
-
-**Purpose**: Track credit balances for organizations
-
-\`\`\`typescript
-creditBalances: defineTable({
-  // Organization isolation (one balance per org)
-  organizationId: v.string(),
-  
-  // Credit details
-  totalCredits: v.number(),
-  usedCredits: v.number(),
-  remainingCredits: v.number(),
-  subscriptionCredits: v.number(), // Monthly allocation from Polar
-  purchasedCredits: v.number(), // One-time purchases from Polar
-  
-  // Reset timestamps
-  lastResetAt: v.number(),
-  nextResetAt: v.number(),
-  
-  // Timestamps
-  updatedAt: v.number(),
-  
-  // Metadata
-  metadata: v.object({
-    resetFrequency: v.union(
-      v.literal('monthly'),
-      v.literal('never')
-    ),
-  }),
-})
-  .index('by_organization', ['organizationId'])
-\`\`\`
-
-**Fields**:
-- `organizationId`: One balance per organization
-- `totalCredits`: Total credits available
-- `usedCredits`: Credits already used
-- `remainingCredits`: Credits left
-- `subscriptionCredits`: Monthly credits allocated
-- `purchasedCredits`: Credits purchased one-time
-- `lastResetAt`: Timestamp of last reset
-- `nextResetAt`: Timestamp of next reset
-- `updatedAt`: Timestamp of last update
-- `metadata`: Additional details (resetFrequency)
-
-**Notes**:
-- Tracks credit balances for organizations
-- Supports monthly and never reset frequencies
-- Used for billing calculations
 
 ---
 
@@ -3249,11 +3396,26 @@ AnyDebate Convex Database
     - Each organization has one subscription.
     - Subscription tracks billing and credits.
 
-22. **Organization → Usage Tracking**: One-to-many
+22. **Organization → Credit Balances**: One-to-one
+    - Each organization has one credit balance entry.
+
+23. **Organization → Invoices**: One-to-many
+    - Invoices are linked to organizations for payment history.
+
+24. **Organization → Usage Tracking**: One-to-many
     - Usage tracking records belong to an organization.
     - Filtered by `organizationId`.
 
-23. **Workspace → Collaboration Events**: One-to-many
+25. **Organization/Workspace → Roles**: One-to-many
+    - Roles can be system-wide, organization-specific, or workspace-specific.
+
+26. **Organization/Workspace → Personas**: One-to-many
+    - Personas can be system-wide, organization-specific, or workspace-specific.
+
+27. **Organization/Workspace → Frameworks**: One-to-many
+    - Frameworks can be system-wide, organization-specific, or workspace-specific.
+
+28. **Workspace → Collaboration Events**: One-to-many
     - Collaboration events are tied to a workspace and an artifact.
     - Filtered by `workspaceId` and `artifactId`.
 
@@ -3389,31 +3551,47 @@ All indexes are designed for common query patterns:
     .index('by_created_at', ['createdAt'])
     \`\`\`
 
-19. **Usage Tracking queries**:
+19. **Subscription-based queries**:
+    \`\`\`typescript
+    .index('by_organization', ['organizationId'])
+    .index('by_polar_subscription_id', ['polarSubscriptionId'])
+    .index('by_polar_product_id', ['polarProductId'])
+    .index('by_status', ['status'])
+    \`\`\`
+    
+20. **Credit Balance queries**:
+    \`\`\`typescript
+    .index('by_organization', ['organizationId'])
+    \`\`\`
+
+21. **Invoice queries**:
+    \`\`\`typescript
+    .index('by_organization', ['organizationId'])
+    .index('by_polar_invoice_id', ['polarInvoiceId'])
+    .index('by_subscription', ['subscriptionId'])
+    .index('by_status', ['status'])
+    .index('by_invoice_date', ['invoiceDate'])
+    .index('by_organization_and_status', ['organizationId', 'status'])
+    \`\`\`
+
+22. **Usage Tracking queries**:
     \`\`\`typescript
     .index('by_organization_and_billing_period', ['organizationId', 'billingPeriod'])
     .index('by_workspace_and_billing_period', ['workspaceId', 'billingPeriod'])
     \`\`\`
     
-20. **Analytics-based queries**:
-    \`\`\`typescript
-    .index('by_organization_and_metric', ['organizationId', 'metricType'])
-    .index('by_workspace_and_metric', ['workspaceId', 'metricType'])
-    .index('by_period_id', ['periodId'])
-    \`\`\`
-
-21. **Folder-based queries**:
+23. **Folder-based queries**:
     \`\`\`typescript
     .index('by_parent', ['parentId'])
     .index('by_workspace_and_parent', ['workspaceId', 'parentId'])
     \`\`\`
 
-22. **Tag-based queries**:
+24. **Tag-based queries**:
     \`\`\`typescript
     .index('by_workspace_and_name', ['workspaceId', 'name'])
     \`\`\`
 
-23. **Collaboration Event queries**:
+25. **Collaboration Event queries**:
     \`\`\`typescript
     .index('by_organization_and_artifact', ['organizationId', 'artifactId'])
     .index('by_workspace_and_artifact', ['workspaceId', 'artifactId'])
@@ -3421,7 +3599,7 @@ All indexes are designed for common query patterns:
     .index('by_timestamp', ['organizationId', 'timestamp'])
     \`\`\`
 
-24. **Working Memory queries**:
+26. **Working Memory queries**:
     \`\`\`typescript
     .index('by_scope_chat', ['scope', 'chatId'])
     .index('by_scope_user', ['scope', 'userId'])
@@ -3433,7 +3611,7 @@ All indexes are designed for common query patterns:
     .index('by_source_debate', ['sourceDebateId']) // Added for source linking
     \`\`\`
 
-25. **Configuration Tables (Roles, Personas, Frameworks)**:
+27. **Configuration Tables (Roles, Personas, Frameworks)**:
     - Unique identifiers are primary for direct lookups.
     - `organizationId` and `workspaceId` for scoping custom configurations.
     - `isSystem`, `isActive`, `category` for filtering.
@@ -3572,6 +3750,20 @@ const artifactMemory = await ctx.db
   .query('workingMemory')
   .withIndex('by_source_artifact', (q) => q.eq('sourceArtifactId', artifactId))
   .collect();
+
+// Get all invoices for an organization
+const orgInvoices = await ctx.db
+  .query('invoices')
+  .withIndex('by_organization', (q) => q.eq('organizationId', orgId))
+  .collect();
+
+// Get all unpaid invoices for an organization
+const unpaidInvoices = await ctx.db
+  .query('invoices')
+  .withIndex('by_organization_and_status', (q) =>
+    q.eq('organizationId', orgId).eq('status', 'open')
+  )
+  .collect();
 \`\`\`
 
 ---
@@ -3640,6 +3832,7 @@ if (resource.workspaceId !== workspaceId && membership.role !== 'admin') {
 7. **Log Collaboration Events**: Record all significant collaboration actions for auditing and real-time synchronization.
 8. **Manage Artifact Versions**: Implement logic to create, store, and retrieve artifact versions.
 9. **Manage Working Memory**: Implement logic for creating, retrieving, and scoping working memory entries based on context.
+10. **Billing and Payment Management**: Implement logic for handling subscriptions, credit balances, and invoice retrieval via Polar webhooks and APIs.
 
 ---
 
@@ -3739,6 +3932,7 @@ This schema provides:
 ✅ **Real-time Collaboration Tracking**: Events for auditing and synchronization.
 ✅ **Quick Start Features**: Agent team presets and scenarios for faster onboarding.
 ✅ **Persistent AI Memory**: Flexible working memory for agents across multiple scopes.
+✅ **Billing and Payment Management**: Comprehensive tracking of subscriptions, credit balances, and invoices.
 ✅ **Performance**: Optimized indexes for organization and workspace queries.
 ✅ **Security**: Mandatory auth and permission checks using workspace memberships.
 ✅ **Scalability**: Designed for growth with robust data structuring.
@@ -3755,6 +3949,7 @@ This schema provides:
 9. Develop features for agent team presets and quick start scenarios for enhanced user onboarding.
 10. Implement session comparison features, including migration from localStorage.
 11. Develop and integrate the working memory system for persistent AI knowledge.
+12. Integrate Polar webhooks for subscriptions, credit balances, and invoices.
 
 ---
 
