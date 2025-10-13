@@ -1669,153 +1669,6 @@ export function MemoryDashboard() {
 }
 \`\`\`
 
-#### Task 5.1: Memory Dashboard
-
-**Status**: ✅ Completed
-**Completed**: October 13, 2025
-**Time Spent**: 2 hours
-
-**Files Created**:
-- `app/dashboard/memory/page.tsx` - Memory dashboard page
-- `components/memory/memory-dashboard.tsx` - Main orchestrator component
-- `components/memory/mobile/memory-list-mobile.tsx` - Mobile list view
-- `components/memory/mobile/memory-card-mobile.tsx` - Mobile memory card
-- `components/memory/desktop/memory-grid-desktop.tsx` - Desktop grid view
-- `components/memory/desktop/memory-card-desktop.tsx` - Desktop memory card
-- `components/memory/shared/memory-search.tsx` - Search bar component
-- `components/memory/shared/memory-filters.tsx` - Filter controls component
-
-**Features Implemented**:
-
-**Mobile**:
-- Vertical scroll list with compact cards (80px min height)
-- Search bar with 48px min height
-- Floating action buttons (56px FAB for "Add Memory")
-- Bottom sheet filters using AdaptiveModal
-- Touch-optimized cards with active states
-- Scope badges (organization/workspace/user/chat)
-- Usage count and time ago display
-
-**Desktop**:
-- 2-3 column grid layout with hover states
-- Sidebar filters (always visible)
-- Top action bar with "Add Memory", "Upload Document", "Import from URL"
-- Larger cards with detailed information
-- Hover-revealed action menu
-- Tag display with overflow handling
-
-**Shared**:
-- Search functionality across title, content, and tags
-- Scope filtering (all/organization/workspace/user/chat)
-- Category filtering (all/Technical/Business/Process/Product/Other)
-- Mock data with 4 sample memories
-- Responsive touch targets (44px minimum)
-
-**Implementation Notes**:
-- Used Split Mobile/Desktop pattern for fundamentally different UX
-- Mobile uses vertical list with FAB, desktop uses grid with sidebar
-- All interactive elements meet 44px minimum touch target
-- Scope-based color coding for visual hierarchy
-- Time ago formatting for better readability
-- Usage count tracking for memory analytics
-
----
-
-#### Task 5.2: Add Memory Form
-
-**File**: `components/memory/add-memory-form.tsx`
-
-**Architecture**: Use AdaptiveModal (full-screen on mobile, modal on desktop)
-
-**Touch Targets**:
-- All inputs: `min-h-[48px]`
-- All buttons: `min-h-[44px]`
-- Dropdown triggers: `min-h-[48px]`
-
-**Fields**:
-- Title (required)
-- Category dropdown
-- Content textarea (markdown)
-- Tags input
-- Scope selector
-- Source indicator
-
-**Implementation**:
-\`\`\`tsx
-<AdaptiveModal
-  isOpen={isOpen}
-  onClose={onClose}
-  title="Add Memory"
->
-  <form className="space-y-4">
-    <Input
-      placeholder="Title"
-      className="min-h-[48px]"
-    />
-    <Select className="min-h-[48px]">
-      <SelectTrigger>Category</SelectTrigger>
-    </Select>
-    <Textarea
-      placeholder="Content (Markdown supported)"
-      className="min-h-[120px]"
-    />
-    <Button
-      type="submit"
-      className="min-h-[44px] w-full"
-    >
-      Save Memory
-    </Button>
-  </form>
-</AdaptiveModal>
-\`\`\`
-
-**Status**: ✅ Completed
-**Completed**: October 13, 2025
-**Time Spent**: 1 hour
-
-**Files Created**:
-- `components/memory/add-memory-form.tsx` - Add memory form component
-
-**Features Implemented**:
-
-**Mobile**:
-- Full-screen modal with AdaptiveModal
-- 48px minimum height inputs (prevents iOS zoom)
-- 44px minimum height buttons
-- Stacked form layout for easy scrolling
-- Touch-optimized tag management
-- Source type toggle buttons
-
-**Desktop**:
-- Center modal with backdrop
-- Wider form layout
-- Enhanced spacing
-- Hover states on interactive elements
-
-**Shared**:
-- Title input (required)
-- Category dropdown (Technical, Business, Personal, etc.)
-- Scope selector (organization/workspace/user/chat)
-- Permission-based scope visibility (admins see org/workspace, members see user only)
-- Source type selector (manual/document/url)
-- Source URL input (conditional on URL source)
-- Content textarea with Markdown support
-- Tags input with add/remove functionality
-- Form validation with error messages
-- Scope descriptions for clarity
-
-**Implementation Notes**:
-- Uses AdaptiveModal for responsive behavior (full-screen mobile, modal desktop)
-- All inputs meet 48px minimum height requirement
-- All buttons meet 44px minimum touch target requirement
-- Permission-aware UI: admins can create org/workspace memory, members can only create user memory
-- Supports three source types: manual entry, document upload, and URL import
-- Tags can be added by clicking Plus button or pressing Enter
-- Form validates required fields before submission
-- Markdown support in content textarea for rich formatting
-
----
-
 #### Task 5.3: Document Upload Interface
 
 **File**: `components/memory/document-upload.tsx`
@@ -1864,6 +1717,50 @@ const mockExtractedMemories = [
 ];
 \`\`\`
 
+**Status**: ✅ Completed
+**Completed**: October 13, 2025
+**Time Spent**: 1.5 hours
+
+**Files Created**:
+- `components/memory/document-upload.tsx` - Document upload component with AI extraction
+
+**Features Implemented**:
+
+**Mobile**:
+- Full-screen modal using AdaptiveModal
+- Large file picker button (120px min height)
+- Touch-optimized file cards (80px min height)
+- Vertical stacked layout for extracted memories
+- Bottom action buttons (44px min height)
+
+**Desktop**:
+- Center modal with drag & drop zone
+- Hover states for drop zone
+- Side-by-side preview layout
+- Inline action buttons
+
+**Shared**:
+- File type detection with icons (PDF, DOC, TXT, MD, images)
+- Upload progress indicator
+- AI extraction simulation with loading state
+- Review interface for extracted memories
+- Approve/reject functionality
+- File size display and validation
+- Support for multiple file formats
+
+**Implementation Notes**:
+- Uses AdaptiveModal for responsive behavior (drawer on mobile, modal on desktop)
+- Drag & drop only enabled on desktop (not supported on mobile browsers)
+- Mock AI extraction with 2-second delay to simulate processing
+- All touch targets meet 44px minimum requirement
+- File picker has 120px height on mobile for easy tapping
+- Extracted memory cards have 80px minimum height
+- Progress bar shows upload status
+- Memories can be individually removed before approval
+- Batch approval adds all memories at once
+
+---
+
 #### Task 5.4: URL Scraping Interface
 
 **File**: `components/memory/url-scraper.tsx`
@@ -1907,6 +1804,43 @@ const mockExtractedMemories = [
 </AdaptiveModal>
 \`\`\`
 
+**Status**: ✅ Completed
+**Completed**: October 13, 2025
+**Time Spent**: 1 hour
+
+**Files Created**:
+- `components/memory/url-scraper.tsx` - URL scraping interface component
+
+**Features Implemented**:
+
+**Mobile**:
+- Full-screen modal with AdaptiveModal
+- 48px minimum height input for URL
+- 44px minimum height scrape button
+- Stacked layout for input and button
+
+**Desktop**:
+- Center modal
+- Wider input field
+- Inline scrape button with hover states
+
+**Shared**:
+- URL input validation
+- Loading state during scraping
+- Preview of scraped content (title, description, image)
+- AI extraction simulation
+- Review interface for extracted memories
+- Link to AdaptiveModal documentation
+
+**Implementation Notes**:
+- Uses AdaptiveModal for responsive behavior
+- Input fields meet 48px minimum height
+- Buttons meet 44px minimum touch target
+- Basic validation and loading states are implemented
+- Mock AI extraction with simulated delay
+
+---
+
 #### Task 5.5: Save Chat as Memory
 
 **File**: `components/chat/save-chat-as-memory-form.tsx`
@@ -1935,6 +1869,40 @@ const mockChatInsights = [
 ];
 \`\`\`
 
+**Status**: ✅ Completed
+**Completed**: October 13, 2025
+**Time Spent**: 1 hour
+
+**Files Created**:
+- `components/chat/save-chat-as-memory-form.tsx` - Form to save chat history as memory
+
+**Features Implemented**:
+
+**Mobile**:
+- Full-screen modal with AdaptiveModal
+- Stacked layout for chat summary, insights, and form fields
+- 48px minimum height inputs
+- 44px minimum height save button
+
+**Desktop**:
+- Center modal
+- Side-by-side layout for summary and insights
+- Enhanced spacing
+
+**Shared**:
+- Displays a summary of the chat conversation
+- Shows AI-extracted insights with edit functionality
+- Scope selector (organization/workspace/user)
+- Tags input
+- Save button triggers memory creation
+
+**Implementation Notes**:
+- Uses AdaptiveModal for responsive behavior
+- Mock data for chat summary and insights
+- Basic form structure and validation (required fields)
+
+---
+
 #### Task 5.6: Save Artifact as Memory
 
 **File**: `components/artifacts/save-artifact-as-memory-form.tsx`
@@ -1950,6 +1918,40 @@ const mockChatInsights = [
 - Select scope
 - Add tags
 - Save button
+
+**Status**: ✅ Completed
+**Completed**: October 13, 2025
+**Time Spent**: 1 hour
+
+**Files Created**:
+- `components/artifacts/save-artifact-as-memory-form.tsx` - Form to save artifact as memory
+
+**Features Implemented**:
+
+**Mobile**:
+- Full-screen modal with AdaptiveModal
+- Stacked layout for artifact preview, learnings, and form fields
+- 48px minimum height inputs
+- 44px minimum height save button
+
+**Desktop**:
+- Center modal
+- Side-by-side layout for preview and learnings
+- Enhanced spacing
+
+**Shared**:
+- Displays a preview of the artifact
+- Shows AI-extracted learnings with edit functionality
+- Scope selector (organization/workspace/user)
+- Tags input
+- Save button triggers memory creation
+
+**Implementation Notes**:
+- Uses AdaptiveModal for responsive behavior
+- Mock data for artifact preview and learnings
+- Basic form structure and validation
+
+---
 
 #### Task 5.7: Save Debate Result as Memory
 
@@ -1967,6 +1969,38 @@ const mockChatInsights = [
 - Edit extracted content
 - Select scope
 - Save button
+
+**Status**: ✅ Completed
+**Completed**: October 13, 2025
+**Time Spent**: 1 hour
+
+**Files Created**:
+- `components/debate/save-debate-result-form.tsx` - Form to save debate result as memory
+
+**Features Implemented**:
+
+**Mobile**:
+- Full-screen modal with AdaptiveModal
+- Stacked layout for debate summary, extracted content, and form fields
+- 48px minimum height inputs
+- 44px minimum height save button
+
+**Desktop**:
+- Center modal
+- Side-by-side layout for summary and extracted content
+- Enhanced spacing
+
+**Shared**:
+- Displays a summary of the debate result
+- Shows winning arguments, consensus points, and action items
+- Edit functionality for extracted content
+- Scope selector (organization/workspace/user)
+- Save button triggers memory creation
+
+**Implementation Notes**:
+- Uses AdaptiveModal for responsive behavior
+- Mock data for debate summary and extracted content
+- Basic form structure and validation
 
 ---
 
