@@ -17,6 +17,8 @@
 4. [Component Testing](#component-testing)
 5. [Mobile Testing](#mobile-testing)
 6. [Success Criteria](#success-criteria)
+7. [Complete Redirection Map](#complete-redirection-map)
+8. [Navigation Testing Checklist](#navigation-testing-checklist)
 
 ---
 
@@ -1024,14 +1026,279 @@ When you find an issue, document it using this template:
 
 ---
 
-## Next Steps
+## Complete Redirection Map
 
-1. ✅ **Implementation Complete** - Finish missing-ui-implementation-plan.md
-2. ⏭️ **Desktop Testing** - Test all pages and components on desktop (2 hours)
-3. ⏭️ **Mobile Testing** - Test all pages and components on mobile (1.5 hours)
-4. ⏭️ **Issue Resolution** - Fix any issues found (30 minutes)
-5. ⏭️ **Sign-Off** - Get approval that all buttons/links work
-6. ⏭️ **Backend Integration** - Ready to start backend work
+### Purpose
+This section maps ALL navigation paths, redirects, and routing in the application to ensure comprehensive testing coverage.
+
+---
+
+### Internal Routes (App Pages)
+
+#### Public Routes (No Auth Required)
+| Route | Page File | Description | Entry Points |
+|-------|-----------|-------------|--------------|
+| `/` | `app/page.tsx` | Landing page | Direct URL, Logo click |
+| `/pricing` | `app/pricing/page.tsx` | Pricing page | Landing CTA, Nav link |
+| `/quick-start` | `app/quick-start/page.tsx` | Template selection | Landing CTA, Dashboard CTA |
+
+#### Protected Routes (Auth Required)
+| Route | Page File | Description | Entry Points |
+|-------|-----------|-------------|--------------|
+| `/dashboard` | `app/dashboard/page.tsx` | Main dashboard | Post-login redirect, Nav link |
+| `/debates` | `app/debates/page.tsx` | Debates page | Dashboard CTA, Nav link |
+| `/agents` | `app/agents/page.tsx` | Agents library | Dashboard CTA, Nav link |
+| `/sessions` | `app/sessions/page.tsx` | Session history | Dashboard widget, Nav link |
+| `/messages` | `app/messages/page.tsx` | Messages page | Nav link |
+| `/artifacts` | `app/artifacts/page.tsx` | Artifacts library | Nav link |
+| `/analytics` | `app/analytics/page.tsx` | Analytics dashboard | Dashboard CTA, Nav link |
+| `/settings` | `app/settings/page.tsx` | User settings | Nav link, Profile dropdown |
+| `/dashboard/billing` | `app/dashboard/billing/page.tsx` | Billing & subscription | Settings link, Nav link |
+| `/dashboard/memory` | `app/dashboard/memory/page.tsx` | Memory management | Nav link |
+| `/dashboard/organization` | `app/dashboard/organization/page.tsx` | Organization overview | Org switcher |
+| `/dashboard/organization/settings` | `app/dashboard/organization/settings/page.tsx` | Organization settings | Org overview CTA |
+| `/dashboard/organization/members` | `app/dashboard/organization/members/page.tsx` | Organization members | Org overview CTA |
+
+---
+
+### Navigation Map by Component
+
+#### Landing Page (`app/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| "Get Started" (Hero) | Button | `/quick-start` | Navigate to template selection |
+| "View Pricing" (Hero) | Button | `/pricing` | Navigate to pricing page |
+| "Features" (Nav) | Link | `#features` | Scroll to features section |
+| "Pricing" (Nav) | Link | `/pricing` | Navigate to pricing page |
+| "Sign In" (Nav) | Button | Auth flow (mock) | Open sign-in modal/redirect |
+| "Get Started" (Nav) | Button | `/quick-start` | Navigate to template selection |
+| "About" (Footer) | Link | `/about` (mock) | Navigate to about page |
+| "Contact" (Footer) | Link | `/contact` (mock) | Navigate to contact page |
+| "Privacy" (Footer) | Link | `/privacy` (mock) | Navigate to privacy page |
+| "Terms" (Footer) | Link | `/terms` (mock) | Navigate to terms page |
+
+#### Dashboard (`app/dashboard/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| "New Debate" (Quick Action) | Card | `/debates` | Navigate to debates page |
+| "Browse Templates" (Quick Action) | Card | `/quick-start` | Navigate to template selection |
+| "Create Agent" (Quick Action) | Card | Modal | Open AgentBuilderModal |
+| "View Analytics" (Quick Action) | Card | `/analytics` | Navigate to analytics page |
+| "Auto-Debate" (Quick Action) | Card | `/debates?mode=auto` | Navigate to debates with auto mode |
+| "Manage Agents" (Quick Action) | Card | `/agents` | Navigate to agents page |
+| Activity Item | Link | `/debates/{id}` or `/sessions/{id}` | Navigate to related page |
+| "View All" (Sessions) | Link | `/sessions` | Navigate to sessions page |
+| Session Item | Link | `/sessions/{id}` | Navigate to session detail |
+| Organization Switcher | Dropdown | Modal | Open CreateOrganizationDialog |
+| "Personal Workspace" | Option | Current page | Switch organization (reload) |
+| "Acme Corp" | Option | Current page | Switch organization (reload) |
+| "Create Organization" | Button | Modal | Open CreateOrganizationDialog |
+
+#### Debates Page (`app/debates/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| "New Debate" | Button | Same page | Show debate configuration form |
+| Template Card | Card | Same page | Load template into form |
+| "Start Debate" | Button | Same page | Start debate, show interface |
+| Debate Item | Link | `/debates/{id}` | Navigate to debate detail |
+| "Resume" | Button | `/debates/{id}` | Navigate to debate detail |
+| "Delete" | Button | Modal | Open delete confirmation dialog |
+
+#### Agents Page (`app/agents/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| "Create Agent" | Button | Modal | Open AgentBuilderModal |
+| Agent Card | Card | `/agents/{id}` | Navigate to agent detail |
+| "Edit" | Button | Modal | Open AgentBuilderModal with data |
+| "Delete" | Button | Modal | Open delete confirmation dialog |
+| "Duplicate" | Button | Same page | Create duplicate, show toast |
+
+#### Sessions Page (`app/sessions/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| Session Item | Link | `/sessions/{id}` | Navigate to session detail |
+| "Resume" | Button | `/sessions/{id}` | Navigate to session detail |
+| "Archive" | Button | Same page | Archive session, show toast |
+| "Delete" | Button | Modal | Open delete confirmation dialog |
+
+#### Messages Page (`app/messages/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| Message Item | Link | Same page | Expand message detail |
+| "Reply" | Button | Same page | Show reply form |
+| "Share" | Button | Modal | Open share dialog |
+
+#### Artifacts Page (`app/artifacts/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| Artifact Card | Card | `/artifacts/{id}` | Navigate to artifact detail |
+| "Delete" | Button | Modal | Open delete confirmation dialog |
+| "Export" | Button | Modal | Open export dialog |
+
+#### Analytics Page (`app/analytics/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| "Export" | Button | Modal | Open export dialog |
+
+#### Settings Page (`app/settings/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| "Change Password" | Button | Modal | Open change password dialog |
+| "Delete Account" | Button | Modal | Open delete confirmation dialog |
+
+#### Pricing Page (`app/pricing/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| "Get Started" (Free) | Button | Auth flow (mock) | Open sign-up modal/redirect |
+| "Upgrade" (Pro) | Button | Modal | Open upgrade dialog |
+| "Contact Sales" (Enterprise) | Button | Modal | Open contact form |
+
+#### Billing Page (`app/dashboard/billing/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| "Change Plan" | Button | Modal | Open ChangePlanDialog |
+| "Cancel Subscription" | Button | Modal | Open CancelSubscriptionDialog |
+| "Add Tokens" | Button | Modal | Open PurchaseTokensDialog |
+| "Download" (Invoice) | Button | Download | Download invoice PDF |
+| "View Details" | Button | Modal | Open invoice detail modal |
+
+#### Memory Page (`app/dashboard/memory/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| "Add Memory" | Button | Same page | Show add memory form |
+| Memory Card | Card | Same page | Expand memory detail |
+| "Edit" | Button | Modal | Open EditMemoryDialog |
+| "Delete" | Button | Modal | Open delete confirmation dialog |
+
+#### Quick Start Page (`app/quick-start/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| Template Card | Card | Same page | Select template |
+| "Use Template" | Button | `/debates` | Navigate to debates with template |
+
+#### Organization Overview (`app/dashboard/organization/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| "Invite Members" | Button | Modal | Open InviteMemberDialog |
+| "Organization Settings" | Button | `/dashboard/organization/settings` | Navigate to org settings |
+| "View Reports" | Button | `/analytics` | Navigate to analytics |
+| "View All Members" | Button | `/dashboard/organization/members` | Navigate to members page |
+
+#### Organization Settings (`app/dashboard/organization/settings/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| "Save Changes" | Button | Same page | Save settings, show toast |
+| "Cancel" | Button | Same page | Reset form, show toast |
+| "Delete Organization" | Button | Modal | Open delete confirmation dialog |
+
+#### Organization Members (`app/dashboard/organization/members/page.tsx`)
+| Element | Type | Destination | Expected Behavior |
+|---------|------|-------------|-------------------|
+| "Invite Member" | Button | Modal | Open InviteMemberDialog |
+| "Remove" (per member) | Button | Modal | Open delete confirmation dialog |
+| Role Dropdown | Dropdown | Same page | Update role, show toast |
+
+---
+
+### Dialog/Modal Navigation
+
+#### Dialogs That Open Other Dialogs
+| Source Dialog | Trigger | Destination Dialog |
+|---------------|---------|-------------------|
+| None currently | - | - |
+
+#### Dialogs That Navigate to Pages
+| Dialog | Trigger | Destination Page |
+|--------|---------|-----------------|
+| CreateOrganizationDialog | "Create" button | `/dashboard/organization` (after creation) |
+| AgentBuilderModal | "Save" button | `/agents` (after creation) |
+| ChangePlanDialog | "Confirm" button | `/dashboard/billing` (reload) |
+
+---
+
+### External Links
+
+| Element | Location | Destination | Expected Behavior |
+|---------|----------|-------------|-------------------|
+| None currently | - | - | - |
+
+---
+
+### Redirect Rules
+
+#### Post-Action Redirects
+| Action | Source Page | Destination | Condition |
+|--------|-------------|-------------|-----------|
+| Create Organization | Any page with OrgSwitcher | `/dashboard/organization` | After successful creation |
+| Create Agent | Any page with AgentBuilderModal | `/agents` | After successful creation |
+| Delete Organization | `/dashboard/organization/settings` | `/dashboard` | After successful deletion |
+| Cancel Subscription | `/dashboard/billing` | `/dashboard/billing` | After successful cancellation |
+| Use Template | `/quick-start` | `/debates` | After template selection |
+
+#### Error Redirects
+| Error | Source Page | Destination | Condition |
+|-------|-------------|-------------|-----------|
+| 404 Not Found | Any page | `/` | Page doesn't exist |
+| 401 Unauthorized | Protected route | `/` | Not authenticated |
+| 403 Forbidden | Protected route | `/dashboard` | Not authorized |
+
+---
+
+### Deep Links
+
+#### Shareable URLs
+| URL Pattern | Description | Expected Behavior |
+|-------------|-------------|-------------------|
+| `/debates/{id}` | Specific debate | Load debate detail |
+| `/sessions/{id}` | Specific session | Load session detail |
+| `/agents/{id}` | Specific agent | Load agent detail |
+| `/artifacts/{id}` | Specific artifact | Load artifact detail |
+
+#### Query Parameters
+| URL Pattern | Parameter | Description | Expected Behavior |
+|-------------|-----------|-------------|-------------------|
+| `/debates` | `?mode=auto` | Auto-debate mode | Start auto-debate |
+| `/debates` | `?template={id}` | Template ID | Load template |
+| `/agents` | `?filter=favorites` | Filter type | Show favorites |
+| `/sessions` | `?status=active` | Status filter | Show active sessions |
+
+---
+
+## Navigation Testing Checklist
+
+#### All Routes Accessible
+- [ ] All 16 routes load correctly
+- [ ] No 404 errors
+- [ ] Protected routes require auth (mock)
+- [ ] Public routes accessible without auth
+
+#### All Navigation Links Work
+- [ ] All nav links navigate correctly
+- [ ] All footer links navigate correctly
+- [ ] All breadcrumb links navigate correctly
+- [ ] All sidebar links navigate correctly
+
+#### All Button Navigations Work
+- [ ] All CTA buttons navigate correctly
+- [ ] All card clicks navigate correctly
+- [ ] All "View All" links navigate correctly
+- [ ] All "Back" buttons navigate correctly
+
+#### All Redirects Work
+- [ ] Post-action redirects work
+- [ ] Error redirects work
+- [ ] Auth redirects work (mock)
+
+#### All Deep Links Work
+- [ ] Shareable URLs work
+- [ ] Query parameters work
+- [ ] Hash fragments work (scroll to section)
+
+#### Browser Navigation Works
+- [ ] Back button works
+- [ ] Forward button works
+- [ ] Refresh preserves state (where appropriate)
+- [ ] Bookmarks work
 
 ---
 
