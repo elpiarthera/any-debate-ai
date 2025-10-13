@@ -1268,8 +1268,8 @@ const mockPlans = [
 ];
 \`\`\`
 
-**Status**: ✅ Completed  
-**Completed**: October 12, 2025  
+**Status**: ✅ Completed
+**Completed**: October 12, 2025
 **Time Spent**: 1.5 hours
 
 **Files Created**:
@@ -1342,8 +1342,8 @@ const mockTokenBalance = {
 };
 \`\`\`
 
-**Status**: ✅ Completed  
-**Completed**: October 13, 2025  
+**Status**: ✅ Completed
+**Completed**: October 13, 2025
 **Time Spent**: 1.5 hours
 
 **Files Created**:
@@ -1395,8 +1395,8 @@ const mockTokenBalance = {
 - Buy credits button
 - Mobile-optimized
 
-**Status**: ✅ Completed  
-**Completed**: October 12, 2025  
+**Status**: ✅ Completed
+**Completed**: October 12, 2025
 **Time Spent**: 45 minutes
 
 **Files Created**:
@@ -1518,8 +1518,8 @@ export function TokenBalanceWarning({ balance }: { balance: number }) {
 - CTA button: `min-h-[44px]`
 - Dismiss button: `min-h-[44px] min-w-[44px]`
 
-**Status**: ✅ Completed  
-**Completed**: October 13, 2025  
+**Status**: ✅ Completed
+**Completed**: October 13, 2025
 **Time Spent**: 30 minutes
 
 **Files Created**:
@@ -1671,8 +1671,8 @@ export function MemoryDashboard() {
 
 #### Task 5.1: Memory Dashboard
 
-**Status**: ✅ Completed  
-**Completed**: October 13, 2025  
+**Status**: ✅ Completed
+**Completed**: October 13, 2025
 **Time Spent**: 2 hours
 
 **Files Created**:
@@ -1768,6 +1768,53 @@ export function MemoryDashboard() {
   </form>
 </AdaptiveModal>
 \`\`\`
+
+**Status**: ✅ Completed
+**Completed**: October 13, 2025
+**Time Spent**: 1 hour
+
+**Files Created**:
+- `components/memory/add-memory-form.tsx` - Add memory form component
+
+**Features Implemented**:
+
+**Mobile**:
+- Full-screen modal with AdaptiveModal
+- 48px minimum height inputs (prevents iOS zoom)
+- 44px minimum height buttons
+- Stacked form layout for easy scrolling
+- Touch-optimized tag management
+- Source type toggle buttons
+
+**Desktop**:
+- Center modal with backdrop
+- Wider form layout
+- Enhanced spacing
+- Hover states on interactive elements
+
+**Shared**:
+- Title input (required)
+- Category dropdown (Technical, Business, Personal, etc.)
+- Scope selector (organization/workspace/user/chat)
+- Permission-based scope visibility (admins see org/workspace, members see user only)
+- Source type selector (manual/document/url)
+- Source URL input (conditional on URL source)
+- Content textarea with Markdown support
+- Tags input with add/remove functionality
+- Form validation with error messages
+- Scope descriptions for clarity
+
+**Implementation Notes**:
+- Uses AdaptiveModal for responsive behavior (full-screen mobile, modal desktop)
+- All inputs meet 48px minimum height requirement
+- All buttons meet 44px minimum touch target requirement
+- Permission-aware UI: admins can create org/workspace memory, members can only create user memory
+- Supports three source types: manual entry, document upload, and URL import
+- Tags can be added by clicking Plus button or pressing Enter
+- Form validates required fields before submission
+- Markdown support in content textarea for rich formatting
+
+---
 
 #### Task 5.3: Document Upload Interface
 
@@ -1866,9 +1913,7 @@ const mockExtractedMemories = [
 
 **Architecture**: Use AdaptiveModal
 
-**Touch Targets**:
-- All inputs: `min-h-[48px]`
-- Save button: `min-h-[44px]`
+**Touch Targets**: Same as Task 5.5
 
 **Features**:
 - Chat summary display
