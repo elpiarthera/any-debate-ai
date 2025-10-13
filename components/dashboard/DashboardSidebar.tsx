@@ -20,6 +20,11 @@ import {
   TrendingUp,
   Activity,
   Zap,
+  FileText,
+  Brain,
+  Download,
+  Store,
+  CreditCard,
 } from "lucide-react"
 
 interface DashboardSidebarProps {
@@ -28,11 +33,16 @@ interface DashboardSidebarProps {
 }
 
 const navigationItems = [
-  { href: "/dashboard", icon: Home, label: "Home", badge: null },
-  { href: "/debates", icon: MessageSquare, label: "Debates", badge: "3" },
-  { href: "/agents", icon: Users, label: "Agents", badge: null },
-  { href: "/analytics", icon: BarChart3, label: "Analytics", badge: null },
-  { href: "/settings", icon: Settings, label: "Settings", badge: null },
+  { href: "/dashboard", icon: Home, label: "Dashboard", badge: null, adminOnly: false },
+  { href: "/debates", icon: MessageSquare, label: "Debates", badge: "3", adminOnly: false },
+  { href: "/agents", icon: Users, label: "Agents", badge: null, adminOnly: false },
+  { href: "/templates", icon: FileText, label: "Templates", badge: null, adminOnly: false },
+  { href: "/memory", icon: Brain, label: "Memory", badge: "New", adminOnly: true },
+  { href: "/analytics", icon: BarChart3, label: "Analytics", badge: null, adminOnly: false },
+  { href: "/export", icon: Download, label: "Export", badge: null, adminOnly: false },
+  { href: "/marketplace", icon: Store, label: "Marketplace", badge: null, adminOnly: false },
+  { href: "/settings", icon: Settings, label: "Settings", badge: null, adminOnly: false },
+  { href: "/billing", icon: CreditCard, label: "Billing", badge: null, adminOnly: true },
 ]
 
 const quickActions = [
@@ -76,6 +86,10 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse }: DashboardSid
     if (isTablet) return isCollapsed ? "64px" : "280px" // Narrower on tablet
     return isCollapsed ? "64px" : "320px" // Full width on desktop
   }
+
+  const isAdmin = true
+
+  const visibleNavigationItems = navigationItems.filter((item) => !item.adminOnly || isAdmin)
 
   return (
     <motion.div
@@ -126,7 +140,7 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse }: DashboardSid
         <ScrollArea className="h-full">
           <div className="p-2">
             <div className="space-y-1">
-              {navigationItems.map((item, index) => {
+              {visibleNavigationItems.map((item, index) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href
 

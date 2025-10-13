@@ -1,9 +1,13 @@
 # Phase 6: Advanced Features & Polish - Implementation Plan
 
+**Last Updated**: October 11, 2025
+
 ## Overview
 Final polish layer with advanced export capabilities, community marketplace features, and enhanced auto-debate automation. This phase transforms AnyDebate AI into a production-ready platform with professional-grade features.
 
-**Priority**: Low | **Status**: 0% | **Requires**: Phase 4 (Convex Database) + Phase 5 (User Management)
+**Priority**: Low | **Status**: 0% | **Requires**: Phase 4 (Convex Database) + Phase 5 (User Management) + Phase 7 (Polar Payments)
+
+**Total Estimated Time**: 35-50 hours (5-7 focused days)
 
 ---
 
@@ -32,6 +36,43 @@ Final polish layer with advanced export capabilities, community marketplace feat
 - CDN for template assets
 - Email service for notifications
 - Analytics service for tracking
+
+---
+
+## Official Documentation References
+
+### Composio Integration Platform
+- **Composio Main Docs**: https://docs.composio.dev/
+- **Composio Quickstart**: https://docs.composio.dev/docs/quickstart.mdx
+- **Composio Tools Catalog**: https://composio.dev/tools
+- **Composio Vercel Provider**: https://docs.composio.dev/providers/vercel.mdx
+- **Authenticating Tools**: https://docs.composio.dev/docs/authenticating-tools.mdx
+- **Executing Tools**: https://docs.composio.dev/docs/executing-tools.mdx
+- **Fetching and Filtering Tools**: https://docs.composio.dev/docs/fetching-tools.mdx
+- **Using Triggers**: https://docs.composio.dev/docs/using-triggers.mdx
+- **Custom Tools**: https://docs.composio.dev/docs/custom-tools.mdx
+
+**Why Composio?**
+- Access 3000+ tools out of the box (Google Drive, Dropbox, OneDrive, Gmail, Slack, etc.)
+- Handles authentication flows automatically
+- No need to write individual API integrations
+- Built-in support for Vercel AI SDK
+- Fine-grained permissions and access controls
+- Automatic tool call optimization
+
+### Cloud Storage via Composio
+- **Google Drive**: https://composio.dev/googledrive
+- **Dropbox**: https://composio.dev/dropbox
+- **OneDrive**: https://composio.dev/onedrive
+
+### PDF Generation
+- **jsPDF**: https://github.com/parallax/jsPDF
+- **Puppeteer**: https://pptr.dev/
+- **React-PDF**: https://react-pdf.org/
+
+### File Upload
+- **Vercel Blob**: https://vercel.com/docs/storage/vercel-blob
+- **Uploadthing**: https://uploadthing.com/
 
 ---
 
@@ -112,33 +153,33 @@ convex/
 
 ---
 
-## Phase 1: Advanced Export System (Priority: P0)
+## Phase 1: Advanced Export System (8-12 hours)
 
-### Task 1.1: Create Cloud Storage Integration System
+### Task 1.1: Cloud Storage Integration with Composio (2-3 hours)
 **File**: `lib/export/cloud-storage.ts`
 
-**Features to Implement**:
-- [ ] Google Drive integration (OAuth + file upload)
-- [ ] Dropbox integration (OAuth + file upload)
-- [ ] OneDrive integration (OAuth + file upload)
-- [ ] Provider authentication management
-- [ ] File upload with progress tracking
-- [ ] Folder organization and management
-- [ ] Automatic sync on export
-- [ ] Error handling and retry logic
+**Using Composio for Cloud Storage**:
+Composio provides out-of-the-box integrations with Google Drive, Dropbox, and OneDrive. No need to implement OAuth flows or API clients manually.
+
+**Installation**:
+\`\`\`bash
+npm install composio-core
+\`\`\`
 
 **Implementation**:
 \`\`\`typescript
+import { Composio } from 'composio-core'
+
 export interface CloudProvider {
   id: string
   name: string
   icon: string
   isConnected: boolean
-  authUrl: string
+  composioAppName: string // e.g., "googledrive", "dropbox", "onedrive"
 }
 
 export interface CloudUploadOptions {
-  provider: "google-drive" | "dropbox" | "onedrive"
+  provider: "googledrive" | "dropbox" | "onedrive"
   fileName: string
   fileContent: Blob
   folder?: string
@@ -154,45 +195,196 @@ export interface CloudUploadResult {
 }
 
 export class CloudStorageManager {
-  // Provider authentication
-  async connectProvider(provider: string): Promise<void>
-  async disconnectProvider(provider: string): Promise<void>
-  async isProviderConnected(provider: string): Promise<boolean>
+  private composio: Composio
   
-  // File operations
-  async uploadFile(options: CloudUploadOptions): Promise<CloudUploadResult>
-  async listFiles(provider: string, folder?: string): Promise<CloudFile[]>
-  async deleteFile(provider: string, fileId: string): Promise<void>
+  constructor() {
+    // Initialize Composio with API key
+    this.composio = new Composio({
+      apiKey: process.env.COMPOSIO_API_KEY
+    })
+  }
   
-  // Folder operations
-  async createFolder(provider: string, name: string): Promise<string>
-  async listFolders(provider: string): Promise<CloudFolder[]>
+  // Provider authentication (handled by Composio)
+  async connectProvider(provider: string, userId: string): Promise<string> {
+    // Get auth URL from Composio
+    const entity = await this.composio.getEntity(userId)
+    const connection = await entity.initiateConnection(provider)
+    return connection.redirectUrl
+  }
+  
+  async disconnectProvider(provider: string, userId: string): Promise<void> {
+    const entity = await this.composio.getEntity(userId)
+    await entity.deleteConnection(provider)
+  }
+  
+  async isProviderConnected(provider: string, userId: string): Promise<boolean> {
+    const entity = await this.composio.getEntity(userId)
+    const connections = await entity.getConnections()
+    return connections.some(conn => conn.appName === provider && conn.status === 'ACTIVE')
+  }
+  
+  // File operations (using Composio tools)
+  async uploadFile(options: CloudUploadOptions, userId: string): Promise<CloudUploadResult> {
+    const entity = await this.composio.getEntity(userId)
+    
+    // Get the appropriate tool based on provider
+    const toolName = this.getUploadToolName(options.provider)
+    
+    // Execute the upload tool
+    const result = await entity.execute(toolName, {
+      file_name: options.fileName,
+      file_content: await this.blobToBase64(options.fileContent),
+      folder_path: options.folder,
+      overwrite: options.overwrite
+    })
+    
+    return {
+      success: result.success,
+      fileId: result.data.file_id,
+      fileUrl: result.data.file_url,
+      provider: options.provider,
+      uploadedAt: new Date()
+    }
+  }
+  
+  async listFiles(provider: string, userId: string, folder?: string): Promise<CloudFile[]> {
+    const entity = await this.composio.getEntity(userId)
+    const toolName = this.getListFilesToolName(provider)
+    
+    const result = await entity.execute(toolName, {
+      folder_path: folder
+    })
+    
+    return result.data.files
+  }
+  
+  async deleteFile(provider: string, userId: string, fileId: string): Promise<void> {
+    const entity = await this.composio.getEntity(userId)
+    const toolName = this.getDeleteToolName(provider)
+    
+    await entity.execute(toolName, {
+      file_id: fileId
+    })
+  }
+  
+  // Folder operations (using Composio tools)
+  async createFolder(provider: string, userId: string, name: string): Promise<string> {
+    const entity = await this.composio.getEntity(userId)
+    const toolName = this.getCreateFolderToolName(provider)
+    
+    const result = await entity.execute(toolName, {
+      folder_name: name
+    })
+    
+    return result.data.folder_id
+  }
+  
+  async listFolders(provider: string, userId: string): Promise<CloudFolder[]> {
+    const entity = await this.composio.getEntity(userId)
+    const toolName = this.getListFoldersToolName(provider)
+    
+    const result = await entity.execute(toolName, {})
+    
+    return result.data.folders
+  }
+  
+  // Helper methods
+  private getUploadToolName(provider: string): string {
+    const toolMap = {
+      googledrive: 'GOOGLEDRIVE_UPLOAD_FILE',
+      dropbox: 'DROPBOX_UPLOAD_FILE',
+      onedrive: 'ONEDRIVE_UPLOAD_FILE'
+    }
+    return toolMap[provider]
+  }
+  
+  private getListFilesToolName(provider: string): string {
+    const toolMap = {
+      googledrive: 'GOOGLEDRIVE_LIST_FILES',
+      dropbox: 'DROPBOX_LIST_FILES',
+      onedrive: 'ONEDRIVE_LIST_FILES'
+    }
+    return toolMap[provider]
+  }
+  
+  private getDeleteToolName(provider: string): string {
+    const toolMap = {
+      googledrive: 'GOOGLEDRIVE_DELETE_FILE',
+      dropbox: 'DROPBOX_DELETE_FILE',
+      onedrive: 'ONEDRIVE_DELETE_FILE'
+    }
+    return toolMap[provider]
+  }
+  
+  private getCreateFolderToolName(provider: string): string {
+    const toolMap = {
+      googledrive: 'GOOGLEDRIVE_CREATE_FOLDER',
+      dropbox: 'DROPBOX_CREATE_FOLDER',
+      onedrive: 'ONEDRIVE_CREATE_FOLDER'
+    }
+    return toolMap[provider]
+  }
+  
+  private getListFoldersToolName(provider: string): string {
+    const toolMap = {
+      googledrive: 'GOOGLEDRIVE_LIST_FOLDERS',
+      dropbox: 'DROPBOX_LIST_FOLDERS',
+      onedrive: 'ONEDRIVE_LIST_FOLDERS'
+    }
+    return toolMap[provider]
+  }
+  
+  private async blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+  }
 }
 \`\`\`
 
+**Best Practices with Composio**:
+- Use Composio entities to manage user-specific connections
+- Store Composio API key in environment variables
+- Let Composio handle OAuth flows automatically
+- Use Composio's built-in error handling
+- Leverage Composio's tool catalog for consistent API calls
+- No need to implement retry logic - Composio handles it
+
+**Benefits of Using Composio**:
+1. **No OAuth Implementation**: Composio handles all authentication flows
+2. **Unified API**: Same interface for all cloud providers
+3. **Automatic Updates**: Composio maintains API integrations
+4. **Built-in Error Handling**: Robust error handling out of the box
+5. **Fine-grained Permissions**: Control what each user can access
+6. **Faster Development**: 2-3 hours instead of 3-4 hours per provider
+
 **Mobile-First Considerations**:
-- OAuth flow optimized for mobile browsers
+- OAuth flow optimized for mobile browsers (handled by Composio)
 - Progress indicators for slow connections
-- Offline queue for failed uploads
+- Offline queue for failed uploads (implement on top of Composio)
 - Touch-optimized provider selection
+
+**Environment Variables Required**:
+\`\`\`env
+COMPOSIO_API_KEY=your_composio_api_key
+\`\`\`
 
 ---
 
-### Task 1.2: Create Custom Export Template System
+### Task 1.2: Custom Export Template System (2-3 hours)
 **File**: `lib/export/custom-templates.ts`
 
-**Features to Implement**:
-- [ ] Custom PDF templates with branding
-- [ ] Template editor with live preview
-- [ ] Custom header/footer design
-- [ ] Logo and color scheme customization
-- [ ] Font selection and typography
-- [ ] Page layout options (margins, spacing)
-- [ ] Template saving and management
-- [ ] Template sharing with team
+**Libraries to Use**:
+- **jsPDF**: For PDF generation (https://github.com/parallax/jsPDF)
+- **React-PDF**: For React-based PDF templates (https://react-pdf.org/)
 
 **Implementation**:
 \`\`\`typescript
+import jsPDF from 'jspdf'
+
 export interface ExportTemplate {
   id: string
   name: string
@@ -240,11 +432,18 @@ export class ExportTemplateManager {
   async getTemplate(id: string): Promise<ExportTemplate>
   async listTemplates(): Promise<ExportTemplate[]>
   
-  // Template application
+  // Template application (using jsPDF)
   async applyTemplate(sessionId: string, templateId: string): Promise<Blob>
   async previewTemplate(templateId: string, sampleData: any): Promise<string>
 }
 \`\`\`
+
+**Best Practices**:
+- Use jsPDF for simple PDFs
+- Use React-PDF for complex layouts
+- Cache generated PDFs
+- Optimize images before embedding
+- Use web fonts for consistent rendering
 
 **Mobile-First Considerations**:
 - Template editor with mobile-friendly controls
@@ -254,18 +453,8 @@ export class ExportTemplateManager {
 
 ---
 
-### Task 1.3: Create Batch Export System
+### Task 1.3: Batch Export System (2-3 hours)
 **File**: `lib/export/batch-export.ts`
-
-**Features to Implement**:
-- [ ] Select multiple sessions for export
-- [ ] Batch export to single file or multiple files
-- [ ] Progress tracking for batch operations
-- [ ] Export queue management
-- [ ] Automatic cloud upload after export
-- [ ] Export history and logs
-- [ ] Cancel/pause batch operations
-- [ ] Export scheduling
 
 **Implementation**:
 \`\`\`typescript
@@ -295,23 +484,30 @@ export interface BatchExportOptions {
 }
 
 export class BatchExportManager {
-  // Job management
+  // Job management (stored in Convex)
   async createJob(options: BatchExportOptions): Promise<BatchExportJob>
   async getJob(jobId: string): Promise<BatchExportJob>
   async cancelJob(jobId: string): Promise<void>
   async pauseJob(jobId: string): Promise<void>
   async resumeJob(jobId: string): Promise<void>
   
-  // Export execution
+  // Export execution (using Convex actions for background processing)
   async processJob(jobId: string): Promise<void>
   async getJobProgress(jobId: string): Promise<number>
   async getJobResults(jobId: string): Promise<ExportResult[]>
   
-  // History
+  // History (stored in Convex)
   async getJobHistory(): Promise<BatchExportJob[]>
   async clearJobHistory(): Promise<void>
 }
 \`\`\`
+
+**Best Practices**:
+- Use Convex actions for background processing
+- Store job state in Convex database
+- Implement progress tracking
+- Handle failures gracefully
+- Provide clear error messages
 
 **Mobile-First Considerations**:
 - Background processing with notifications
@@ -321,17 +517,8 @@ export class BatchExportManager {
 
 ---
 
-### Task 1.4: Create Scheduled Export System
+### Task 1.4: Scheduled Export System (1-2 hours)
 **File**: `lib/export/scheduled-export.ts`
-
-**Features to Implement**:
-- [ ] Schedule automatic exports (daily, weekly, monthly)
-- [ ] Automatic cloud backup
-- [ ] Email notifications on completion
-- [ ] Export retention policies
-- [ ] Schedule management UI
-- [ ] Export verification and validation
-- [ ] Failure notifications and retry logic
 
 **Implementation**:
 \`\`\`typescript
@@ -370,20 +557,27 @@ export interface ScheduledExport {
 }
 
 export class ScheduledExportManager {
-  // Schedule CRUD
+  // Schedule CRUD (stored in Convex)
   async createSchedule(schedule: Partial<ScheduledExport>): Promise<ScheduledExport>
   async updateSchedule(id: string, updates: Partial<ScheduledExport>): Promise<ScheduledExport>
   async deleteSchedule(id: string): Promise<void>
   async getSchedule(id: string): Promise<ScheduledExport>
   async listSchedules(): Promise<ScheduledExport[]>
   
-  // Schedule execution
+  // Schedule execution (using Convex cron jobs)
   async enableSchedule(id: string): Promise<void>
   async disableSchedule(id: string): Promise<void>
   async runScheduleNow(id: string): Promise<void>
   async getScheduleHistory(id: string): Promise<ScheduleRun[]>
 }
 \`\`\`
+
+**Best Practices**:
+- Use Convex scheduled functions (cron jobs)
+- Store schedules in Convex database
+- Send email notifications via Resend or similar
+- Log all scheduled runs
+- Handle timezone conversions properly
 
 **Mobile-First Considerations**:
 - Mobile-friendly schedule picker
@@ -399,8 +593,8 @@ export class ScheduledExportManager {
 **Components to Create**:
 1. **CloudStorageSelector.tsx**
    - [ ] Provider cards with connection status
-   - [ ] Connect/disconnect buttons
-   - [ ] OAuth flow handling
+   - [ ] Connect/disconnect buttons using Composio auth URLs
+   - [ ] OAuth callback handling (Composio redirects)
    - [ ] Mobile: Bottom sheet, Desktop: Modal
 
 2. **ExportTemplateEditor.tsx**
@@ -433,20 +627,28 @@ export class ScheduledExportManager {
 
 ---
 
-## Phase 2: Community Marketplace (Priority: P1)
+## Phase 2: Community Marketplace (12-18 hours)
 
-### Task 2.1: Create Template Marketplace System
+### Task 2.1: Template Marketplace System (4-5 hours)
 **File**: `lib/marketplace/template-store.ts`
 
-**Features to Implement**:
-- [ ] Browse community templates
-- [ ] Search and filter templates
-- [ ] Template categories and tags
-- [ ] Template preview before download
-- [ ] Template installation
-- [ ] Template updates and versioning
-- [ ] Template popularity tracking
-- [ ] Featured templates
+**Optional: Use Composio for Email Notifications**
+Instead of implementing email notifications manually, you can use Composio's Gmail integration:
+- Send template update notifications via Gmail
+- Send review notifications to template authors
+- Send marketplace announcements
+
+\`\`\`typescript
+// Example: Send email notification via Composio
+async sendTemplateUpdateNotification(userId: string, templateName: string) {
+  const entity = await this.composio.getEntity(userId)
+  await entity.execute('GMAIL_SEND_EMAIL', {
+    to: 'user@example.com',
+    subject: `Update available for ${templateName}`,
+    body: 'A new version of your template is available...'
+  })
+}
+\`\`\`
 
 **Implementation**:
 \`\`\`typescript
@@ -489,25 +691,32 @@ export interface TemplateFilter {
 }
 
 export class TemplateMarketplace {
-  // Browse and search
+  // Browse and search (using Convex queries with indexes)
   async searchTemplates(query: string, filters?: TemplateFilter): Promise<MarketplaceTemplate[]>
   async getTemplate(id: string): Promise<MarketplaceTemplate>
   async getFeaturedTemplates(): Promise<MarketplaceTemplate[]>
   async getPopularTemplates(): Promise<MarketplaceTemplate[]>
   async getRecentTemplates(): Promise<MarketplaceTemplate[]>
   
-  // Installation
+  // Installation (stored in Convex)
   async installTemplate(id: string): Promise<void>
   async uninstallTemplate(id: string): Promise<void>
   async updateTemplate(id: string): Promise<void>
   async getInstalledTemplates(): Promise<MarketplaceTemplate[]>
   
-  // Publishing (for creators)
+  // Publishing (for creators, requires admin role)
   async publishTemplate(template: Partial<MarketplaceTemplate>): Promise<MarketplaceTemplate>
   async updatePublishedTemplate(id: string, updates: Partial<MarketplaceTemplate>): Promise<void>
   async unpublishTemplate(id: string): Promise<void>
 }
 \`\`\`
+
+**Best Practices**:
+- Store templates in Convex database
+- Use Convex indexes for fast search
+- Store template files in Vercel Blob
+- Implement pagination for large lists
+- Cache popular templates
 
 **Mobile-First Considerations**:
 - Vertical scroll list on mobile
@@ -520,15 +729,6 @@ export class TemplateMarketplace {
 
 ### Task 2.2: Create Rating and Review System
 **File**: `lib/marketplace/ratings.ts`
-
-**Features to Implement**:
-- [ ] 5-star rating system
-- [ ] Written reviews with text
-- [ ] Review voting (helpful/not helpful)
-- [ ] Review moderation
-- [ ] Review replies from authors
-- [ ] Review sorting and filtering
-- [ ] Review verification (purchased users only)
 
 **Implementation**:
 \`\`\`typescript
@@ -565,22 +765,29 @@ export interface RatingSummary {
 }
 
 export class ReviewManager {
-  // Review CRUD
+  // Review CRUD (stored in Convex)
   async createReview(review: Partial<TemplateReview>): Promise<TemplateReview>
   async updateReview(id: string, updates: Partial<TemplateReview>): Promise<TemplateReview>
   async deleteReview(id: string): Promise<void>
   async getReview(id: string): Promise<TemplateReview>
   
-  // Review queries
+  // Review queries (using Convex queries with indexes)
   async getTemplateReviews(templateId: string, sortBy?: "recent" | "helpful" | "rating"): Promise<TemplateReview[]>
   async getRatingSummary(templateId: string): Promise<RatingSummary>
   
-  // Review interactions
+  // Review interactions (stored in Convex)
   async markHelpful(reviewId: string): Promise<void>
   async markNotHelpful(reviewId: string): Promise<void>
   async replyToReview(reviewId: string, content: string): Promise<void>
 }
 \`\`\`
+
+**Best Practices**:
+- Store reviews in Convex database
+- Use Convex aggregation for rating summaries
+- Implement spam detection
+- Allow only verified users to review
+- Moderate reviews for inappropriate content
 
 **Mobile-First Considerations**:
 - Compact review cards on mobile
@@ -592,15 +799,6 @@ export class ReviewManager {
 
 ### Task 2.3: Create Template Versioning System
 **File**: `lib/marketplace/versioning.ts`
-
-**Features to Implement**:
-- [ ] Semantic versioning (major.minor.patch)
-- [ ] Version history tracking
-- [ ] Changelog for each version
-- [ ] Automatic update notifications
-- [ ] Rollback to previous versions
-- [ ] Version compatibility checking
-- [ ] Breaking change warnings
 
 **Implementation**:
 \`\`\`typescript
@@ -626,13 +824,13 @@ export interface VersionUpdate {
 }
 
 export class VersionManager {
-  // Version management
+  // Version management (stored in Convex)
   async createVersion(version: Partial<TemplateVersion>): Promise<TemplateVersion>
   async getVersion(templateId: string, version: string): Promise<TemplateVersion>
   async getVersionHistory(templateId: string): Promise<TemplateVersion[]>
   async getLatestVersion(templateId: string): Promise<TemplateVersion>
   
-  // Update checking
+  // Update checking (using Convex queries)
   async checkForUpdates(templateId: string): Promise<VersionUpdate>
   async checkAllUpdates(): Promise<VersionUpdate[]>
   
@@ -641,6 +839,13 @@ export class VersionManager {
   async rollbackVersion(templateId: string, version: string): Promise<void>
 }
 \`\`\`
+
+**Best Practices**:
+- Follow semantic versioning (semver)
+- Store versions in Convex database
+- Store version files in Vercel Blob
+- Notify users of breaking changes
+- Allow rollback to previous versions
 
 **Mobile-First Considerations**:
 - Compact version history list
@@ -652,15 +857,6 @@ export class VersionManager {
 
 ### Task 2.4: Create Template Analytics System
 **File**: `lib/marketplace/analytics.ts`
-
-**Features to Implement**:
-- [ ] Download tracking
-- [ ] Usage analytics
-- [ ] Performance metrics
-- [ ] User engagement tracking
-- [ ] Revenue tracking (for paid templates)
-- [ ] Geographic distribution
-- [ ] Trend analysis
 
 **Implementation**:
 \`\`\`typescript
@@ -691,17 +887,24 @@ export interface TrendData {
 }
 
 export class TemplateAnalyticsManager {
-  // Analytics queries
+  // Analytics queries (using Convex aggregation)
   async getAnalytics(templateId: string, period: string): Promise<TemplateAnalytics>
   async getDownloadTrend(templateId: string, days: number): Promise<TrendData[]>
   async getRevenueTrend(templateId: string, days: number): Promise<TrendData[]>
   
-  // Tracking
+  // Tracking (stored in Convex)
   async trackDownload(templateId: string): Promise<void>
   async trackUsage(templateId: string): Promise<void>
   async trackFavorite(templateId: string): Promise<void>
 }
 \`\`\`
+
+**Best Practices**:
+- Store analytics events in Convex
+- Use Convex aggregation for metrics
+- Implement data retention policies
+- Respect user privacy
+- Provide opt-out options
 
 **Mobile-First Considerations**:
 - Responsive charts and graphs
@@ -741,7 +944,7 @@ export class TemplateAnalyticsManager {
 
 ---
 
-## Phase 3: Custom Agent Training & Enhanced Auto-Debate (Priority: P2)
+## Phase 3: Custom Agent Training & Enhanced Auto-Debate (15-20 hours)
 
 ### Task 3.1: Create Custom Agent Training System
 **File**: `lib/agents/custom-training.ts`
@@ -937,15 +1140,6 @@ export class AgentPerformanceTracker {
 ### Task 3.4: Create Enhanced Auto-Debate System
 **File**: `lib/auto-debate/enhanced-automation.ts`
 
-**Features to Implement**:
-- [ ] Automatic artifact generation during debates
-- [ ] AI-powered debate flow control
-- [ ] Dynamic agent selection based on topic
-- [ ] Automatic fact-checking
-- [ ] Source citation
-- [ ] Debate summarization
-- [ ] Key point extraction
-
 **Implementation**:
 \`\`\`typescript
 export interface EnhancedAutoDebateConfig {
@@ -983,25 +1177,32 @@ export interface DebateArtifact {
 }
 
 export class EnhancedAutoDebate {
-  // Debate management
+  // Debate management (stored in Convex)
   async startDebate(config: EnhancedAutoDebateConfig): Promise<string>
   async pauseDebate(debateId: string): Promise<void>
   async resumeDebate(debateId: string): Promise<void>
   async endDebate(debateId: string): Promise<DebateSummary>
   
-  // Artifact generation
+  // Artifact generation (using AI SDK with structured output)
   async generateArtifact(debateId: string, type: string): Promise<DebateArtifact>
   async getDebateArtifacts(debateId: string): Promise<DebateArtifact[]>
   
-  // Moderation
+  // Moderation (using AI SDK)
   async factCheck(statement: string): Promise<FactCheckResult>
   async citeSources(statement: string): Promise<Source[]>
   
-  // Scoring
+  // Scoring (using AI SDK)
   async scoreRound(debateId: string, round: number): Promise<RoundScore>
   async getFinalScore(debateId: string): Promise<FinalScore>
 }
 \`\`\`
+
+**Best Practices**:
+- Use AI SDK for artifact generation
+- Store debates in Convex database
+- Use structured output for consistent artifacts
+- Implement real-time updates
+- Handle errors gracefully
 
 **Mobile-First Considerations**:
 - Mobile-friendly debate controls
@@ -1013,15 +1214,6 @@ export class EnhancedAutoDebate {
 
 ### Task 3.5: Create Debate Moderation System
 **File**: `lib/auto-debate/moderation.ts`
-
-**Features to Implement**:
-- [ ] Automatic fact-checking
-- [ ] Logical fallacy detection
-- [ ] Bias detection
-- [ ] Tone analysis
-- [ ] Rule enforcement
-- [ ] Warning system
-- [ ] Intervention triggers
 
 **Implementation**:
 \`\`\`typescript
@@ -1046,24 +1238,31 @@ export interface ModerationEvent {
 }
 
 export class DebateModerator {
-  // Rule management
+  // Rule management (stored in Convex)
   async getRules(): Promise<ModerationRule[]>
   async updateRule(ruleId: string, updates: Partial<ModerationRule>): Promise<void>
   async enableRule(ruleId: string): Promise<void>
   async disableRule(ruleId: string): Promise<void>
   
-  // Moderation
+  // Moderation (using AI SDK)
   async moderateMessage(message: string): Promise<ModerationResult>
   async factCheck(statement: string): Promise<FactCheckResult>
   async detectFallacies(argument: string): Promise<Fallacy[]>
   async detectBias(text: string): Promise<BiasAnalysis>
   async analyzeTone(text: string): Promise<ToneAnalysis>
   
-  // Events
+  // Events (stored in Convex)
   async getModerationEvents(debateId: string): Promise<ModerationEvent[]>
   async handleViolation(event: ModerationEvent): Promise<void>
 }
 \`\`\`
+
+**Best Practices**:
+- Use AI SDK for moderation
+- Store rules in Convex database
+- Log all moderation events
+- Provide clear explanations
+- Allow rule customization
 
 **Mobile-First Considerations**:
 - Mobile-friendly moderation alerts
@@ -1076,14 +1275,23 @@ export class DebateModerator {
 ### Task 3.6: Create Tournament System
 **File**: `lib/auto-debate/tournaments.ts`
 
-**Features to Implement**:
-- [ ] Multi-round tournament structure
-- [ ] Bracket generation
-- [ ] Automatic matchmaking
-- [ ] Tournament progression tracking
-- [ ] Leaderboard
-- [ ] Tournament analytics
-- [ ] Winner determination
+**Optional: Use Composio for External Integrations**
+Composio can help integrate tournaments with external platforms:
+- **Slack**: Post tournament updates to Slack channels
+- **Discord**: Send tournament notifications to Discord servers
+- **Calendar**: Create tournament events in Google Calendar
+- **Notion**: Document tournament results in Notion
+
+\`\`\`typescript
+// Example: Post tournament update to Slack via Composio
+async postTournamentUpdate(userId: string, tournamentId: string, message: string) {
+  const entity = await this.composio.getEntity(userId)
+  await entity.execute('SLACK_SEND_MESSAGE', {
+    channel: '#tournaments',
+    text: message
+  })
+}
+\`\`\`
 
 **Implementation**:
 \`\`\`typescript
@@ -1128,27 +1336,34 @@ export interface TournamentMatch {
 }
 
 export class TournamentManager {
-  // Tournament CRUD
+  // Tournament CRUD (stored in Convex)
   async createTournament(tournament: Partial<Tournament>): Promise<Tournament>
   async getTournament(id: string): Promise<Tournament>
   async updateTournament(id: string, updates: Partial<Tournament>): Promise<void>
   async deleteTournament(id: string): Promise<void>
   
-  // Tournament execution
+  // Tournament execution (using Convex actions)
   async startTournament(id: string): Promise<void>
   async advanceRound(id: string): Promise<void>
   async completeTournament(id: string): Promise<void>
   
-  // Match management
+  // Match management (stored in Convex)
   async createMatch(roundId: string, p1: string, p2: string): Promise<TournamentMatch>
   async startMatch(matchId: string): Promise<void>
   async completeMatch(matchId: string, winner: string, score: any): Promise<void>
   
-  // Leaderboard
+  // Leaderboard (using Convex queries)
   async getLeaderboard(tournamentId: string): Promise<TournamentParticipant[]>
   async getParticipantStats(participantId: string): Promise<ParticipantStats>
 }
 \`\`\`
+
+**Best Practices**:
+- Store tournaments in Convex database
+- Use Convex actions for automation
+- Implement bracket generation algorithms
+- Handle edge cases (ties, forfeits)
+- Provide real-time updates
 
 **Mobile-First Considerations**:
 - Mobile-friendly bracket view
@@ -1188,17 +1403,17 @@ export class TournamentManager {
 ## Success Criteria
 
 ### Advanced Export System
-- [ ] Cloud storage integration works for all providers
-- [ ] Custom templates can be created and applied
-- [ ] Batch export processes multiple sessions
-- [ ] Scheduled exports run automatically
+- [ ] Cloud storage integration works for Google Drive, Dropbox, OneDrive (via Composio)
+- [ ] Custom templates can be created and applied using jsPDF
+- [ ] Batch export processes multiple sessions using Convex actions
+- [ ] Scheduled exports run automatically using Convex cron jobs
 - [ ] Export quality is production-ready
 
 ### Community Marketplace
-- [ ] Templates can be browsed and searched
-- [ ] Rating and review system works
-- [ ] Template versioning is tracked
-- [ ] Analytics provide useful insights
+- [ ] Templates can be browsed and searched using Convex queries
+- [ ] Rating and review system works with Convex storage
+- [ ] Template versioning is tracked in Convex
+- [ ] Analytics provide useful insights using Convex aggregation
 - [ ] Marketplace is performant and responsive
 
 ### Custom Agent Training
@@ -1208,10 +1423,10 @@ export class TournamentManager {
 - [ ] Training process is user-friendly
 
 ### Enhanced Auto-Debate
-- [ ] Artifacts are generated automatically
-- [ ] Moderation catches violations
-- [ ] Scoring is fair and accurate
-- [ ] Tournaments run smoothly
+- [ ] Artifacts are generated automatically using AI SDK
+- [ ] Moderation catches violations using AI SDK
+- [ ] Scoring is fair and accurate using AI SDK
+- [ ] Tournaments run smoothly using Convex
 - [ ] All features work on mobile and desktop
 
 ---
@@ -1219,10 +1434,10 @@ export class TournamentManager {
 ## Testing Checklist
 
 ### Export System
-- [ ] Google Drive integration
-- [ ] Dropbox integration
-- [ ] OneDrive integration
-- [ ] Custom template creation
+- [ ] Google Drive connection and upload via Composio
+- [ ] Dropbox connection and upload via Composio
+- [ ] OneDrive connection and upload via Composio
+- [ ] Custom template creation with jsPDF
 - [ ] Batch export (5+ sessions)
 - [ ] Scheduled export execution
 - [ ] Export quality validation
@@ -1287,25 +1502,25 @@ All components follow mobile-first best practices:
 
 ## Implementation Order
 
-1. **Phase 1: Advanced Export System** (2-3 weeks)
-   - Week 1: Cloud storage integration
-   - Week 2: Custom templates and batch export
-   - Week 3: Scheduled exports and UI
+1. **Phase 1: Advanced Export System** (8-12 hours)
+   - Task 1.1: Cloud storage integration with Composio (2-3 hours)
+   - Task 1.2: Custom templates (2-3 hours)
+   - Task 1.3: Batch export (2-3 hours)
+   - Task 1.4: Scheduled exports (1-2 hours)
 
-2. **Phase 2: Community Marketplace** (3-4 weeks)
-   - Week 1: Marketplace system and UI
-   - Week 2: Rating and review system
-   - Week 3: Versioning and analytics
-   - Week 4: Polish and testing
+2. **Phase 2: Community Marketplace** (12-18 hours)
+   - Task 2.1: Marketplace system (4-5 hours)
+   - Task 2.2: Rating and reviews (3-4 hours)
+   - Task 2.3: Versioning (2-3 hours)
+   - Task 2.4: Analytics (3-4 hours)
 
-3. **Phase 3: Custom Agent Training & Enhanced Auto-Debate** (4-5 weeks)
-   - Week 1: Agent training system
-   - Week 2: Agent fine-tuning and performance
-   - Week 3: Enhanced auto-debate and moderation
-   - Week 4: Tournament system
-   - Week 5: Polish and testing
+3. **Phase 3: Enhanced Auto-Debate** (15-20 hours)
+   - Task 3.1: Enhanced automation (5-6 hours)
+   - Task 3.2: Moderation (4-5 hours)
+   - Task 3.3: Scoring (3-4 hours)
+   - Task 3.4: Tournaments (3-5 hours)
 
-**Total Estimated Time**: 9-12 weeks of focused development
+**Total Estimated Time**: 35-50 hours (5-7 focused days)
 
 ---
 
@@ -1314,25 +1529,21 @@ All components follow mobile-first best practices:
 ### Technical Requirements
 - [ ] Convex database fully implemented (Phase 4)
 - [ ] User authentication system (Phase 5)
-- [ ] Payment processing integration (for marketplace)
-- [ ] Cloud storage API keys (Google, Dropbox, OneDrive)
-- [ ] Email service for notifications
-- [ ] CDN for template assets
+- [ ] Polar payment integration (Phase 7) - for marketplace
+- [ ] Composio API key (for cloud storage and other integrations)
+- [ ] Email service for notifications (optional - can use Composio's Gmail integration)
+- [ ] Vercel Blob for template storage
 
 ### External Services
-- [ ] Google Drive API access
-- [ ] Dropbox API access
-- [ ] OneDrive API access
-- [ ] Stripe or similar payment processor
-- [ ] SendGrid or similar email service
-- [ ] Cloudflare or similar CDN
+- [ ] Composio account and API key
+- [ ] Polar for payments
+- [ ] Vercel Blob for storage
+- [ ] (Optional) Resend for emails if not using Composio
 
-### Team Requirements
-- [ ] Backend developer for API integrations
-- [ ] Frontend developer for UI components
-- [ ] ML engineer for agent training (optional)
-- [ ] Designer for marketplace UI
-- [ ] QA engineer for testing
+### NPM Packages
+- [ ] `composio-core` - Composio SDK (handles all cloud storage integrations)
+- [ ] `jspdf` - PDF generation
+- [ ] `react-pdf` - React PDF templates (optional)
 
 ---
 
@@ -1340,24 +1551,22 @@ All components follow mobile-first best practices:
 
 ### High Risk
 - **Cloud storage integration complexity** - Multiple OAuth flows, API differences
-  - Mitigation: Start with one provider, add others incrementally
-- **Agent training performance** - May be slow or expensive
-  - Mitigation: Use pre-trained models, limit training scope
+  - Mitigation: Use Composio to handle OAuth flows and API differences.
 - **Marketplace moderation** - User-generated content risks
-  - Mitigation: Implement automated moderation, manual review
+  - Mitigation: Implement automated moderation using AI SDK, manual review
 
 ### Medium Risk
 - **Custom template complexity** - PDF generation can be tricky
-  - Mitigation: Use proven libraries (jsPDF, Puppeteer)
+  - Mitigation: Use proven libraries (jsPDF), start with simple templates
 - **Tournament system complexity** - Many edge cases
-  - Mitigation: Start with simple format, add complexity later
+  - Mitigation: Start with simple format (single-elimination), add complexity later
 - **Performance at scale** - Large datasets may slow down
-  - Mitigation: Implement pagination, caching, optimization
+  - Mitigation: Implement pagination, caching, Convex indexes
 
 ### Low Risk
 - **UI implementation** - Well-defined patterns exist
-- **Rating system** - Standard implementation
-- **Analytics** - Straightforward data aggregation
+- **Rating system** - Standard implementation using Convex
+- **Analytics** - Straightforward data aggregation using Convex
 
 ---
 
@@ -1395,9 +1604,10 @@ Potential improvements for future iterations:
 
 - All features require Convex database (Phase 4)
 - All features require user authentication (Phase 5)
-- Cloud storage requires OAuth setup
-- Marketplace requires payment processing
-- Agent training may require ML infrastructure
+- Marketplace requires Polar payment integration (Phase 7)
+- Cloud storage uses Composio (no direct API integration needed)
+- Composio handles OAuth flows automatically
+- Use Composio for other integrations (Gmail, Slack, etc.) to simplify development
 - Focus on production-ready quality
 - Mobile-first design throughout
 - Performance and security are critical
@@ -1406,8 +1616,8 @@ Potential improvements for future iterations:
 
 ## Conclusion
 
-Phase 6 represents the final polish layer that transforms AnyDebate AI from a functional application into a production-ready platform with professional-grade features. The advanced export system enables seamless integration with existing workflows, the community marketplace fosters collaboration and knowledge sharing, and the enhanced auto-debate features provide sophisticated automation capabilities.
+Phase 6 represents the final polish layer that transforms AnyDebate AI into a production-ready platform with professional-grade features. The advanced export system enables seamless integration with existing workflows using Composio for cloud storage, the community marketplace fosters collaboration using Convex for data storage, and the enhanced auto-debate features provide sophisticated automation using the AI SDK.
 
-This phase requires significant development time and external service integrations, but the result is a comprehensive platform that can compete with commercial debate and collaboration tools. The mobile-first approach ensures that all features work seamlessly across devices, and the focus on performance and user experience creates a polished, professional product.
+This phase requires 35-50 hours of focused development and external service integrations, but the result is a comprehensive platform that can compete with commercial debate and collaboration tools. The mobile-first approach ensures that all features work seamlessly across devices, and the focus on using Composio and official SDKs ensures maintainability and reliability.
 
-**Status**: Ready for implementation after Phase 4 and Phase 5 are complete.
+**Status**: Ready for implementation after Phase 4, Phase 5, and Phase 7 are complete.
