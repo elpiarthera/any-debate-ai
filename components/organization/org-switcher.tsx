@@ -116,6 +116,12 @@ export function OrgSwitcher() {
         >
           <OrgList />
         </AdaptiveModal>
+
+        <CreateOrganizationDialog
+          isOpen={isCreateDialogOpen}
+          onClose={() => setIsCreateDialogOpen(false)}
+          onSubmit={handleSubmitOrganization}
+        />
       </>
     )
   }
