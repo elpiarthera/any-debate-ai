@@ -159,412 +159,794 @@ import { v } from "convex/values"
 
 export default defineSchema({
   // ============================================
-  // MULTI-TENANCY: ORGANIZATIONS
+  // MULTI-TENANCY: ORGANIZATIONS & USERS
   // ============================================
   
-  // Organizations (synced from Clerk)
+  // 1. Organizations (synced from Clerk)
   organizations: defineTable({
-    clerkOrganizationId: v.string(), // Clerk's organization ID
+    clerkOrganizationId: v.string(),
     name: v.string(),
     slug: v.optional(v.string()),
-    imageUrl: v.optional(v.string()),
+    totalSessions: v.number(),
+    totalMessages: v.number(),
+    totalTokensUsed: v.number(),
     createdAt: v.number(),
     updatedAt: v.number(),
-    
-    subscription: v.optional(v.object({
-      polarCustomerId: v.string(),
-      polarSubscriptionId: v.string(),
-      plan: v.union(
-        v.literal("free"),
-        v.literal("starter"),
-        v.literal("pro")
-      ),
-      status: v.union(
-        v.literal("active"),
-        v.literal("canceled"),
-        v.literal("past_due"),
-        v.literal("trialing")
-      ),
-      userCount: v.number(), // Number of users in org
-      pricePerUser: v.number(), // Price per user per month
-      currentPeriodStart: v.number(),
-      currentPeriodEnd: v.number(),
-      cancelAtPeriodEnd: v.boolean(),
-    })),
-    
-    // Usage limits based on plan
-    limits: v.object({
-      maxMembers: v.number(),
-      maxSessions: v.number(),
-      maxMessagesPerSession: v.number(),
-      maxArtifacts: v.number(),
-      maxFileStorageBytes: v.number(),
-    }),
-    
-    // Current usage tracking
-    usage: v.object({
-      currentMembers: v.number(),
-      currentSessions: v.number(),
-      totalMessages: v.number(),
-      totalArtifacts: v.number(),
-      usedFileStorageBytes: v.number(),
-    }),
-    
-    // Organization settings
-    settings: v.optional(v.object({
-      allowMemberInvites: v.boolean(),
-      defaultAgentTemplates: v.array(v.id("agentTemplates")),
-      branding: v.optional(v.object({
-        primaryColor: v.string(),
-        logoUrl: v.string(),
-      })),
-    })),
-    
-    metadata: v.optional(v.any()), // Additional metadata
   })
-    .index("by_clerk_id", ["clerkOrganizationId"])
-    .index("by_slug", ["slug"])
-    .index("by_created", ["createdAt"]),
+    .index('by_clerk_org_id', ['clerkOrganizationId']),
 
-  // ============================================
-  // USER MANAGEMENT
-  // ============================================
-  
-  // Users (synced from Clerk)
+  // 2. Users (synced from Clerk)
   users: defineTable({
-    clerkUserId: v.string(), // Clerk's user ID
-    email: v.string(),
-    firstName: v.optional(v.string()),
-    lastName: v.optional(v.string()),
-    imageUrl: v.optional(v.string()),
-    createdAt: v.number(),
-    updatedAt: v.number(),
+    clerkUserId: v.string(),
+    preferences: v.object({
+      theme: v.union(v.literal('light'), v.literal('dark'), v.literal('system')),
+      defaultModel: v.string(),
+      language: v.string(),
+      notifications: v.boolean(),
+      defaultAgents: v.array(v.string()),
+    }),
+    totalSessions: v.number(),
     lastActiveAt: v.number(),
-    
-    // User preferences
-    preferences: v.optional(v.object({
-      theme: v.union(v.literal("light"), v.literal("dark"), v.literal("system")),
-      defaultView: v.string(),
-      notifications: v.object({
-        email: v.boolean(),
-        inApp: v.boolean(),
-      }),
-    })),
-    
-    metadata: v.optional(v.any()),
-  })
-    .index("by_clerk_id", ["clerkUserId"])
-    .index("by_email", ["email"])
-    .index("by_last_active", ["lastActiveAt"]),
-
-  // Organization Memberships (synced from Clerk)
-  organizationMemberships: defineTable({
-    organizationId: v.id("organizations"),
-    userId: v.id("users"),
-    clerkMembershipId: v.string(), // Clerk's membership ID
-    role: v.union(v.literal("org:admin"), v.literal("org:member")), // Only default roles
     createdAt: v.number(),
     updatedAt: v.number(),
-    
-    // Additional membership metadata
-    metadata: v.optional(v.object({
-      invitedBy: v.optional(v.id("users")),
-      joinedVia: v.union(
-        v.literal("invitation"),
-        v.literal("direct")
-      ),
-    })),
   })
-    .index("by_organization", ["organizationId"])
-    .index("by_user", ["userId"])
-    .index("by_org_and_user", ["organizationId", "userId"])
-    .index("by_clerk_id", ["clerkMembershipId"]),
+    .index('by_clerk_user_id', ['clerkUserId'])
+    .index('by_last_active', ['lastActiveAt']),
+
+  // 3. Workspaces
+  workspaces: defineTable({
+    organizationId: v.string(),
+    name: v.string(),
+    description: v.optional(v.string()),
+    slug: v.optional(v.string()),
+    settings: v.object({
+      defaultModel: v.optional(v.string()),
+      autoSave: v.boolean(),
+      exportFormat: v.union(v.literal('pdf'), v.literal('markdown'), v.literal('json')),
+    }),
+    isDefault: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_organization_and_name', ['organizationId', 'name'])
+    .index('by_organization_and_slug', ['organizationId', 'slug']),
+
+  // 4. Workspace Memberships
+  workspaceMemberships: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    userId: v.string(),
+    role: v.union(v.literal('admin'), v.literal('member')),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_organization_and_workspace', ['organizationId', 'workspaceId'])
+    .index('by_organization_and_user', ['organizationId', 'userId'])
+    .index('by_workspace_and_user', ['workspaceId', 'userId']),
 
   // ============================================
   // CORE FEATURES: SESSIONS & MESSAGES
   // ============================================
   
-  // Debate sessions (TENANT-ISOLATED)
+  // 5. Sessions
   sessions: defineTable({
-    organizationId: v.id("organizations"), // TENANT ISOLATION
-    createdBy: v.id("users"),
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    userId: v.string(),
+    agentIds: v.array(v.id('agents')),
     title: v.string(),
-    description: v.optional(v.string()),
+    mode: v.union(v.literal('compare'), v.literal('debate'), v.literal('auto-debate')),
+    status: v.union(v.literal('active'), v.literal('completed'), v.literal('archived')),
+    config: v.object({
+      rounds: v.optional(v.number()),
+      currentRound: v.optional(v.number()),
+      speakingOrder: v.optional(v.array(v.string())),
+      autoDebateStatus: v.optional(v.union(
+        v.literal('setup'),
+        v.literal('running'),
+        v.literal('paused'),
+        v.literal('completed')
+      )),
+    }),
+    metadata: v.object({
+      tags: v.array(v.string()),
+      description: v.optional(v.string()),
+      visibility: v.union(v.literal('private'), v.literal('workspace'), v.literal('organization')),
+    }),
+    messageCount: v.number(),
+    tokensUsed: v.number(),
+    duration: v.number(),
+    lastActivityAt: v.number(),
     createdAt: v.number(),
     updatedAt: v.number(),
-    status: v.union(
-      v.literal("active"),
-      v.literal("archived"),
-      v.literal("deleted")
-    ),
-    
-    // Session configuration
-    config: v.optional(v.object({
-      mode: v.union(
-        v.literal("compare"),
-        v.literal("debate"),
-        v.literal("auto-debate")
-      ),
-      selectedAgents: v.array(v.id("agents")),
-      debateRounds: v.optional(v.number()),
-    })),
-    
-    metadata: v.object({
-      messageCount: v.number(),
-      agentCount: v.number(),
-      artifactCount: v.number(),
-      lastActivity: v.number(),
-      participants: v.array(v.id("users")), // Users who participated
-    }),
   })
-    .index("by_organization", ["organizationId"])
-    .index("by_organization_and_status", ["organizationId", "status"])
-    .index("by_created_by", ["createdBy"])
-    .index("by_updated", ["updatedAt"])
-    .index("by_status", ["status"]),
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_organization_and_workspace', ['organizationId', 'workspaceId'])
+    .index('by_status', ['status'])
+    .index('by_organization_and_status', ['organizationId', 'status']),
 
-  // Chat messages (TENANT-ISOLATED via session)
+  // 6. Messages
   messages: defineTable({
-    sessionId: v.id("sessions"),
-    agentId: v.optional(v.id("agents")),
-    userId: v.optional(v.id("users")), // User who sent the message
-    role: v.union(
-      v.literal("user"),
-      v.literal("assistant"),
-      v.literal("system")
-    ),
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    sessionId: v.id('sessions'),
+    userId: v.string(),
+    agentId: v.optional(v.id('agents')),
+    role: v.union(v.literal('user'), v.literal('assistant'), v.literal('system')),
     content: v.string(),
-    timestamp: v.number(),
-    
-    metadata: v.optional(v.object({
+    metadata: v.object({
       model: v.optional(v.string()),
+      temperature: v.optional(v.number()),
       tokens: v.optional(v.number()),
       latency: v.optional(v.number()),
-      parentMessageId: v.optional(v.id("messages")), // For threading
-      reactions: v.optional(v.array(v.object({
-        emoji: v.string(),
-        userId: v.id("users"),
-        timestamp: v.number(),
-      }))),
-      bookmarked: v.optional(v.boolean()),
-      bookmarkNote: v.optional(v.string()),
+    }),
+    parentMessageId: v.optional(v.id('messages')),
+    threadId: v.optional(v.string()),
+    replyCount: v.optional(v.number()),
+    hasReplies: v.optional(v.boolean()),
+    bookmarked: v.optional(v.boolean()),
+    reactions: v.optional(v.object({
+      likes: v.number(),
+      dislikes: v.number(),
     })),
-  })
-    .index("by_session", ["sessionId"])
-    .index("by_timestamp", ["timestamp"])
-    .index("by_agent", ["agentId"])
-    .index("by_user", ["userId"]),
-
-  // ============================================
-  // AGENTS & TEMPLATES
-  // ============================================
-  
-  // Agent configurations (TENANT-ISOLATED)
-  agents: defineTable({
-    organizationId: v.optional(v.id("organizations")), // null = global template
-    createdBy: v.optional(v.id("users")),
-    name: v.string(),
-    role: v.string(),
-    persona: v.string(),
-    framework: v.optional(v.string()),
-    systemPrompt: v.string(),
+    isStreaming: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.number(),
-    isTemplate: v.boolean(), // Pre-built templates vs custom
-    isPublic: v.boolean(), // Public templates available to all orgs
-    
-    metadata: v.object({
-      category: v.string(),
-      expertise: v.array(v.string()),
-      usageCount: v.number(),
-      lastUsed: v.optional(v.number()),
-    }),
   })
-    .index("by_organization", ["organizationId"])
-    .index("by_template", ["isTemplate"])
-    .index("by_public", ["isPublic"])
-    .index("by_category", ["metadata.category"])
-    .index("by_created_by", ["createdBy"]),
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_session', ['sessionId'])
+    .index('by_user', ['userId'])
+    .index('by_organization_and_session', ['organizationId', 'sessionId'])
+    .index('by_organization_and_user', ['organizationId', 'userId'])
+    .index('by_workspace_and_session', ['workspaceId', 'sessionId'])
+    .index('by_created_at', ['createdAt']),
 
-  // Agent templates (pre-built teams and scenarios)
-  agentTemplates: defineTable({
+  // ============================================
+  // AGENTS & CONFIGURATION
+  // ============================================
+  
+  // 7. Agents
+  agents: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    userId: v.string(),
+    name: v.string(),
+    description: v.optional(v.string()),
+    roleId: v.string(),
+    personaId: v.string(),
+    frameworkId: v.string(),
+    role: v.string(),
+    persona: v.string(),
+    framework: v.string(),
+    model: v.string(),
+    provider: v.string(),
+    systemPrompt: v.string(),
+    customInstructions: v.optional(v.string()),
+    parameters: v.object({
+      temperature: v.optional(v.number()),
+      maxTokens: v.optional(v.number()),
+      topP: v.optional(v.number()),
+    }),
+    usageCount: v.number(),
+    isFavorite: v.boolean(),
+    isTemplate: v.boolean(),
+    isActive: v.boolean(),
+    visibility: v.union(v.literal('private'), v.literal('workspace'), v.literal('organization')),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_organization_and_visibility', ['organizationId', 'visibility'])
+    .index('by_workspace_and_visibility', ['workspaceId', 'visibility'])
+    .index('by_template', ['isTemplate']),
+
+  // 21. Roles
+  roles: defineTable({
+    id: v.string(),
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    isSystem: v.boolean(),
+    isActive: v.boolean(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.string()),
+    usageCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_id', ['id'])
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_category', ['category'])
+    .index('by_is_system', ['isSystem'])
+    .index('by_is_active', ['isActive']),
+
+  // 22. Personas
+  personas: defineTable({
+    id: v.string(),
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    isSystem: v.boolean(),
+    isActive: v.boolean(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.string()),
+    usageCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_id', ['id'])
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_is_system', ['isSystem'])
+    .index('by_is_active', ['isActive']),
+
+  // 23. Frameworks
+  frameworks: defineTable({
+    id: v.string(),
+    name: v.string(),
+    description: v.string(),
+    methodology: v.string(),
+    bestFor: v.array(v.string()),
+    steps: v.array(v.string()),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    isSystem: v.boolean(),
+    isActive: v.boolean(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.string()),
+    usageCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_id', ['id'])
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_is_system', ['isSystem'])
+    .index('by_is_active', ['isActive']),
+
+  // ============================================
+  // ARTIFACTS & ORGANIZATION
+  // ============================================
+  
+  // 8. Artifacts
+  artifacts: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    sessionId: v.id('sessions'),
+    messageId: v.id('messages'),
+    userId: v.string(),
+    type: v.union(v.literal('document'), v.literal('data-table'), v.literal('checklist'), v.literal('chart')),
+    title: v.string(),
+    content: v.string(),
+    folderId: v.optional(v.id('folders')),
+    tags: v.array(v.string()),
+    isFavorite: v.boolean(),
+    isPinned: v.boolean(),
+    lastAccessedAt: v.number(),
+    collaborators: v.optional(v.array(v.string())),
+    reactions: v.optional(v.object({
+      likes: v.number(),
+      dislikes: v.number(),
+    })),
+    fileId: v.optional(v.id('_storage')),
+    metadata: v.object({
+      size: v.optional(v.number()),
+      version: v.optional(v.number()),
+      exports: v.optional(v.array(v.object({
+        format: v.string(),
+        url: v.string(),
+        timestamp: v.number(),
+      }))),
+      author: v.optional(v.string()),
+      tags: v.optional(v.array(v.string())),
+      mimeType: v.optional(v.string()),
+      wordCount: v.optional(v.number()),
+      rowCount: v.optional(v.number()),
+      itemCount: v.optional(v.number()),
+    }),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_session', ['sessionId'])
+    .index('by_message', ['messageId'])
+    .index('by_user', ['userId'])
+    .index('by_organization_and_session', ['organizationId', 'sessionId'])
+    .index('by_workspace_and_session', ['workspaceId', 'sessionId'])
+    .index('by_folder', ['folderId'])
+    .index('by_workspace_and_folder', ['workspaceId', 'folderId'])
+    .index('by_workspace_and_type', ['workspaceId', 'type'])
+    .index('by_favorite', ['workspaceId', 'isFavorite'])
+    .index('by_pinned', ['workspaceId', 'isPinned'])
+    .index('by_last_accessed', ['workspaceId', 'lastAccessedAt']),
+
+  // 9. Folders
+  folders: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    userId: v.string(),
+    name: v.string(),
+    description: v.optional(v.string()),
+    color: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    parentId: v.optional(v.id('folders')),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_parent', ['parentId'])
+    .index('by_workspace_and_parent', ['workspaceId', 'parentId']),
+
+  // 10. Tags
+  tags: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    userId: v.string(),
+    name: v.string(),
+    color: v.string(),
+    count: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_workspace_and_name', ['workspaceId', 'name']),
+
+  // 11. Artifact Templates
+  artifactTemplates: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    userId: v.string(),
+    name: v.string(),
+    description: v.string(),
+    icon: v.string(),
+    type: v.union(v.literal('document'), v.literal('data-table'), v.literal('checklist'), v.literal('chart')),
+    data: v.string(),
+    category: v.string(),
+    tags: v.array(v.string()),
+    isSystem: v.boolean(),
+    visibility: v.union(v.literal('private'), v.literal('workspace'), v.literal('organization')),
+    usageCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_type', ['workspaceId', 'type'])
+    .index('by_category', ['workspaceId', 'category'])
+    .index('by_system', ['isSystem'])
+    .index('by_visibility', ['workspaceId', 'visibility']),
+
+  // 12. Artifact Versions
+  artifactVersions: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    artifactId: v.id('artifacts'),
+    version: v.number(),
+    timestamp: v.number(),
+    author: v.string(),
+    changeDescription: v.string(),
+    changeType: v.union(v.literal('created'), v.literal('edited'), v.literal('restored'), v.literal('auto-saved')),
+    changedFields: v.optional(v.array(v.string())),
+    previousVersionId: v.optional(v.id('artifactVersions')),
+    data: v.string(),
+    createdAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_artifact', ['artifactId'])
+    .index('by_artifact_and_version', ['artifactId', 'version'])
+    .index('by_author', ['author'])
+    .index('by_change_type', ['changeType'])
+    .index('by_timestamp', ['timestamp']),
+
+  // ============================================
+  // TEMPLATES & PRESETS
+  // ============================================
+  
+  // 13. Templates
+  templates: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    userId: v.string(),
     name: v.string(),
     description: v.string(),
     category: v.string(),
     agents: v.array(v.object({
       name: v.string(),
-      role: v.string(),
-      persona: v.string(),
-      framework: v.optional(v.string()),
+      roleId: v.string(),
+      personaId: v.string(),
+      frameworkId: v.string(),
+      customInstructions: v.optional(v.string()),
     })),
-    scenario: v.optional(v.string()),
+    topic: v.optional(v.string()),
+    conversationType: v.union(v.literal('debate'), v.literal('collaboration'), v.literal('analysis')),
+    suggestedQuestions: v.optional(v.array(v.string())),
+    isCustom: v.boolean(),
+    popularity: v.optional(v.number()),
+    usageCount: v.number(),
+    lastUsed: v.optional(v.number()),
+    tags: v.array(v.string()),
+    author: v.optional(v.string()),
+    visibility: v.union(v.literal('private'), v.literal('workspace'), v.literal('organization')),
     createdAt: v.number(),
     updatedAt: v.number(),
-    isPublic: v.boolean(),
-    
-    metadata: v.object({
-      usageCount: v.number(),
-      rating: v.optional(v.number()),
-      tags: v.array(v.string()),
-    }),
   })
-    .index("by_category", ["category"])
-    .index("by_public", ["isPublic"]),
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_category', ['organizationId', 'category'])
+    .index('by_workspace_and_category', ['workspaceId', 'category'])
+    .index('by_visibility', ['organizationId', 'visibility'])
+    .index('by_workspace_and_visibility', ['workspaceId', 'visibility'])
+    .index('by_usage', ['organizationId', 'usageCount'])
+    .index('by_workspace_and_usage', ['workspaceId', 'usageCount']),
+
+  // 14. Agent Team Presets
+  agentTeamPresets: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    userId: v.optional(v.string()),
+    name: v.string(),
+    description: v.string(),
+    icon: v.string(),
+    category: v.string(),
+    agents: v.array(v.object({
+      name: v.string(),
+      roleId: v.string(),
+      personaId: v.string(),
+      frameworkId: v.string(),
+      customInstructions: v.optional(v.string()),
+    })),
+    useCases: v.array(v.string()),
+    isSystem: v.boolean(),
+    usageCount: v.number(),
+    lastUsed: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_category', ['organizationId', 'category'])
+    .index('by_system', ['organizationId', 'isSystem'])
+    .index('by_usage', ['organizationId', 'usageCount']),
+
+  // 15. Quick Start Scenarios
+  quickStartScenarios: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    userId: v.optional(v.string()),
+    name: v.string(),
+    description: v.string(),
+    icon: v.string(),
+    category: v.string(),
+    presetId: v.id('agentTeamPresets'),
+    suggestedTopic: v.string(),
+    suggestedQuestions: v.array(v.string()),
+    isSystem: v.boolean(),
+    usageCount: v.number(),
+    lastUsed: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_preset', ['presetId'])
+    .index('by_category', ['organizationId', 'category'])
+    .index('by_system', ['organizationId', 'isSystem'])
+    .index('by_usage', ['organizationId', 'usageCount']),
 
   // ============================================
-  // ARTIFACTS
+  // BOOKMARKS & PROJECTS
   // ============================================
   
-  // Artifacts (TENANT-ISOLATED via session)
-  artifacts: defineTable({
-    sessionId: v.id("sessions"),
-    messageId: v.optional(v.id("messages")),
-    createdBy: v.id("users"),
-    type: v.union(
-      v.literal("document"),
-      v.literal("table"),
-      v.literal("checklist"),
-      v.literal("chart")
-    ),
+  // 16. Projects
+  projects: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    userId: v.string(),
+    name: v.string(),
+    description: v.optional(v.string()),
+    sessionIds: v.array(v.id('sessions')),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId']),
+
+  // 17. Bookmarks
+  bookmarks: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    userId: v.string(),
+    messageId: v.id('messages'),
+    sessionId: v.id('sessions'),
     title: v.string(),
-    content: v.any(), // JSON content specific to artifact type
+    note: v.optional(v.string()),
+    tags: v.array(v.string()),
+    collectionId: v.optional(v.id('bookmarkCollections')),
     createdAt: v.number(),
     updatedAt: v.number(),
-    version: v.number(),
-    
-    metadata: v.optional(v.object({
-      fileStorageId: v.optional(v.string()), // Convex storage ID
-      fileName: v.optional(v.string()),
-      fileType: v.optional(v.string()),
-      fileSize: v.optional(v.number()),
-      exportedAt: v.optional(v.number()),
-      exportFormat: v.optional(v.string()),
-    })),
   })
-    .index("by_session", ["sessionId"])
-    .index("by_type", ["type"])
-    .index("by_message", ["messageId"])
-    .index("by_created_by", ["createdBy"]),
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_message', ['messageId'])
+    .index('by_session', ['sessionId'])
+    .index('by_collection', ['collectionId']),
+
+  // 18. Bookmark Collections
+  bookmarkCollections: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    userId: v.string(),
+    name: v.string(),
+    description: v.optional(v.string()),
+    color: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    bookmarkIds: v.array(v.id('bookmarks')),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_name', ['name']),
 
   // ============================================
-  // EXPORTS
+  // ANALYTICS & TRACKING
   // ============================================
   
-  // Export history (TENANT-ISOLATED via session)
-  exports: defineTable({
-    sessionId: v.id("sessions"),
-    userId: v.id("users"),
-    format: v.union(
-      v.literal("pdf"),
-      v.literal("markdown"),
-      v.literal("json")
-    ),
-    fileStorageId: v.string(), // Convex storage ID
-    createdAt: v.number(),
-    
+  // 19. Activities
+  activities: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.optional(v.id('workspaces')),
+    userId: v.string(),
+    type: v.union(v.literal('debate'), v.literal('agent'), v.literal('export'), v.literal('template'), v.literal('artifact')),
+    title: v.string(),
+    description: v.string(),
+    sessionId: v.optional(v.id('sessions')),
+    agentId: v.optional(v.id('agents')),
+    artifactId: v.optional(v.id('artifacts')),
     metadata: v.object({
-      fileSize: v.number(),
-      includeArtifacts: v.boolean(),
+      participants: v.optional(v.array(v.string())),
+      messageCount: v.optional(v.number()),
+      status: v.optional(v.string()),
+    }),
+    createdAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_type', ['type'])
+    .index('by_created_at', ['createdAt'])
+    .index('by_organization_and_created_at', ['organizationId', 'createdAt']),
+
+  // 20. Session Comparisons
+  sessionComparisons: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    userId: v.string(),
+    name: v.optional(v.string()),
+    sessionIds: v.array(v.id('sessions')),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_created_at', ['createdAt']),
+
+  // 24. Collaboration Events
+  collaborationEvents: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.id('workspaces'),
+    sessionId: v.id('sessions'),
+    artifactId: v.id('artifacts'),
+    userId: v.optional(v.string()),
+    agentId: v.optional(v.id('agents')),
+    eventType: v.union(v.literal('edit'), v.literal('comment'), v.literal('cursor'), v.literal('view'), v.literal('create'), v.literal('delete')),
+    description: v.string(),
+    metadata: v.object({
+      field: v.optional(v.string()),
+      oldValue: v.optional(v.string()),
+      newValue: v.optional(v.string()),
+      position: v.optional(v.object({
+        x: v.number(),
+        y: v.number(),
+      })),
+      color: v.optional(v.string()),
+    }),
+    timestamp: v.number(),
+    createdAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_session', ['sessionId'])
+    .index('by_artifact', ['artifactId'])
+    .index('by_user', ['userId'])
+    .index('by_agent', ['agentId'])
+    .index('by_organization_and_artifact', ['organizationId', 'artifactId'])
+    .index('by_workspace_and_artifact', ['workspaceId', 'artifactId'])
+    .index('by_session_and_artifact', ['sessionId', 'artifactId'])
+    .index('by_timestamp', ['organizationId', 'timestamp']),
+
+  // ============================================
+  // PAYMENTS & BILLING
+  // ============================================
+  
+  // 25. Subscriptions
+  subscriptions: defineTable({
+    organizationId: v.string(),
+    polarSubscriptionId: v.string(),
+    polarCustomerId: v.string(),
+    polarProductId: v.string(),
+    status: v.union(v.literal('active'), v.literal('canceled'), v.literal('past_due'), v.literal('trialing')),
+    currentPeriodStart: v.number(),
+    currentPeriodEnd: v.number(),
+    cancelAtPeriodEnd: v.boolean(),
+    metadata: v.object({
+      planName: v.string(),
+      features: v.array(v.string()),
+    }),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    canceledAt: v.optional(v.number()),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_polar_subscription_id', ['polarSubscriptionId'])
+    .index('by_polar_product_id', ['polarProductId'])
+    .index('by_status', ['status']),
+
+  // 26. Credit Balances
+  creditBalances: defineTable({
+    organizationId: v.string(),
+    totalCredits: v.number(),
+    usedCredits: v.number(),
+    remainingCredits: v.number(),
+    subscriptionCredits: v.number(),
+    purchasedCredits: v.number(),
+    lastResetAt: v.number(),
+    nextResetAt: v.number(),
+    updatedAt: v.number(),
+    metadata: v.object({
+      resetFrequency: v.union(v.literal('monthly'), v.literal('never')),
     }),
   })
-    .index("by_session", ["sessionId"])
-    .index("by_user", ["userId"])
-    .index("by_created", ["createdAt"]),
+    .index('by_organization', ['organizationId']),
 
-  // ============================================
-  // ANALYTICS & AUDIT
-  // ============================================
-  
-  // Analytics (TENANT-ISOLATED)
-  analytics: defineTable({
-    organizationId: v.id("organizations"),
-    sessionId: v.optional(v.id("sessions")),
-    userId: v.optional(v.id("users")),
-    eventType: v.string(),
-    eventData: v.any(),
-    timestamp: v.number(),
-    
-    metadata: v.optional(v.object({
-      deviceType: v.string(),
-      viewport: v.object({
-        width: v.number(),
-        height: v.number(),
-      }),
-    })),
-  })
-    .index("by_organization", ["organizationId"])
-    .index("by_session", ["sessionId"])
-    .index("by_user", ["userId"])
-    .index("by_event", ["eventType"])
-    .index("by_timestamp", ["timestamp"]),
-
-  // Audit logs (TENANT-ISOLATED)
-  auditLogs: defineTable({
-    organizationId: v.id("organizations"),
-    userId: v.id("users"),
-    action: v.string(), // e.g., "session.created", "member.invited"
-    resourceType: v.string(), // e.g., "session", "organization"
-    resourceId: v.string(),
-    timestamp: v.number(),
-    
-    metadata: v.optional(v.object({
-      ipAddress: v.optional(v.string()),
-      userAgent: v.optional(v.string()),
-      changes: v.optional(v.any()), // Before/after for updates
-    })),
-  })
-    .index("by_organization", ["organizationId"])
-    .index("by_user", ["userId"])
-    .index("by_resource", ["resourceType", "resourceId"])
-    .index("by_timestamp", ["timestamp"]),
-
-  // ============================================
-  // PAYMENTS & SUBSCRIPTIONS (POLAR)
-  // ============================================
-  
-  // Payment transactions (TENANT-ISOLATED)
-  payments: defineTable({
-    organizationId: v.id("organizations"),
-    polarPaymentId: v.string(), // Polar's payment ID
+  // 27. Invoices
+  invoices: defineTable({
+    organizationId: v.string(),
+    polarInvoiceId: v.string(),
+    subscriptionId: v.optional(v.id('subscriptions')),
+    invoiceNumber: v.string(),
+    status: v.union(v.literal('draft'), v.literal('open'), v.literal('paid'), v.literal('void'), v.literal('uncollectible')),
     amount: v.number(),
     currency: v.string(),
-    status: v.union(
-      v.literal("pending"),
-      v.literal("succeeded"),
-      v.literal("failed"),
-      v.literal("refunded")
-    ),
-    type: v.union(
-      v.literal("subscription"),
-      v.literal("one_time")
-    ),
+    description: v.optional(v.string()),
+    invoiceDate: v.number(),
+    dueDate: v.optional(v.number()),
+    paidAt: v.optional(v.number()),
+    invoiceUrl: v.optional(v.string()),
+    pdfUrl: v.optional(v.string()),
+    metadata: v.object({
+      planName: v.optional(v.string()),
+      billingPeriod: v.optional(v.string()),
+      items: v.optional(v.array(v.object({
+        description: v.string(),
+        quantity: v.number(),
+        unitPrice: v.number(),
+        amount: v.number(),
+      }))),
+    }),
     createdAt: v.number(),
     updatedAt: v.number(),
-    
-    metadata: v.optional(v.object({
-      description: v.string(),
-      receiptUrl: v.optional(v.string()),
-      refundReason: v.optional(v.string()),
-    })),
   })
-    .index("by_organization", ["organizationId"])
-    .index("by_polar_id", ["polarPaymentId"])
-    .index("by_status", ["status"])
-    .index("by_created", ["createdAt"]),
+    .index('by_organization', ['organizationId'])
+    .index('by_polar_invoice_id', ['polarInvoiceId'])
+    .index('by_subscription', ['subscriptionId'])
+    .index('by_status', ['status'])
+    .index('by_invoice_date', ['invoiceDate'])
+    .index('by_organization_and_status', ['organizationId', 'status']),
 
-  // Webhook events (for debugging and audit)
-  webhookEvents: defineTable({
-    source: v.union(v.literal("clerk"), v.literal("polar")),
-    eventType: v.string(),
-    eventData: v.any(),
-    processed: v.boolean(),
-    processedAt: v.optional(v.number()),
-    error: v.optional(v.string()),
-    timestamp: v.number(),
+  // 28. Usage Tracking
+  usageTracking: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.optional(v.id('workspaces')),
+    userId: v.string(),
+    sessionId: v.optional(v.id('sessions')),
+    messageId: v.optional(v.id('messages')),
+    eventType: v.union(v.literal('token_usage'), v.literal('api_call'), v.literal('export'), v.literal('storage')),
+    tokensUsed: v.number(),
+    cost: v.optional(v.number()),
+    metadata: v.object({
+      inputTokens: v.number(),
+      outputTokens: v.number(),
+      cached: v.boolean(),
+      model: v.optional(v.string()),
+      provider: v.optional(v.string()),
+      finishReason: v.optional(v.string()),
+      toolCallsCount: v.optional(v.number()),
+      latency: v.optional(v.number()),
+    }),
+    polarMeterId: v.optional(v.string()),
+    createdAt: v.number(),
+    billingPeriod: v.string(),
   })
-    .index("by_source", ["source"])
-    .index("by_processed", ["processed"])
-    .index("by_timestamp", ["timestamp"]),
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user', ['userId'])
+    .index('by_session', ['sessionId'])
+    .index('by_message', ['messageId'])
+    .index('by_event_type', ['eventType'])
+    .index('by_created_at', ['createdAt']),
+
+  // ============================================
+  // MEMORY SYSTEM
+  // ============================================
+  
+  // 29. Working Memory
+  workingMemory: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.string(),
+    scope: v.union(v.literal('chat'), v.literal('user'), v.literal('workspace'), v.literal('organization')),
+    chatId: v.optional(v.id('sessions')),
+    userId: v.optional(v.string()),
+    title: v.string(),
+    category: v.string(),
+    content: v.string(),
+    tags: v.array(v.string()),
+    source: v.union(v.literal('manual'), v.literal('document'), v.literal('url'), v.literal('agent'), v.literal('chat'), v.literal('artifact'), v.literal('debate_result')),
+    sourceUrl: v.optional(v.string()),
+    sourceDocument: v.optional(v.string()),
+    sourceChatId: v.optional(v.id('sessions')),
+    sourceArtifactId: v.optional(v.string()),
+    sourceDebateId: v.optional(v.id('sessions')),
+    createdBy: v.string(),
+    usageCount: v.number(),
+    lastUsedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_organization', ['organizationId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_scope_chat', ['scope', 'chatId'])
+    .index('by_scope_user', ['scope', 'userId'])
+    .index('by_scope_workspace', ['scope', 'workspaceId'])
+    .index('by_scope_organization', ['scope', 'organizationId'])
+    .index('by_organization_and_workspace', ['organizationId', 'workspaceId'])
+    .index('by_category', ['category'])
+    .index('by_source', ['source'])
+    .index('by_created_by', ['createdBy'])
+    .index('by_source_chat', ['sourceChatId'])
+    .index('by_source_artifact', ['sourceArtifactId'])
+    .index('by_source_debate', ['sourceDebateId']),
 })
 \`\`\`
 
@@ -581,9 +963,9 @@ export default defineSchema({
 
 2. **User-scoped queries**:
    \`\`\`typescript
-   // Get user's organizations
+   // Get user's workspaces
    const memberships = await ctx.db
-     .query("organizationMemberships")
+     .query("workspaceMemberships")
      .withIndex("by_user", (q) => q.eq("userId", userId))
      .collect()
    \`\`\`
@@ -2156,6 +2538,12 @@ components/
 **Last Updated**: October 11, 2025  
 **Status**: Phase 0 In Progress (Task 0.1 ✅ Complete, Task 0.2 In Progress)  
 **Next Steps**: Complete Task 0.2 - Database Schema Design
+Implementation  
+**Next Steps**: Complete Task 0.2 - Database Schema Design
+
+Implementation  
+**Next Steps**: Complete Task 0.2 - Database Schema Design
+ Schema Design
 Implementation  
 **Next Steps**: Complete Task 0.2 - Database Schema Design
 
