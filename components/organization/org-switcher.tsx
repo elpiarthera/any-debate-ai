@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal"
 import { useDevice } from "@/contexts/DeviceProvider"
+import { CreateOrganizationDialog } from "./create-organization-dialog"
 
 interface Organization {
   id: string
@@ -29,6 +30,7 @@ const mockOrganizations: Organization[] = [
 export function OrgSwitcher() {
   const [selectedOrg, setSelectedOrg] = useState<Organization>(mockOrganizations[0])
   const [isOpen, setIsOpen] = useState(false)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const { isMobile } = useDevice()
 
   const handleSelectOrg = (org: Organization) => {
@@ -38,7 +40,12 @@ export function OrgSwitcher() {
 
   const handleCreateOrg = () => {
     setIsOpen(false)
-    // TODO: Open create organization dialog
+    setIsCreateDialogOpen(true)
+  }
+
+  const handleSubmitOrganization = (orgData: any) => {
+    console.log("[v0] Creating organization:", orgData)
+    // TODO: Integrate with Clerk API when backend is ready
   }
 
   const OrgList = () => (
@@ -114,27 +121,35 @@ export function OrgSwitcher() {
   }
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className="
-            justify-between bg-transparent
-            min-h-[44px] min-w-[44px]
-            w-[200px] md:w-[240px]
-          "
-        >
-          <span className="truncate">{selectedOrg.name}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[280px]" align="start">
-        <DropdownMenuLabel>Organizations</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <div className="p-1">
-          <OrgList />
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            className="
+              justify-between bg-transparent
+              min-h-[44px] min-w-[44px]
+              w-[200px] md:w-[240px]
+            "
+          >
+            <span className="truncate">{selectedOrg.name}</span>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-[280px]" align="start">
+          <DropdownMenuLabel>Organizations</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <div className="p-1">
+            <OrgList />
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <CreateOrganizationDialog
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        onSubmit={handleSubmitOrganization}
+      />
+    </>
   )
 }
