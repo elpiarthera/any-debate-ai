@@ -2014,11 +2014,11 @@ const mockChatInsights = [
 ];
 \`\`\`
 
-**Status**:  not started
-**Completed**: TBD
-**Time Spent**: x hour
+**Status**: ✅ Completed
+**Completed**: October 13, 2025
+**Time Spent**: 1 hour
 
-**Files to create**:
+**Files Created**:
 - `components/chat/save-chat-as-memory-form.tsx` - Form to save chat history as memory
 
 **Features Implemented**:
@@ -2028,23 +2028,33 @@ const mockChatInsights = [
 - Stacked layout for chat summary, insights, and form fields
 - 48px minimum height inputs
 - 44px minimum height save button
+- Vertical button layout (stacked)
 
 **Desktop**:
 - Center modal
-- Side-by-side layout for summary and insights
-- Enhanced spacing
+- Enhanced spacing with larger padding
+- Horizontal button layout (inline)
+- Better visual hierarchy
 
 **Shared**:
-- Displays a summary of the chat conversation
-- Shows AI-extracted insights with edit functionality
-- Scope selector (organization/workspace/user)
-- Tags input
-- Save button triggers memory creation
+- Displays a summary of the chat conversation in a muted card
+- Shows AI-extracted insights with inline edit functionality
+- Edit mode toggle per insight with Edit/Check icon buttons
+- Editable title, category, content, and tags for each insight
+- Scope selector (organization/workspace/user) with permission-based visibility
+- Tags input with add/remove functionality
+- Save button triggers memory creation with all insights
+- Cancel button to close form
 
 **Implementation Notes**:
-- Uses AdaptiveModal for responsive behavior
-- Mock data for chat summary and insights
-- Basic form structure and validation (required fields)
+- Uses AdaptiveModal for responsive behavior (full-screen on mobile, center modal on desktop)
+- Mock data for chat summary and extracted insights
+- Inline editing with toggle button per insight card
+- Permission-aware scope selector (admins see org/workspace, members can only create user memory)
+- Tag management with add/remove functionality per insight
+- All interactive elements meet 44px minimum touch target requirement
+- Form inputs use 48px minimum height to prevent iOS zoom
+- Responsive button layout (stacked on mobile, inline on desktop)
 
 ---
 
@@ -2239,7 +2249,6 @@ All Phase 6 (Advanced Features) have been moved to a dedicated file for better o
 - [ ] `components/memory/memory-hierarchy-viz.tsx` (REMOVED per updates)
 - [ ] `components/memory/memory-loading-indicator.tsx` (REMOVED per updates)
 - [ ] `components/memory/memory-preview.tsx` (REMOVED per updates)
-- [ ] `components/memory/memory-reference-indicator.tsx` (REMOVED per updates)
 - [ ] `components/chat/save-chat-as-memory-form.tsx` - Uses AdaptiveModal
 - [ ] `components/artifacts/save-artifact-as-memory-form.tsx` - Uses AdaptiveModal
 - [ ] `components/debate/save-debate-result-form.tsx` - Uses AdaptiveModal
