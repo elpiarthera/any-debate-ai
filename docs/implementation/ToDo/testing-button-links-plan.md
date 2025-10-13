@@ -449,6 +449,91 @@ Verify that ALL buttons and links in the application are functional after implem
 
 ---
 
+### Page 14: Organization Overview (`app/dashboard/organization/page.tsx`)
+
+**URL**: `/dashboard/organization`
+
+#### Desktop Testing (1920x1080)
+- [ ] **Stats Cards** (4 cards)
+  - Total Members → Displays correct count
+  - Active Debates → Displays correct count
+  - Token Usage → Displays correct percentage
+  - Growth → Displays correct percentage
+
+- [ ] **Quick Action Cards** (3 cards)
+  - Click "Invite Members" → Opens InviteMemberDialog
+  - Click "Organization Settings" → Navigate to `/dashboard/organization/settings`
+  - Click "View Reports" → Navigate to analytics (mock)
+
+- [ ] **Recent Activity List**
+  - Displays last 5 activities
+  - Shows user name, action, and time
+  - Icons display correctly
+
+- [ ] **Member Preview**
+  - Displays first 5 members
+  - Shows avatar, name, and role
+  - Click "View All Members" → Navigate to `/dashboard/organization/members`
+
+#### Mobile Testing (375px)
+- [ ] **All cards/sections** - Same as desktop
+  - Verify: Stats cards stack vertically (1 column)
+  - Verify: Quick action cards stack vertically
+  - Verify: Touch targets ≥ 44px
+  - Verify: No horizontal scroll
+
+---
+
+### Page 15: Organization Settings (`app/dashboard/organization/settings/page.tsx`)
+
+**URL**: `/dashboard/organization/settings`
+
+#### Desktop Testing (1920x1080)
+- [ ] **General Settings Form**
+  - Organization Name input → Type works, validation works
+  - Organization Slug input → Type works, validation works
+  - Description textarea → Type works, character count updates
+  - Click "Save Changes" → Shows loading state, then success toast
+  - Click "Cancel" → Resets form, shows toast
+
+- [ ] **Danger Zone**
+  - Click "Delete Organization" → Opens delete confirmation dialog
+  - Dialog: Click "Cancel" → Closes dialog
+  - Dialog: Click "Delete Organization" → Confirms deletion (mock), shows toast
+
+#### Mobile Testing (375px)
+- [ ] **All form elements** - Same as desktop
+  - Verify: Form inputs full-width (48px height)
+  - Verify: Buttons full-width at bottom (44px height)
+  - Verify: Keyboard doesn't cover inputs
+  - Verify: Touch targets ≥ 44px
+
+---
+
+### Page 16: Organization Members (`app/dashboard/organization/members/page.tsx`)
+
+**URL**: `/dashboard/organization/members`
+
+#### Desktop Testing (1920x1080)
+- [ ] **Page Header**
+  - Click "Invite Member" button → Opens InviteMemberDialog
+  - Verify: Button is 44px min height
+
+- [ ] **Member List** (uses OrgMemberList component)
+  - Displays all members with avatar, name, role
+  - Click "Invite Member" (in list) → Opens InviteMemberDialog
+  - Click "Remove" (per member) → Opens delete confirmation dialog
+  - Click role dropdown → Opens role selector
+  - Select new role → Updates role (toast appears)
+
+#### Mobile Testing (375px)
+- [ ] **All buttons/list items** - Same as desktop
+  - Verify: Member cards stack vertically (80px min height)
+  - Verify: Touch targets ≥ 44px
+  - Verify: Invite button accessible
+
+---
+
 ## Component Testing
 
 ### Organization Components
@@ -678,7 +763,7 @@ Verify that ALL buttons and links in the application are functional after implem
 - [ ] All pages load correctly
 - [ ] Layout uses tablet breakpoint
 - [ ] All touch targets ≥ 44px
-- [ ] All inputs ≥ 48px
+- [ ] All inputs ≥ 48px (prevents iOS zoom)
 - [ ] Dialogs open as modals (not drawers)
 - [ ] Navigation works
 
