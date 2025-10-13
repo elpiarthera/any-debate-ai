@@ -117,7 +117,13 @@ Verify that ALL buttons and links in the application are functional after implem
   - Verify: Touch targets ≥ 44px
   - Verify: No horizontal scroll
 
----
+- [ ] **Exit Intent Popup**
+  - Triggers on mouse leave (if enabled)
+  - Triggers after delay (if enabled)
+  - Email input validation works
+  - "Send Me The Guide" button submits form
+  - Shows only once (if enabled)
+  - ⚠️ **TODO**: Email service integration (currently console.log only)
 
 ### Page 2: Dashboard (`app/dashboard/page.tsx`)
 
@@ -731,6 +737,101 @@ Verify that ALL buttons and links in the application are functional after implem
 - [ ] **Desktop**: Displays item name correctly
 - [ ] **Desktop**: "Cancel" button closes dialog
 - [ ] **Desktop**: "Delete" button confirms (toast appears)
+- [ ] **Mobile**: Touch targets ≥ 44px
+
+---
+
+### Artifact Components (EXPANDED)
+
+#### ArtifactExportModal (`components/artifacts/export/ArtifactExportModal.tsx`)
+- [ ] **Desktop**: Opens as center modal
+- [ ] **Desktop**: Format selection (PDF, PNG, CSV, JSON) works
+- [ ] **Desktop**: "Include Metadata" toggle works
+- [ ] **Desktop**: "Export" button downloads file (toast appears)
+- [ ] **Desktop**: "Cancel" button closes modal
+- [ ] **Mobile**: Opens as full-screen drawer
+- [ ] **Mobile**: All buttons ≥ 44px touch targets
+
+#### VersionHistoryPanel (`components/artifacts/version-history/VersionHistoryPanel.tsx`)
+- [ ] **Desktop**: Opens as center modal
+- [ ] **Desktop**: Search versions works
+- [ ] **Desktop**: Filter by author works
+- [ ] **Desktop**: Filter by change type works
+- [ ] **Desktop**: Click version → Selects version
+- [ ] **Desktop**: "Compare" button → Shows diff view
+- [ ] **Desktop**: "Restore" button → Restores version (toast appears)
+- [ ] **Desktop**: "Export" button → Downloads history JSON
+- [ ] **Mobile**: Touch targets ≥ 44px
+
+---
+
+### Template Components (EXPANDED)
+
+#### SaveTemplateModal (`components/templates/SaveTemplateModal.tsx`)
+- [ ] **Desktop**: Opens as center modal
+- [ ] **Desktop**: Form validation works (name, description required)
+- [ ] **Desktop**: Category selector works
+- [ ] **Desktop**: Conversation type selector works
+- [ ] **Desktop**: Add tag button works
+- [ ] **Desktop**: Remove tag button works
+- [ ] **Desktop**: Suggested tags clickable
+- [ ] **Desktop**: "Include current topic" checkbox works
+- [ ] **Desktop**: "Save Template" button submits (toast appears)
+- [ ] **Desktop**: "Cancel" button closes modal
+- [ ] **Mobile**: Touch targets ≥ 44px
+
+#### TemplateManagementPanel (`components/templates/TemplateManagementPanel.tsx`)
+- [ ] **Desktop**: "Select" button → Enters selection mode
+- [ ] **Desktop**: "Import" button → Opens file picker
+- [ ] **Desktop**: "Export All" button → Downloads JSON
+- [ ] **Desktop**: "Select All" button → Selects all templates
+- [ ] **Desktop**: "Export" button (selected) → Downloads selected
+- [ ] **Desktop**: "Delete" button (selected) → Deletes selected (confirmation)
+- [ ] **Desktop**: "Cancel" button → Exits selection mode
+- [ ] **Desktop**: "Duplicate" button (per template) → Creates copy (toast)
+- [ ] **Desktop**: "Share" button (per template) → Downloads JSON
+- [ ] **Desktop**: "Delete" button (per template) → Deletes (confirmation)
+- [ ] **Mobile**: Touch targets ≥ 44px
+
+---
+
+### Bookmark Components (EXPANDED)
+
+#### BookmarkEditor (`components/chat/bookmarks/BookmarkEditor.tsx`)
+- [ ] **Desktop**: Opens as center modal
+- [ ] **Desktop**: Collection selector works
+- [ ] **Desktop**: Note textarea works
+- [ ] **Desktop**: Add tag button works
+- [ ] **Desktop**: Remove tag button (per tag) works
+- [ ] **Desktop**: "Save Changes" button submits (toast appears)
+- [ ] **Desktop**: "Cancel" button closes modal
+- [ ] **Mobile**: Touch targets ≥ 44px
+
+#### CollectionManager (`components/chat/bookmarks/CollectionManager.tsx`)
+- [ ] **Desktop**: Opens as center modal
+- [ ] **Desktop**: "Create New Collection" button → Shows form
+- [ ] **Desktop**: Collection name input works
+- [ ] **Desktop**: Collection description textarea works
+- [ ] **Desktop**: Color selector works (8 colors)
+- [ ] **Desktop**: Icon selector works (10 icons)
+- [ ] **Desktop**: "Create" button → Creates collection (toast)
+- [ ] **Desktop**: "Update" button → Updates collection (toast)
+- [ ] **Desktop**: "Cancel" button → Hides form
+- [ ] **Desktop**: "Edit" button (per collection) → Shows edit form
+- [ ] **Desktop**: "Delete" button (per collection) → Deletes (confirmation)
+- [ ] **Mobile**: Touch targets ≥ 44px
+
+---
+
+### Comparison Components (NEW)
+
+#### ComparisonSelector (`components/chat/comparison/ComparisonSelector.tsx`)
+- [ ] **Desktop**: Opens as center modal
+- [ ] **Desktop**: Session checkboxes work
+- [ ] **Desktop**: Click session card → Toggles selection
+- [ ] **Desktop**: "Compare" button → Starts comparison (2-4 sessions)
+- [ ] **Desktop**: "Cancel" button → Closes modal
+- [ ] **Desktop**: Shows error if < 2 or > 4 sessions selected
 - [ ] **Mobile**: Touch targets ≥ 44px
 
 ---
