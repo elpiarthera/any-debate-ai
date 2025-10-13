@@ -1424,8 +1424,86 @@ const handleDownloadInvoice = (invoiceId: string) => {
 1. `components/dashboard/QuickActions.tsx` - Wire up card clicks
 2. `components/sessions/SessionList.tsx` - Wire up resume/delete
 3. `components/agents/AgentLibrary.tsx` - Wire up favorite/edit/delete
+4. `components/chat/ChatSidebar.tsx` - Wire up edit/delete session buttons
 
-**Changes Required**: [Similar pattern to above tasks]
+**Changes Required**:
+
+**ChatSidebar.tsx** (lines ~176, ~181):
+\`\`\`tsx
+const [showEditDialog, setShowEditDialog] = useState(false)
+const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+const [selectedSession, setSelectedSession] = useState<string | null>(null)
+
+const handleEditSession = (sessionId: string, e: React.MouseEvent) => {
+  e.stopPropagation()
+  setSelectedSession(sessionId)
+  setShowEditDialog(true)
+}
+
+const handleDeleteSession = (sessionId: string, e: React.MouseEvent) => {
+  e.stopPropagation()
+  setSelectedSession(sessionId)
+  setShowDeleteDialog(true)
+}
+
+<Button 
+  variant="ghost" 
+  size="sm" 
+  className="h-6 w-6 p-0 hover:bg-sidebar-accent"
+  onClick={(e) => handleEditSession(session.id, e)}
+>
+  <Edit3 className="h-3 w-3" />
+</Button>
+<Button
+  variant="ghost"
+  size="sm"
+  className="h-6 w-6 p-0 hover:bg-destructive/20 hover:text-destructive"
+  onClick={(e) => handleDeleteSession(session.id, e)}
+>
+  <Trash2 className="h-3 w-3" />
+</Button>
+
+<EditSessionDialog
+  open={showEditDialog}
+  onOpenChange={setShowEditDialog}
+  sessionId={selectedSession}
+  onSave={(newTitle) => {
+    console.log('[v0] Renaming session:', selectedSession, newTitle)
+    toast({ title: 'Session renamed', description: `Session renamed to "${newTitle}"` })
+  }}
+/>
+<DeleteConfirmationDialog
+  open={showDeleteDialog}
+  onOpenChange={setShowDeleteDialog}
+  onConfirm={() => {
+    if (selectedSession) {
+      console.log('[v0] Deleting session:', selectedSession)
+      toast({ title: 'Session deleted', description: 'The session has been deleted.' })
+    }
+  }}
+  itemName={sessions.find(s => s.id === selectedSession)?.title || 'session'}
+  itemType="Session"
+/>
+\`\`\`
+
+**QuickActions.tsx**:
+\`\`\`tsx
+const handleNewDebate = () => {
+  window.location.href = '/debates'
+}
+
+const handleViewAgents = () => {
+  window.location.href = '/agents'
+}
+
+const handleViewAnalytics = () => {
+  window.location.href = '/analytics'
+}
+
+<Card onClick={handleNewDebate} className="cursor-pointer hover:bg-accent transition-colors">
+  {/* ... existing card content ... */}
+</Card>
+\`\`\`
 
 ---
 
@@ -1450,10 +1528,24 @@ const handleDownloadInvoice = (invoiceId: string) => {
 **Estimated Time**: 30 minutes
 
 **Files to Update**:
-1. `components/chat/MessageBubble.tsx` - Wire up share handler
-2. `components/debate/ModelColumn.tsx` - Wire up retry/stop handlers
+1. `components/debate/MessageBubble.tsx` - Wire up share handler (if needed)
+2. `components/debate/ModelColumn.tsx` - Already working (retry/stop handlers exist)
 
-**Changes Required**: [Similar pattern to above tasks]
+**Changes Required**: 
+
+**MessageBubble.tsx**:
+\`\`\`tsx
+// Verify handleShare is properly wired up
+const handleShare = (targetModelId: string) => {
+  if (onShare) {
+    onShare(message.content, targetModelId)
+    toast({
+      title: 'Message shared',
+      description: `Message shared with ${otherModels.find(m => m.id === targetModelId)?.name}`,
+    })
+  }
+}
+\`\`\`
 
 ---
 
