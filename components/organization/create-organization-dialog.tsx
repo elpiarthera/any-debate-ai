@@ -33,6 +33,8 @@ export function CreateOrganizationDialog({ isOpen, onClose, onSubmit }: CreateOr
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  console.log("[v0] CreateOrganizationDialog render - isOpen:", isOpen, "isMobile:", isMobile)
+
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()

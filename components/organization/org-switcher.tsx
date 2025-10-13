@@ -33,14 +33,19 @@ export function OrgSwitcher() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const { isMobile } = useDevice()
 
+  console.log("[v0] OrgSwitcher render - isMobile:", isMobile, "isCreateDialogOpen:", isCreateDialogOpen)
+
   const handleSelectOrg = (org: Organization) => {
+    console.log("[v0] handleSelectOrg called:", org.name)
     setSelectedOrg(org)
     setIsOpen(false)
   }
 
   const handleCreateOrg = () => {
+    console.log("[v0] handleCreateOrg called - opening create dialog")
     setIsOpen(false)
     setIsCreateDialogOpen(true)
+    console.log("[v0] isCreateDialogOpen set to true")
   }
 
   const handleSubmitOrganization = (orgData: any) => {
@@ -77,7 +82,12 @@ export function OrgSwitcher() {
       ))}
 
       <button
-        onClick={handleCreateOrg}
+        onClick={(e) => {
+          console.log("[v0] Create Organization button clicked")
+          e.preventDefault()
+          e.stopPropagation()
+          handleCreateOrg()
+        }}
         className="
           w-full flex items-center gap-2
           min-h-[80px] px-4 py-3
@@ -117,9 +127,13 @@ export function OrgSwitcher() {
           <OrgList />
         </AdaptiveModal>
 
+        {console.log("[v0] Rendering CreateOrganizationDialog (mobile) - isOpen:", isCreateDialogOpen)}
         <CreateOrganizationDialog
           isOpen={isCreateDialogOpen}
-          onClose={() => setIsCreateDialogOpen(false)}
+          onClose={() => {
+            console.log("[v0] CreateOrganizationDialog onClose called")
+            setIsCreateDialogOpen(false)
+          }}
           onSubmit={handleSubmitOrganization}
         />
       </>
@@ -151,9 +165,13 @@ export function OrgSwitcher() {
         </DropdownMenuContent>
       </DropdownMenu>
 
+      {console.log("[v0] Rendering CreateOrganizationDialog (desktop) - isOpen:", isCreateDialogOpen)}
       <CreateOrganizationDialog
         isOpen={isCreateDialogOpen}
-        onClose={() => setIsCreateDialogOpen(false)}
+        onClose={() => {
+          console.log("[v0] CreateOrganizationDialog onClose called")
+          setIsCreateDialogOpen(false)
+        }}
         onSubmit={handleSubmitOrganization}
       />
     </>
