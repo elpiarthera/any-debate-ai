@@ -1127,8 +1127,6 @@ export function OrgMemberList() {
 - Mock data includes role, join date, and contact information
 - Responsive layouts using mobile-first Tailwind classes
 
----
-
 #### Task 3.9: Multi-Org Support UI
 
 **File**: `components/organization/multi-org-indicator.tsx`
@@ -1174,6 +1172,42 @@ export function MultiOrgIndicator({ orgCount }: { orgCount: number }) {
 \`\`\`
 
 **Placement**: Header, organization switcher
+
+**Status**: ✅ Completed
+**Completed**: October 12, 2025
+**Time Spent**: 30 minutes
+
+**Files Created**:
+- `components/organization/multi-org-indicator.tsx`
+
+**Features Implemented**:
+
+**Mobile**:
+- Clickable badge opens org switcher modal (44px touch target)
+- Compact badge display with icon and count
+- Full-screen org switcher in AdaptiveModal
+- Touch-optimized button wrapper
+
+**Desktop**:
+- Badge shows full text ("X organizations")
+- Inline org switcher dropdown
+- Larger icon sizing (16px vs 12px)
+- No modal needed
+
+**Shared**:
+- Only displays if user has more than 1 organization
+- Building2 icon for visual indicator
+- Secondary badge variant for subtle appearance
+- Responsive text sizing (text-xs on mobile, text-sm on desktop)
+
+**Implementation Notes**:
+- Uses useDevice hook for mobile-first behavior
+- Mobile badge wrapped in Button for proper touch targets
+- Desktop shows inline OrgSwitcher component
+- AdaptiveModal provides mobile drawer experience
+- Component accepts orgCount and currentOrgName props
+- Automatically hides when orgCount <= 1
+
 
 ---
 
@@ -1345,6 +1379,7 @@ export function TokenBalanceWarning({ balance }: { balance: number }) {
 - Dismiss button (if added): `min-h-[44px] min-w-[44px]`
 
 ---
+
 **Removing overcomplicated Phase 4 tasks (4.6 Overage Display, 4.7 Payment Success/Failure Pages, 4.8 Subscription Status Badge)**
 **Simplifying Phase 4 to match PHASE_7_POLAR_PAYMENTS_PLAN.md scope exactly**
 
