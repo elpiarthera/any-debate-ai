@@ -2079,32 +2079,44 @@ const mockChatInsights = [
 **Time Spent**: 1 hour
 
 **Files Created**:
-- `components/artifacts/save-artifact-as-memory-form.tsx` - Form to save artifact as memory
+- `components/artifacts/save-artifact-as-memory-form.tsx` - Form to save artifact as memory with artifact preview and AI-extracted learnings
 
 **Features Implemented**:
 
 **Mobile**:
 - Full-screen modal with AdaptiveModal
 - Stacked layout for artifact preview, learnings, and form fields
-- 48px minimum height inputs
-- 44px minimum height save button
+- 48px minimum height inputs (title, tags)
+- 44px minimum height buttons (save, cancel, edit)
+- Compact artifact preview with type-specific icons
+- Vertical scrolling for long content
 
 **Desktop**:
-- Center modal
-- Side-by-side layout for preview and learnings
-- Enhanced spacing
+- Center modal (max-w-2xl)
+- Enhanced spacing between sections
+- Larger artifact preview
+- Side-by-side layout for form fields where appropriate
+- Hover states on interactive elements
 
 **Shared**:
-- Displays a preview of the artifact
-- Shows AI-extracted learnings with edit functionality
-- Scope selector (organization/workspace/user)
-- Tags input
-- Save button triggers memory creation
+- Displays artifact preview with type-specific icons (document, chart, checklist, table)
+- Shows AI-extracted learnings with inline editing capabilities
+- Permission-based scope selector (admins: workspace/organization, members: user only)
+- Tags input with add/remove functionality
+- Real-time character count for title field
+- Form validation with error messages
+- Save button triggers memory creation with all form data
+- Cancel button closes modal without saving
 
 **Implementation Notes**:
-- Uses AdaptiveModal for responsive behavior
-- Mock data for artifact preview and learnings
-- Basic form structure and validation
+- Uses AdaptiveModal for responsive full-screen on mobile, centered modal on desktop
+- Mock data includes artifact preview and AI-extracted learnings
+- Permission-aware scope selection based on user role (admin vs member)
+- Inline editing for learnings with textarea expansion
+- Tag management with visual chips and remove buttons
+- All touch targets meet 44px minimum requirement
+- All inputs meet 48px minimum height requirement
+- Mobile-first Tailwind classes throughout
 
 ---
 
