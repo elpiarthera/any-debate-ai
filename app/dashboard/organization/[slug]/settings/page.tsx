@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState } from "react"
+import { useState } from "react"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -30,8 +30,8 @@ const mockOrganization = {
   description: "Building the future of AI debates",
 }
 
-export default function OrganizationSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params)
+export default function OrganizationSettingsPage({ params }: { params: { slug: string } }) {
+  const { slug } = params
   const { isMobile } = useDevice()
   const { toast } = useToast()
   const router = useRouter()

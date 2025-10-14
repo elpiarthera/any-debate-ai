@@ -1,6 +1,5 @@
 "use client"
 
-import { use } from "react"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -31,8 +30,8 @@ const mockMembers = [
   { id: "5", name: "Charlie Davis", role: "member" },
 ]
 
-export default function OrganizationPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params)
+export default function OrganizationPage({ params }: { params: { slug: string } }) {
+  const { slug } = params
   const { isMobile } = useDevice()
   const router = useRouter()
 
