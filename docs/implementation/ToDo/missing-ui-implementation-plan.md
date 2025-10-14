@@ -64,7 +64,7 @@ UI_UX_SPRINT_PLAN focused on building UI components but didn't wire up all inter
 - Task 1.4: Organization Members Page - ✅ COMPLETE
 
 ### Phase 2: Required Dialogs/Modals (4 hours)
-- Task 2.1: Invite Member Dialog
+- Task 2.1: Invite Member Dialog - ✅ COMPLETE
 - Task 2.2: Change Plan Dialog
 - Task 2.3: Cancel Subscription Dialog
 - Task 2.4: Purchase Tokens Dialog
@@ -284,137 +284,64 @@ const mockMembers = [
 
 ### Task 2.1: Invite Member Dialog
 
-**Status**: ❌ NOT STARTED
+**Status**: ✅ COMPLETE
 **Priority**: P1 - HIGH
 **Estimated Time**: 45 minutes
+**Completed**: October 14, 2025
 
 **File**: `components/organization/invite-member-dialog.tsx`
 
-**Architecture**: Use AdaptiveModal
+**Architecture**: Uses AdaptiveModal (Drawer on mobile, Dialog on desktop)
 
 **Touch Targets**:
-- All inputs: `min-h-[48px]`
-- All buttons: `min-h-[44px]`
+- All inputs: `min-h-[48px]` (prevents iOS zoom)
+- All buttons: `min-h-[44px]` (WCAG 2.1 Level AA)
+- Form spacing: `gap-4` (adequate spacing)
 
-**Features**:
-- Email input with validation
-- Role selector (Admin/Member)
-- Send invite button
-- Mock invite function + success toast
+**Features Implemented**:
+- Email input with real-time validation
+- Role selector (Admin/Member) with descriptions
+- Send invitation button with loading state
+- Cancel button to close dialog
+- Mock invite function with 1s delay
+- Success toast notification
+- Error handling and display
+- Disabled state during submission
 
-**Implementation**:
+**Mobile Specifications**:
+- Bottom drawer presentation
+- Stacked button layout (vertical)
+- Full-width inputs (48px height)
+- Touch-optimized spacing
+- Gesture-based dismissal
 
-\`\`\`tsx
-// components/organization/invite-member-dialog.tsx
-'use client'
+**Desktop Specifications**:
+- Center modal presentation
+- Side-by-side buttons (horizontal)
+- Standard input widths
+- Hover states on interactive elements
+- Click outside to dismiss
 
-import { useState } from 'react'
-import { useDevice } from '@/contexts/DeviceProvider'
-import { AdaptiveModal } from '@/components/adaptive/AdaptiveModal'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useToast } from '@/hooks/use-toast'
+**Validation Rules**:
+- Email is required
+- Email must be valid format (regex: `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`)
+- Role is required (defaults to "member")
 
-interface InviteMemberDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
-
-export function InviteMemberDialog({ open, onOpenChange }: InviteMemberDialogProps) {
-  const { isMobile } = useDevice()
-  const { toast } = useToast()
-  const [email, setEmail] = useState('')
-  const [role, setRole] = useState<'admin' | 'member'>('member')
-  const [errors, setErrors] = useState<Record<string, string>>({})
-
-  const validate = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!email.trim()) {
-      newErrors.email = 'Email is required'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Invalid email address'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!validate()) return
-
-    console.log('[v0] Inviting member:', { email, role })
-
-    toast({
-      title: 'Invitation sent',
-      description: `An invitation has been sent to ${email}.`,
-    })
-
-    setEmail('')
-    setRole('member')
-    setErrors({})
-    onOpenChange(false)
-  }
-
-  return (
-    <AdaptiveModal
-      open={open}
-      onOpenChange={onOpenChange}
-      title="Invite Team Member"
-      description="Send an invitation to join your organization."
-    >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email Address *</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="colleague@example.com"
-            className="min-h-[48px]"
-            aria-invalid={!!errors.email}
-          />
-          {errors.email && (
-            <p className="text-sm text-destructive">{errors.email}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="role">Role *</Label>
-          <Select value={role} onValueChange={(value: 'admin' | 'member') => setRole(value)}>
-            <SelectTrigger className="min-h-[48px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="member">Member</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className={`flex gap-3 ${isMobile ? 'flex-col' : 'flex-row justify-end'}`}>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="min-h-[44px]"
-          >
-            Cancel
-          </Button>
-          <Button type="submit" className="min-h-[44px]">
-            Send Invitation
-          </Button>
-        </div>
-      </form>
-    </AdaptiveModal>
-  )
-}
+**Mock Implementation**:
+\`\`\`typescript
+// Mock API call with 1s delay
+await new Promise((resolve) => setTimeout(resolve, 1000))
+console.log("[v0] Inviting member:", { email, role })
+toast({
+  title: "Invitation sent",
+  description: `An invitation has been sent to ${email}.`,
+})
 \`\`\`
+
+**Integration Points**:
+- Used in `app/dashboard/organization/[slug]/members/page.tsx`
+- Triggered by "Invite Member" button in page header
+- Shares state with parent component via `open` and `onOpenChange` props
 
 ---
 
