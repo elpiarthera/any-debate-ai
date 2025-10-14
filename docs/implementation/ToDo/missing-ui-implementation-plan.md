@@ -341,7 +341,7 @@ export function CreateOrganizationDialog({
 **Priority**: P0 - CRITICAL
 **Estimated Time**: 1 hour
 
-**File**: `app/dashboard/organization/page.tsx`
+**File**: `app/dashboard/organization/[slug]/page.tsx`
 
 **Architecture**: Use DashboardLayout wrapper with AdminOnlyGuard
 
@@ -387,7 +387,7 @@ const mockRecentActivity = [
 **Implementation**:
 
 \`\`\`tsx
-// app/dashboard/organization/page.tsx
+// app/dashboard/organization/[slug]/page.tsx
 'use client'
 
 import { useDevice } from '@/contexts/DeviceProvider'
@@ -598,7 +598,7 @@ export default function OrganizationPage() {
 **Priority**: P0 - CRITICAL
 **Estimated Time**: 1 hour
 
-**File**: `app/dashboard/organization/settings/page.tsx`
+**File**: `app/dashboard/organization/[slug]/settings/page.tsx`
 
 **Architecture**: Use DashboardLayout wrapper with AdminOnlyGuard
 
@@ -639,7 +639,7 @@ const mockOrganization = {
 **Implementation**:
 
 \`\`\`tsx
-// app/dashboard/organization/settings/page.tsx
+// app/dashboard/organization/[slug]/settings/page.tsx
 'use client'
 
 import { useState } from 'react'
@@ -898,7 +898,7 @@ export default function OrganizationSettingsPage() {
 **Priority**: P0 - CRITICAL
 **Estimated Time**: 30 minutes
 
-**File**: `app/dashboard/organization/members/page.tsx`
+**File**: `app/dashboard/organization/[slug]/members/page.tsx`
 
 **Architecture**: Use DashboardLayout wrapper with AdminOnlyGuard, wrap existing OrgMemberList component
 
@@ -924,7 +924,7 @@ export default function OrganizationSettingsPage() {
 **Implementation**:
 
 \`\`\`tsx
-// app/dashboard/organization/members/page.tsx
+// app/dashboard/organization/[slug]/members/page.tsx
 'use client'
 
 import { useState } from 'react'
@@ -1647,4 +1647,6 @@ const handleShare = (targetModelId: string) => {
 ---
 
 **Last Updated**: October 14, 2025
+**Total Estimated Time**: 15.5 hours
+2025
 **Total Estimated Time**: 15.5 hours
