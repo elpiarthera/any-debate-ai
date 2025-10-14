@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { AdaptiveGrid } from "@/components/adaptive/AdaptiveGrid"
 import { CreditCard, Download, Calendar, TrendingUp, Users, Zap, CheckCircle2, AlertCircle } from "lucide-react"
+import { ChangePlanDialog } from "@/components/billing/change-plan-dialog"
+import { useState } from "react"
 
 const mockSubscription = {
   plan: "Pro",
@@ -39,6 +41,7 @@ const mockPaymentHistory = [
 
 export default function BillingPage() {
   const { isMobile } = useDevice()
+  const [showChangePlanDialog, setShowChangePlanDialog] = useState(false)
 
   const usagePercentage = (mockTokenBalance.used / mockTokenBalance.monthlyAllocation) * 100
 
@@ -87,7 +90,11 @@ export default function BillingPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2">
-              <Button variant="outline" className="flex-1 min-h-[44px] bg-transparent">
+              <Button
+                variant="outline"
+                className="flex-1 min-h-[44px] bg-transparent"
+                onClick={() => setShowChangePlanDialog(true)}
+              >
                 Change Plan
               </Button>
               <Button variant="ghost" className="flex-1 min-h-[44px]">
@@ -205,6 +212,9 @@ export default function BillingPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* ChangePlanDialog */}
+      <ChangePlanDialog open={showChangePlanDialog} onOpenChange={setShowChangePlanDialog} currentPlan="pro" />
     </div>
   )
 }
