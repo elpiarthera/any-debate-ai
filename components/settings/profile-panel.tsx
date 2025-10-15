@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Save, Upload } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 interface Profile {
   name: string
@@ -19,6 +20,7 @@ interface Profile {
 
 export function ProfilePanel() {
   const { isMobile } = useDevice()
+  const { toast } = useToast()
 
   const [profile, setProfile] = useState<Profile>({
     name: "John Doe",
@@ -31,9 +33,13 @@ export function ProfilePanel() {
 
   const handleSave = async () => {
     setIsSaving(true)
-    // Mock save - in real app would call API
+    console.log("[v0] Saving profile:", profile)
     await new Promise((resolve) => setTimeout(resolve, 1000))
     setIsSaving(false)
+    toast({
+      title: "Profile saved",
+      description: "Your profile has been updated successfully.",
+    })
   }
 
   const updateProfile = <K extends keyof Profile>(key: K, value: Profile[K]) => {

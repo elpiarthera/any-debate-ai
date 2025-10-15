@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Save } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 interface Preferences {
   theme: "light" | "dark" | "system"
@@ -20,6 +21,7 @@ interface Preferences {
 
 export function PreferencesPanel() {
   const { isMobile } = useDevice()
+  const { toast } = useToast()
 
   const [preferences, setPreferences] = useState<Preferences>({
     theme: "dark",
@@ -34,9 +36,14 @@ export function PreferencesPanel() {
 
   const handleSave = async () => {
     setIsSaving(true)
+    console.log("[v0] Saving preferences:", preferences)
     // Mock save - in real app would call API
     await new Promise((resolve) => setTimeout(resolve, 1000))
     setIsSaving(false)
+    toast({
+      title: "Preferences saved",
+      description: "Your preferences have been updated successfully.",
+    })
   }
 
   const updatePreference = <K extends keyof Preferences>(key: K, value: Preferences[K]) => {
