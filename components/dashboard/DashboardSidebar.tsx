@@ -37,12 +37,12 @@ const navigationItems = [
   { href: "/debates", icon: MessageSquare, label: "Debates", badge: "3", adminOnly: false },
   { href: "/agents", icon: Users, label: "Agents", badge: null, adminOnly: false },
   { href: "/templates", icon: FileText, label: "Templates", badge: null, adminOnly: false },
-  { href: "/memory", icon: Brain, label: "Memory", badge: "New", adminOnly: true },
+  { href: "/dashboard/memory", icon: Brain, label: "Memory", badge: "New", adminOnly: true },
   { href: "/analytics", icon: BarChart3, label: "Analytics", badge: null, adminOnly: false },
   { href: "/export", icon: Download, label: "Export", badge: null, adminOnly: false },
   { href: "/marketplace", icon: Store, label: "Marketplace", badge: null, adminOnly: false },
   { href: "/settings", icon: Settings, label: "Settings", badge: null, adminOnly: false },
-  { href: "/billing", icon: CreditCard, label: "Billing", badge: null, adminOnly: true },
+  { href: "/dashboard/billing", icon: CreditCard, label: "Billing", badge: null, adminOnly: true },
 ]
 
 const quickActions = [
