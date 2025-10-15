@@ -8,6 +8,8 @@ import { MemoryCardMobile } from "./memory-card-mobile"
 import { MemorySearch } from "../shared/memory-search"
 import { MemoryFilters } from "../shared/memory-filters"
 import { EditMemoryDialog } from "../edit-memory-dialog"
+import { AddMemoryForm } from "../add-memory-form"
+import { DocumentUpload } from "../document-upload"
 import type { Memory, MemoryScope, MemoryCategory } from "../memory-dashboard"
 
 interface MemoryListMobileProps {
@@ -20,6 +22,9 @@ interface MemoryListMobileProps {
   onCategoryChange: (category: MemoryCategory | "all") => void
   onEditMemory?: (memoryId: string, updatedMemory: Partial<Memory>) => void
   onDeleteMemory?: (memoryId: string) => void
+  onAddMemory?: (memoryData: any) => void
+  onMemoriesFromDocument?: (memories: any[]) => void
+  onMemoriesFromUrl?: (memories: any[]) => void
 }
 
 export function MemoryListMobile({
@@ -32,10 +37,16 @@ export function MemoryListMobile({
   onCategoryChange,
   onEditMemory,
   onDeleteMemory,
+  onAddMemory,
+  onMemoriesFromDocument,
+  onMemoriesFromUrl,
 }: MemoryListMobileProps) {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null)
+  const [isAddMemoryOpen, setIsAddMemoryOpen] = useState(false)
+  const [isDocumentUploadOpen, setIsDocumentUploadOpen] = useState(false)
+  const [showUrlScraper, setShowUrlScraper] = useState(false)
 
   const handleEdit = (memory: Memory) => {
     setSelectedMemory(memory)
@@ -50,7 +61,6 @@ export function MemoryListMobile({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header with search */}
       <div className="sticky top-0 z-10 bg-background border-b p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">Memory</h1>
@@ -67,7 +77,6 @@ export function MemoryListMobile({
         <MemorySearch value={searchQuery} onChange={onSearchChange} />
       </div>
 
-      {/* Memory list */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {memories.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
@@ -81,20 +90,28 @@ export function MemoryListMobile({
         )}
       </div>
 
-      {/* Floating action buttons */}
       <div className="fixed bottom-6 right-4 flex flex-col gap-3">
-        <Button size="icon" variant="outline" className="h-12 w-12 rounded-full shadow-lg bg-transparent">
+        <Button
+          size="icon"
+          variant="outline"
+          className="h-12 w-12 rounded-full shadow-lg bg-transparent"
+          onClick={() => setIsDocumentUploadOpen(true)}
+        >
           <Upload className="h-5 w-5" />
         </Button>
-        <Button size="icon" variant="outline" className="h-12 w-12 rounded-full shadow-lg bg-transparent">
+        <Button
+          size="icon"
+          variant="outline"
+          className="h-12 w-12 rounded-full shadow-lg bg-transparent"
+          onClick={() => setShowUrlScraper(true)}
+        >
           <LinkIcon className="h-5 w-5" />
         </Button>
-        <Button size="icon" className="h-14 w-14 rounded-full shadow-lg">
+        <Button size="icon" className="h-14 w-14 rounded-full shadow-lg" onClick={() => setIsAddMemoryOpen(true)}>
           <Plus className="h-6 w-6" />
         </Button>
       </div>
 
-      {/* Filters modal */}
       <AdaptiveModal isOpen={isFiltersOpen} onClose={() => setIsFiltersOpen(false)} title="Filters">
         <MemoryFilters
           selectedScope={selectedScope}
@@ -104,7 +121,6 @@ export function MemoryListMobile({
         />
       </AdaptiveModal>
 
-      {/* Edit Memory Dialog */}
       <EditMemoryDialog
         isOpen={isEditDialogOpen}
         onClose={() => {
@@ -114,6 +130,37 @@ export function MemoryListMobile({
         onSave={handleSave}
         memory={selectedMemory}
       />
+
+      <AddMemoryForm
+        isOpen={isAddMemoryOpen}
+        onClose={() => setIsAddMemoryOpen(false)}
+        onSubmit={(memoryData) => {
+          onAddMemory?.(memoryData)
+          setIsAddMemoryOpen(false)
+        }}
+      />
+
+      <DocumentUpload
+        isOpen={isDocumentUploadOpen}
+        onClose={() => setIsDocumentUploadOpen(false)}
+        onMemoriesApproved={(memories) => {
+          onMemoriesFromDocument?.(memories)
+          setIsDocumentUploadOpen(false)
+        }}
+      />
+
+      <AdaptiveModal
+        isOpen={showUrlScraper}
+        onClose={() => setShowUrlScraper(false)}
+        title="Import from URL"
+        description="Scrape content from a URL and extract memories"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Enter a URL to scrape content and automatically extract memories using AI.
+          </p>
+        </div>
+      </AdaptiveModal>
     </div>
   )
 }

@@ -113,6 +113,76 @@ export function MemoryDashboard() {
     })
   }
 
+  const handleAddMemory = (memoryData: any) => {
+    const newMemory: Memory = {
+      id: Date.now().toString(),
+      title: memoryData.title,
+      category: memoryData.category,
+      content: memoryData.content,
+      tags: memoryData.tags,
+      source: memoryData.source,
+      sourceUrl: memoryData.sourceUrl,
+      usageCount: 0,
+      createdAt: Date.now(),
+      scope: memoryData.scope,
+      createdBy: "current-user@company.com",
+    }
+
+    setMemories((prev) => [newMemory, ...prev])
+
+    console.log("[v0] Adding new memory:", newMemory)
+    toast({
+      title: "Memory created",
+      description: `"${memoryData.title}" has been added successfully.`,
+    })
+  }
+
+  const handleMemoriesFromDocument = (extractedMemories: any[]) => {
+    const newMemories: Memory[] = extractedMemories.map((memory) => ({
+      id: Date.now().toString() + Math.random(),
+      title: memory.title,
+      category: memory.category as MemoryCategory,
+      content: memory.content,
+      tags: memory.tags,
+      source: "document" as MemorySource,
+      usageCount: 0,
+      createdAt: Date.now(),
+      scope: "workspace" as MemoryScope,
+      createdBy: "current-user@company.com",
+    }))
+
+    setMemories((prev) => [...newMemories, ...prev])
+
+    console.log("[v0] Adding memories from document:", newMemories)
+    toast({
+      title: "Memories imported",
+      description: `${newMemories.length} memories have been added from the document.`,
+    })
+  }
+
+  const handleMemoriesFromUrl = (extractedMemories: any[]) => {
+    const newMemories: Memory[] = extractedMemories.map((memory) => ({
+      id: Date.now().toString() + Math.random(),
+      title: memory.title,
+      category: memory.category as MemoryCategory,
+      content: memory.content,
+      tags: [],
+      source: "url" as MemorySource,
+      usageCount: 0,
+      createdAt: Date.now(),
+      scope: "workspace" as MemoryScope,
+      createdBy: "current-user@company.com",
+    }))
+
+    setMemories((prev) => [...newMemories, ...prev])
+
+    console.log("[v0] Adding memories from URL:", newMemories)
+    toast({
+      title: "Memories imported",
+      description: `${newMemories.length} memories have been added from the URL.`,
+    })
+  }
+
   const sharedProps = {
     memories: filteredMemories,
     searchQuery,
@@ -123,6 +193,9 @@ export function MemoryDashboard() {
     onCategoryChange: setSelectedCategory,
     onEditMemory: handleEditMemory,
     onDeleteMemory: handleDeleteMemory,
+    onAddMemory: handleAddMemory,
+    onMemoriesFromDocument: handleMemoriesFromDocument,
+    onMemoriesFromUrl: handleMemoriesFromUrl,
   }
 
   return isMobile ? <MemoryListMobile {...sharedProps} /> : <MemoryGridDesktop {...sharedProps} />
