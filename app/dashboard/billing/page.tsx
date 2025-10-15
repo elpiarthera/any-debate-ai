@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress"
 import { AdaptiveGrid } from "@/components/adaptive/AdaptiveGrid"
 import { CreditCard, Download, Calendar, TrendingUp, Users, Zap, CheckCircle2, AlertCircle } from "lucide-react"
 import { ChangePlanDialog } from "@/components/billing/change-plan-dialog"
+import { PurchaseTokensDialog } from "@/components/billing/purchase-tokens-dialog"
 import { useState } from "react"
 
 const mockSubscription = {
@@ -42,6 +43,7 @@ const mockPaymentHistory = [
 export default function BillingPage() {
   const { isMobile } = useDevice()
   const [showChangePlanDialog, setShowChangePlanDialog] = useState(false)
+  const [showPurchaseTokensDialog, setShowPurchaseTokensDialog] = useState(false)
 
   const usagePercentage = (mockTokenBalance.used / mockTokenBalance.monthlyAllocation) * 100
 
@@ -138,7 +140,7 @@ export default function BillingPage() {
               </div>
             )}
 
-            <Button className="w-full min-h-[44px]">
+            <Button className="w-full min-h-[44px]" onClick={() => setShowPurchaseTokensDialog(true)}>
               <TrendingUp className="h-4 w-4 mr-2" />
               Purchase Tokens
             </Button>
@@ -162,7 +164,11 @@ export default function BillingPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-3xl md:text-4xl font-bold">${pkg.price}</div>
-                <Button className="w-full min-h-[44px]" variant={pkg.popular ? "default" : "outline"}>
+                <Button
+                  className="w-full min-h-[44px]"
+                  variant={pkg.popular ? "default" : "outline"}
+                  onClick={() => setShowPurchaseTokensDialog(true)}
+                >
                   Purchase
                 </Button>
               </CardContent>
@@ -215,6 +221,9 @@ export default function BillingPage() {
 
       {/* ChangePlanDialog */}
       <ChangePlanDialog open={showChangePlanDialog} onOpenChange={setShowChangePlanDialog} currentPlan="pro" />
+
+      {/* PurchaseTokensDialog */}
+      <PurchaseTokensDialog open={showPurchaseTokensDialog} onOpenChange={setShowPurchaseTokensDialog} />
     </div>
   )
 }

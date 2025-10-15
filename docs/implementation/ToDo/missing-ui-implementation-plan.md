@@ -67,8 +67,8 @@ UI_UX_SPRINT_PLAN focused on building UI components but didn't wire up all inter
 - Task 2.1: Invite Member Dialog - ✅ COMPLETE
 - Task 2.2: Change Plan Dialog - ✅ COMPLETE
 - Task 2.3: Cancel Subscription Dialog - ✅ COMPLETE
-- Task 2.4: Purchase Tokens Dialog
-- Task 2.5: Edit Memory Dialog
+- Task 2.4: Purchase Tokens Dialog - ✅ COMPLETE
+- Task 2.5: Edit Memory Dialog - ✅ COMPLETE
 - Task 2.6: Delete Confirmation Dialog
 
 ### Phase 3: Wire Up Non-Functional Handlers (6 hours)
@@ -514,41 +514,147 @@ toast({
 
 ### Task 2.4: Purchase Tokens Dialog
 
-**Status**: ❌ NOT STARTED
+**Status**: ✅ COMPLETE
 **Priority**: P1 - HIGH
 **Estimated Time**: 45 minutes
+**Completed**: October 14, 2025
 
 **File**: `components/billing/purchase-tokens-dialog.tsx`
 
-**Architecture**: Uses AdaptiveModal
+**Architecture**: Uses AdaptiveModal (Drawer on mobile, Dialog on desktop)
 
-**Features**:
-- Display token packages (4 options)
-- Payment method selector (mock)
-- Purchase button
-- Mock purchase function
+**Touch Targets**:
+- All package selection buttons: `min-h-[120px]` on desktop, `min-h-[100px]` on mobile
+- All radio buttons: `min-h-[24px] min-w-[24px]`
+- All action buttons: `min-h-[44px]` (WCAG 2.1 Level AA)
+- Payment method cards: `min-h-[60px]`
+- Form spacing: `gap-3` (adequate spacing)
 
-**Implementation**: [Similar structure showing token package cards with selection]
+**Features Implemented**:
+- Display 4 token packages (50K, 150K, 300K, 1M tokens)
+- Package selection with visual feedback
+- "Most Popular" badge on 150K package
+- Payment method selector (Credit Card, PayPal)
+- Purchase summary with total
+- Purchase button with loading state
+- Cancel button to close dialog
+- Mock purchase function with 1.5s delay
+- Success toast notification
+- Disabled state during submission
+- Polar.sh branding footer (for future integration)
+
+**Mobile Specifications**:
+- Bottom drawer presentation
+- 1 column layout for package cards
+- Stacked button layout (vertical)
+- Touch-optimized spacing
+- Gesture-based dismissal
+
+**Desktop Specifications**:
+- Center modal presentation
+- 2 column grid for package cards
+- Side-by-side buttons (horizontal)
+- Hover states on package cards
+- Click outside to dismiss
+
+**Token Packages**:
+\`\`\`typescript
+const tokenPackages = [
+  { id: "1", tokens: 50000, price: 10, popular: false, description: "Perfect for small projects" },
+  { id: "2", tokens: 150000, price: 25, popular: true, description: "Most popular choice" },
+  { id: "3", tokens: 300000, price: 45, popular: false, description: "Great for teams" },
+  { id: "4", tokens: 1000000, price: 120, popular: false, description: "Enterprise volume" },
+]
+\`\`\`
+
+**Payment Methods**:
+\`\`\`typescript
+const paymentMethods = [
+  { id: "card", name: "Credit Card", description: "Visa, Mastercard, Amex" },
+  { id: "paypal", name: "PayPal", description: "Pay with PayPal balance" },
+]
+\`\`\`
+
+**Mock Implementation**:
+\`\`\`typescript
+// Mock API call with 1.5s delay
+await new Promise((resolve) => setTimeout(resolve, 1500))
+console.log("[v0] Purchasing tokens:", { package: selectedPackageData, paymentMethod })
+toast({
+  title: "Purchase successful",
+  description: `${(selectedPackageData!.tokens / 1000).toFixed(0)}K tokens have been added to your account.`,
+})
+\`\`\`
+
+**Integration Points**:
+- Used in `app/dashboard/billing/page.tsx`
+- Triggered by "Purchase Tokens" button in Token Balance card
+- Triggered by "Purchase" buttons in Token Packages section
+- Shares state with parent component via `open` and `onOpenChange` props
+
+**Future Integration**:
+- Will integrate with Polar.sh for payment processing
+- Polar.sh branding already included in footer
+- Mock implementation ready to be replaced with real API calls
 
 ---
 
 ### Task 2.5: Edit Memory Dialog
 
-**Status**: ❌ NOT STARTED
+**Status**: ✅ COMPLETE
 **Priority**: P1 - HIGH
 **Estimated Time**: 45 minutes
+**Completed**: October 14, 2025
 
 **File**: `components/memory/edit-memory-dialog.tsx`
 
 **Architecture**: Reuse add-memory-form.tsx logic
 
-**Features**:
+**Touch Targets**:
+- All inputs: `min-h-[48px]` (prevents iOS zoom)
+- All buttons: `min-h-[44px]` (WCAG 2.1 Level AA)
+- Form spacing: `gap-4` (adequate spacing)
+
+**Features Implemented**:
 - Pre-fill with existing memory data
 - All fields from add-memory-form
 - Save button
 - Mock update function
 
-**Implementation**: [Wrapper around add-memory-form with pre-filled data]
+**Mobile Specifications**:
+- Bottom drawer presentation
+- Stacked form layout (vertical)
+- Full-width inputs (48px height)
+- Full-width buttons at bottom (44px height)
+- Touch-optimized spacing
+- Gesture-based dismissal
+
+**Desktop Specifications**:
+- Center modal presentation
+- Standard input widths
+- Right-aligned buttons (side-by-side)
+- Hover states on interactive elements
+- Click outside to dismiss
+
+**Mock Implementation**:
+\`\`\`typescript
+// Mock API call with 1s delay
+await new Promise((resolve) => setTimeout(resolve, 1000))
+console.log("[v0] Editing memory:", { memoryId, newData })
+toast({
+  title: "Memory updated",
+  description: `Memory "${memoryId}" has been successfully updated.`,
+})
+\`\`\`
+
+**Integration Points**:
+- Used in `app/dashboard/memory/[id]/page.tsx`
+- Triggered by "Edit" button in memory list
+- Shares state with parent component via `open` and `onOpenChange` props
+
+**Future Integration**:
+- Will integrate with backend for real memory updates
+- Mock implementation ready to be replaced with real API calls
 
 ---
 
@@ -561,6 +667,10 @@ toast({
 **File**: `components/shared/delete-confirmation-dialog.tsx`
 
 **Architecture**: Reusable AlertDialog component
+
+**Touch Targets**:
+- All buttons: `min-h-[44px]` (WCAG 2.1 Level AA)
+- Form spacing: `gap-4` (adequate spacing)
 
 **Features**:
 - Item name display
@@ -982,22 +1092,22 @@ const handleShare = (targetModelId: string) => {
 
 1. ✅ **Audit Complete** - Found 4 missing components + 40+ non-functional handlers
 2. ✅ **Phase 1 Complete** - Created organization pages with mobile-first architecture (4/4 tasks, 3.5 hours)
-3. 🔄 **Phase 2 In Progress** - Create required dialogs (3/6 tasks complete, ~2.25 hours)
+3. 🔄 **Phase 2 In Progress** - Create required dialogs (5/6 tasks complete, ~3.75 hours)
    - ✅ Task 2.1: Invite Member Dialog
    - ✅ Task 2.2: Change Plan Dialog
    - ✅ Task 2.3: Cancel Subscription Dialog
-   - ⏭️ Task 2.4: Purchase Tokens Dialog (Next)
-   - ⏭️ Task 2.5: Edit Memory Dialog
+   - ✅ Task 2.4: Purchase Tokens Dialog
+   - ✅ Task 2.5: Edit Memory Dialog
    - ⏭️ Task 2.6: Delete Confirmation Dialog
 4. ⏭️ **Phase 3** - Wire up all handlers (6 hours)
 5. ⏭️ **Phase 4** - Test everything (2 hours)
 6. ⏭️ **Backend Integration** - Can start after UI is 100% functional
 
-**Progress**: 7/42 tasks complete (16.7%)
-**Time Spent**: ~5.75 hours
-**Time Remaining**: ~9.75 hours
+**Progress**: 9/42 tasks complete (21.4%)
+**Time Spent**: ~7.25 hours
+**Time Remaining**: ~8.25 hours
 
 **Last Updated**: October 14, 2025
 **Total Estimated Time**: 15.5 hours
 **Phase 1 Completion**: October 14, 2025
-**Phase 2 Progress**: 3/6 tasks complete
+**Phase 2 Progress**: 5/6 tasks complete
