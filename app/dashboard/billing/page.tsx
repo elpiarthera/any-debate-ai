@@ -9,6 +9,8 @@ import { AdaptiveGrid } from "@/components/adaptive/AdaptiveGrid"
 import { CreditCard, Download, Calendar, TrendingUp, Users, Zap, CheckCircle2, AlertCircle } from "lucide-react"
 import { ChangePlanDialog } from "@/components/billing/change-plan-dialog"
 import { PurchaseTokensDialog } from "@/components/billing/purchase-tokens-dialog"
+import { CancelSubscriptionDialog } from "@/components/billing/cancel-subscription-dialog"
+import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
 
 const mockSubscription = {
@@ -42,10 +44,26 @@ const mockPaymentHistory = [
 
 export default function BillingPage() {
   const { isMobile } = useDevice()
+  const { toast } = useToast()
   const [showChangePlanDialog, setShowChangePlanDialog] = useState(false)
   const [showPurchaseTokensDialog, setShowPurchaseTokensDialog] = useState(false)
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
 
   const usagePercentage = (mockTokenBalance.used / mockTokenBalance.monthlyAllocation) * 100
+
+  const handleCancelSubscription = () => {
+    setShowCancelDialog(true)
+  }
+
+  const handleDownloadInvoice = (invoiceId: string) => {
+    console.log("[v0] Downloading invoice:", invoiceId)
+    toast({
+      title: "Download started",
+      description: "Your invoice is being downloaded.",
+    })
+    // Mock download - in production, this would trigger actual file download
+    // window.open(`/api/invoices/${invoiceId}/download`, '_blank')
+  }
 
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
@@ -99,7 +117,7 @@ export default function BillingPage() {
               >
                 Change Plan
               </Button>
-              <Button variant="ghost" className="flex-1 min-h-[44px]">
+              <Button variant="ghost" className="flex-1 min-h-[44px]" onClick={handleCancelSubscription}>
                 Cancel Subscription
               </Button>
             </div>
@@ -208,7 +226,12 @@ export default function BillingPage() {
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
                     <span className="text-sm font-medium">${payment.amount}</span>
                   </div>
-                  <Button variant="ghost" size={isMobile ? "sm" : "default"} className="min-h-[44px] min-w-[44px]">
+                  <Button
+                    variant="ghost"
+                    size={isMobile ? "sm" : "default"}
+                    className="min-h-[44px] min-w-[44px]"
+                    onClick={() => handleDownloadInvoice(payment.invoice)}
+                  >
                     <Download className="h-4 w-4" />
                     {!isMobile && <span className="ml-2">Download</span>}
                   </Button>
@@ -224,6 +247,13 @@ export default function BillingPage() {
 
       {/* PurchaseTokensDialog */}
       <PurchaseTokensDialog open={showPurchaseTokensDialog} onOpenChange={setShowPurchaseTokensDialog} />
+
+      {/* CancelSubscriptionDialog */}
+      <CancelSubscriptionDialog
+        open={showCancelDialog}
+        onOpenChange={setShowCancelDialog}
+        currentPlan={mockSubscription.plan}
+      />
     </div>
   )
 }

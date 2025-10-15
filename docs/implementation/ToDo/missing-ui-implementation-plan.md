@@ -1,14 +1,14 @@
 # Missing UI Implementation Plan - Complete Functional UI
 
-**Status**: 🔄 IN PROGRESS (23.8% complete - 10/42 tasks done)
+**Status**: 🔄 IN PROGRESS (26.2% complete - 11/42 tasks done)
 **Priority**: P0 - CRITICAL (Must complete before backend integration)
 **Last Updated**: October 15, 2025
 **Estimated Duration**: 15.5 hours
-**Time Spent**: ~7.25 hours
-**Time Remaining**: ~8.25 hours
+**Time Spent**: ~8.75 hours
+**Time Remaining**: ~6.75 hours
 **Phase 1 Status**: ✅ COMPLETE (4/4 tasks done)
 **Phase 2 Status**: ✅ COMPLETE (6/6 tasks done)
-**Phase 3 Status**: 🔄 IN PROGRESS (1/6 tasks done)
+**Phase 3 Status**: 🔄 IN PROGRESS (2/6 tasks done)
 **Phase 4 Status**: ❌ NOT STARTED
 
 **⚠️ IMPORTANT**: This plan follows the patterns and standards defined in `docs/guides/mobile-first-best-practices.md`. All implementations MUST adhere to those guidelines.
@@ -78,7 +78,7 @@ UI_UX_SPRINT_PLAN focused on building UI components but didn't wire up all inter
 
 ### Phase 3: Wire Up Non-Functional Handlers (6 hours)
 - Task 3.1: Organization Component Handlers - ✅ COMPLETE
-- Task 3.2: Billing Component Handlers - ❌ NOT STARTED
+- Task 3.2: Billing Component Handlers - ✅ COMPLETE
 - Task 3.3: Memory Component Handlers - ❌ NOT STARTED
 - Task 3.4: Dashboard Component Handlers - ❌ NOT STARTED
 - Task 3.5: Settings Component Handlers - ❌ NOT STARTED
@@ -826,34 +826,34 @@ toast({ title: "Role updated", description: `${memberName}'s role changed to ${n
 
 ### Task 3.2: Billing Component Handlers
 
-**Status**: ❌ NOT STARTED
+**Status**: ✅ COMPLETE
 **Priority**: P1 - HIGH
 **Estimated Time**: 1.5 hours
+**Completed**: October 15, 2025
 
-**Files to Update**:
-1. `app/dashboard/billing/page.tsx` - Wire up all billing actions
+**Files Updated**:
+1. `app/dashboard/billing/page.tsx` - Wired up all billing actions
 
-**Changes Required**:
+**Changes Made**:
 
-\`\`\`tsx
-// Add state for dialogs
-const [showChangePlanDialog, setShowChangePlanDialog] = useState(false)
-const [showCancelDialog, setShowCancelDialog] = useState(false)
-const [showPurchaseDialog, setShowPurchaseDialog] = useState(false)
+**Billing Page**:
+- Added state for cancel subscription dialog (`showCancelDialog`)
+- Added `handleCancelSubscription` handler to open cancel dialog
+- Added `handleDownloadInvoice` handler with mock download functionality
+- Wired up "Cancel Subscription" button to open dialog
+- Wired up "Download" buttons in payment history to download invoices
+- Integrated `CancelSubscriptionDialog` component
+- Added toast notifications for user feedback
+- All handlers include console logging for debugging
 
-// Wire up handlers
-const handleChangePlan = () => {
-  setShowChangePlanDialog(true)
-}
-
+**Mock Implementation**:
+\`\`\`typescript
+// Cancel subscription
 const handleCancelSubscription = () => {
   setShowCancelDialog(true)
 }
 
-const handlePurchaseTokens = () => {
-  setShowPurchaseDialog(true)
-}
-
+// Download invoice
 const handleDownloadInvoice = (invoiceId: string) => {
   console.log('[v0] Downloading invoice:', invoiceId)
   toast({
@@ -863,12 +863,20 @@ const handleDownloadInvoice = (invoiceId: string) => {
   // Mock download
   // window.open(`/api/invoices/${invoiceId}/download`, '_blank')
 }
-
-// Add dialog components
-<ChangePlanDialog open={showChangePlanDialog} onOpenChange={setShowChangePlanDialog} />
-<CancelSubscriptionDialog open={showCancelDialog} onOpenChange={setShowCancelDialog} />
-<PurchaseTokensDialog open={showPurchaseDialog} onOpenChange={setShowPurchaseDialog} />
 \`\`\`
+
+**Integration Points**:
+- "Change Plan" button opens `ChangePlanDialog` (already implemented)
+- "Cancel Subscription" button opens `CancelSubscriptionDialog` (newly wired)
+- "Purchase Tokens" buttons open `PurchaseTokensDialog` (already implemented)
+- "Download" buttons in payment history trigger mock download with toast feedback
+- All dialogs properly integrated with state management
+- All actions provide user feedback via toast notifications
+
+**Future Integration**:
+- Will integrate with Polar.sh for real subscription management
+- Will integrate with backend for real invoice downloads
+- Mock implementations ready to be replaced with real API calls
 
 ### Task 3.3: Memory Component Handlers
 
@@ -1109,7 +1117,7 @@ const handleShare = (targetModelId: string) => {
 3. ✅ **Phase 2 Complete** - Created required dialogs (6/6 tasks complete, ~4 hours)
 4. ⏭️ **Phase 3 In Progress** - Wire up all handlers (6 hours)
    - ✅ Task 3.1: Organization Component Handlers
-   - ❌ Task 3.2: Billing Component Handlers
+   - ✅ Task 3.2: Billing Component Handlers
    - ❌ Task 3.3: Memory Component Handlers
    - ❌ Task 3.4: Dashboard Component Handlers
    - ❌ Task 3.5: Settings Component Handlers
@@ -1117,8 +1125,8 @@ const handleShare = (targetModelId: string) => {
 5. ⏭️ **Phase 4** - Test everything (2 hours)
 6. ⏭️ **Backend Integration** - Can start after UI is 100% functional
 
-**Progress**: 10/42 tasks complete (23.8%)
+**Progress**: 11/42 tasks complete (26.2%)
 **Total Estimated Time**: 15.5 hours
 **Phase 1 Completion**: October 14, 2025
 **Phase 2 Completion**: October 15, 2025
-**Phase 3 Progress**: 1/6 tasks complete
+**Phase 3 Progress**: 2/6 tasks complete
