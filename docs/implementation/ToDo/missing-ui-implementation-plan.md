@@ -1,14 +1,14 @@
 # Missing UI Implementation Plan - Complete Functional UI
 
-**Status**: 🔄 IN PROGRESS (33.3% complete - 14/42 tasks done)
+**Status**: 🔄 IN PROGRESS (35.7% complete - 15/42 tasks done)
 **Priority**: P0 - CRITICAL (Must complete before backend integration)
 **Last Updated**: October 15, 2025
 **Estimated Duration**: 15.5 hours
-**Time Spent**: ~8.75 hours
-**Time Remaining**: ~6.75 hours
+**Time Spent**: ~9.25 hours
+**Time Remaining**: ~6.25 hours
 **Phase 1 Status**: ✅ COMPLETE (4/4 tasks done)
 **Phase 2 Status**: ✅ COMPLETE (6/6 tasks done)
-**Phase 3 Status**: 🔄 IN PROGRESS (4/6 tasks done)
+**Phase 3 Status**: 🔄 IN PROGRESS (5/6 tasks done)
 **Phase 4 Status**: ❌ NOT STARTED
 
 **⚠️ IMPORTANT**: This plan follows the patterns and standards defined in `docs/guides/mobile-first-best-practices.md`. All implementations MUST adhere to those guidelines.
@@ -82,7 +82,7 @@ UI_UX_SPRINT_PLAN focused on building UI components but didn't wire up all inter
 - Task 3.3: Memory Component Handlers - ✅ COMPLETE
 - Task 3.4: Dashboard Component Handlers - ✅ COMPLETE
 - Task 3.5: Settings Component Handlers - ✅ COMPLETE
-- Task 3.6: Chat/Debate Component Handlers - ❌ NOT STARTED
+- Task 3.6: Chat/Debate Component Handlers - ✅ COMPLETE
 
 ### Phase 4: Testing & Verification (2 hours)
 - Task 4.1: Functional Testing - ❌ NOT STARTED
@@ -1100,29 +1100,54 @@ toast({
 
 ### Task 3.6: Chat/Debate Component Handlers
 
-**Status**: ❌ NOT STARTED
+**Status**: ✅ COMPLETE
 **Priority**: P2 - MEDIUM
 **Estimated Time**: 30 minutes
+**Completed**: October 15, 2025
 
-**Files to Update**:
-1. `components/debate/MessageBubble.tsx` - Wire up share handler (if needed)
+**Files Updated**:
+1. `components/debate/MessageBubble.tsx` - Enhanced share handler with logging and better feedback
 2. `components/debate/ModelColumn.tsx` - Already working (retry/stop handlers exist)
 
-**Changes Required**: 
+**Changes Made**:
 
 **MessageBubble.tsx**:
-\`\`\`tsx
-// Verify handleShare is properly wired up
+- Added console logging to `handleShare` function
+- Enhanced toast notification to show target model name
+- Logs message ID, target model ID, target model name, and content length
+- Improved user feedback with specific model name in toast
+
+**ModelColumn.tsx**:
+- Already has working `retry` handler
+- Already has working `stopStreaming` handler
+- No changes needed
+
+**Mock Implementation**:
+\`\`\`typescript
+// Share message to another model
 const handleShare = (targetModelId: string) => {
-  if (onShare) {
-    onShare(message.content, targetModelId)
-    toast({
-      title: 'Message shared',
-      description: `Message shared with ${otherModels.find(m => m.id === targetModelId)?.name}`,
-    })
-  }
+  const targetModel = otherModels.find((m) => m.id === targetModelId)
+  console.log("[v0] Sharing message to model:", {
+    messageId: message.id,
+    targetModelId,
+    targetModelName: targetModel?.name,
+    contentLength: message.content.length,
+  })
+  onShare(message.content, targetModelId)
+  toast.success(\`Message shared to \${targetModel?.name || "model"}!\`)
 }
 \`\`\`
+
+**Integration Points**:
+- Share button in MessageBubble opens dropdown with other models
+- Clicking a model shares the message content to that model
+- Console logging for debugging
+- Toast notification with specific model name for user feedback
+- Retry and stop handlers already working in ModelColumn
+
+**Future Integration**:
+- Will integrate with backend for real message sharing
+- Mock implementation ready to be replaced with real API calls
 
 ---
 
@@ -1218,18 +1243,18 @@ const handleShare = (targetModelId: string) => {
 1. ✅ **Audit Complete** - Found 4 missing components + 40+ non-functional handlers
 2. ✅ **Phase 1 Complete** - Created organization pages with mobile-first architecture (4/4 tasks, 3.5 hours)
 3. ✅ **Phase 2 Complete** - Created required dialogs (6/6 tasks complete, ~4 hours)
-4. ⏭️ **Phase 3 In Progress** - Wire up all handlers (6 hours)
+4. ✅ **Phase 3 Complete** - Wire up all handlers (6 hours)
    - ✅ Task 3.1: Organization Component Handlers
    - ✅ Task 3.2: Billing Component Handlers
    - ✅ Task 3.3: Memory Component Handlers
    - ✅ Task 3.4: Dashboard Component Handlers
    - ✅ Task 3.5: Settings Component Handlers
-   - ❌ Task 3.6: Chat/Debate Component Handlers
+   - ✅ Task 3.6: Chat/Debate Component Handlers
 5. ⏭️ **Phase 4** - Test everything (2 hours)
 6. ⏭️ **Backend Integration** - Can start after UI is 100% functional
 
-**Progress**: 14/42 tasks complete (33.3%)
+**Progress**: 15/42 tasks complete (35.7%)
 **Total Estimated Time**: 15.5 hours
 **Phase 1 Completion**: October 14, 2025
 **Phase 2 Completion**: October 15, 2025
-**Phase 3 Progress**: 4/6 tasks complete
+**Phase 3 Completion**: October 15, 2025
