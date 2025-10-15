@@ -6,6 +6,9 @@ import { UserPlus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { MemberListMobile } from "@/components/organization/mobile/MemberListMobile"
 import { MemberListDesktop } from "@/components/organization/desktop/MemberListDesktop"
+import { InviteMemberDialog } from "@/components/organization/invite-member-dialog"
+import { DeleteConfirmationDialog } from "@/components/shared/delete-confirmation-dialog"
+import { useState } from "react"
 
 // Mock data
 const mockMembers = [
@@ -21,21 +24,32 @@ export default function OrganizationMembersPage({ params }: { params: { slug: st
   const { toast } = useToast()
   const { isMobile } = useDevice()
 
+  const [showInviteDialog, setShowInviteDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [selectedMember, setSelectedMember] = useState<{ id: string; name: string } | null>(null)
+
   const handleInviteMember = () => {
-    toast({
-      title: "Invite member",
-      description: "Invite member dialog would open here.",
-    })
+    setShowInviteDialog(true)
   }
 
   const handleRemoveMember = (memberId: string, memberName: string) => {
-    toast({
-      title: "Member removed",
-      description: `${memberName} has been removed from your organization.`,
-    })
+    setSelectedMember({ id: memberId, name: memberName })
+    setShowDeleteDialog(true)
+  }
+
+  const confirmRemoveMember = () => {
+    if (selectedMember) {
+      console.log("[v0] Removing member:", selectedMember.id)
+      toast({
+        title: "Member removed",
+        description: `${selectedMember.name} has been removed from your organization.`,
+      })
+      setSelectedMember(null)
+    }
   }
 
   const handleChangeRole = (memberId: string, memberName: string, newRole: string) => {
+    console.log("[v0] Changing role:", { memberId, newRole })
     toast({
       title: "Role updated",
       description: `${memberName}'s role has been changed to ${newRole}.`,
@@ -82,6 +96,16 @@ export default function OrganizationMembersPage({ params }: { params: { slug: st
           </CardContent>
         </Card>
       )}
+
+      <InviteMemberDialog open={showInviteDialog} onOpenChange={setShowInviteDialog} />
+
+      <DeleteConfirmationDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={confirmRemoveMember}
+        itemName={selectedMember?.name || "member"}
+        itemType="Member"
+      />
     </div>
   )
 }

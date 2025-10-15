@@ -1,13 +1,15 @@
 # Missing UI Implementation Plan - Complete Functional UI
 
-**Status**: 🔄 IN PROGRESS (21.4% complete - 9/42 tasks done)
+**Status**: 🔄 IN PROGRESS (23.8% complete - 10/42 tasks done)
 **Priority**: P0 - CRITICAL (Must complete before backend integration)
 **Last Updated**: October 15, 2025
 **Estimated Duration**: 15.5 hours
 **Time Spent**: ~7.25 hours
 **Time Remaining**: ~8.25 hours
 **Phase 1 Status**: ✅ COMPLETE (4/4 tasks done)
-**Phase 2 Status**: 🔄 IN PROGRESS (5/6 tasks done)
+**Phase 2 Status**: ✅ COMPLETE (6/6 tasks done)
+**Phase 3 Status**: 🔄 IN PROGRESS (1/6 tasks done)
+**Phase 4 Status**: ❌ NOT STARTED
 
 **⚠️ IMPORTANT**: This plan follows the patterns and standards defined in `docs/guides/mobile-first-best-practices.md`. All implementations MUST adhere to those guidelines.
 
@@ -75,16 +77,16 @@ UI_UX_SPRINT_PLAN focused on building UI components but didn't wire up all inter
 - Task 2.6: Delete Confirmation Dialog - ✅ COMPLETE
 
 ### Phase 3: Wire Up Non-Functional Handlers (6 hours)
-- Task 3.1: Organization Component Handlers
-- Task 3.2: Billing Component Handlers
-- Task 3.3: Memory Component Handlers
-- Task 3.4: Dashboard Component Handlers
-- Task 3.5: Settings Component Handlers
-- Task 3.6: Chat/Debate Component Handlers
+- Task 3.1: Organization Component Handlers - ✅ COMPLETE
+- Task 3.2: Billing Component Handlers - ❌ NOT STARTED
+- Task 3.3: Memory Component Handlers - ❌ NOT STARTED
+- Task 3.4: Dashboard Component Handlers - ❌ NOT STARTED
+- Task 3.5: Settings Component Handlers - ❌ NOT STARTED
+- Task 3.6: Chat/Debate Component Handlers - ❌ NOT STARTED
 
 ### Phase 4: Testing & Verification (2 hours)
-- Task 4.1: Functional Testing
-- Task 4.2: Mobile Testing
+- Task 4.1: Functional Testing - ❌ NOT STARTED
+- Task 4.2: Mobile Testing - ❌ NOT STARTED
 
 ---
 
@@ -759,75 +761,68 @@ interface DeleteConfirmationDialogProps {
 
 ### Task 3.1: Organization Component Handlers
 
-**Status**: ❌ NOT STARTED
+**Status**: ✅ COMPLETE
 **Priority**: P1 - HIGH
 **Estimated Time**: 1 hour
+**Completed**: October 15, 2025
 
-**Files to Update**:
-1. `components/organization/org-switcher.tsx` - Wire up create organization
-2. `components/organization/org-member-list.tsx` - Wire up invite/remove/change role
+**Files Updated**:
+1. `components/organization/create-organization-dialog.tsx` - Created new dialog component
+2. `components/dashboard/OrgSwitcher.tsx` - Wired up create organization dialog
+3. `app/dashboard/organization/[slug]/members/page.tsx` - Wired up invite/remove member dialogs
 
-**Changes Required**:
+**Changes Made**:
 
-**org-switcher.tsx**:
-\`\`\`tsx
-// Line 41: Replace TODO with actual implementation
-const [showCreateDialog, setShowCreateDialog] = useState(false)
+**Create Organization Dialog**:
+- Created new `CreateOrganizationDialog` component using AdaptiveModal
+- Form fields: name, slug (auto-generated from name), description
+- Real-time validation with error messages
+- Auto-generates slug from organization name
+- Mock API call with 1s delay
+- Success toast notification
+- Navigates to new organization page after creation
+- Touch targets: 48px inputs, 44px buttons
 
-const handleCreateOrg = () => {
-  setIsOpen(false)
-  setShowCreateDialog(true)
-}
+**OrgSwitcher**:
+- Added state for create organization dialog
+- Updated `handleCreateOrg` to open dialog instead of navigating
+- Integrated `CreateOrganizationDialog` component
 
-// Add dialog component
-<CreateOrganizationDialog
-  open={showCreateDialog}
-  onOpenChange={setShowCreateDialog}
-/>
+**Members Page**:
+- Added state for invite and delete dialogs
+- Updated `handleInviteMember` to open invite dialog
+- Updated `handleRemoveMember` to open delete confirmation dialog
+- Added `confirmRemoveMember` function with mock API call
+- Updated `handleChangeRole` with mock API call and console logging
+- Integrated `InviteMemberDialog` and `DeleteConfirmationDialog` components
+
+**Mock Implementation**:
+\`\`\`typescript
+// Create organization
+await new Promise((resolve) => setTimeout(resolve, 1000))
+console.log("[v0] Creating organization:", formData)
+router.push(`/dashboard/organization/${formData.slug}`)
+
+// Remove member
+console.log("[v0] Removing member:", memberId)
+toast({ title: "Member removed", description: `${memberName} has been removed.` })
+
+// Change role
+console.log("[v0] Changing role:", { memberId, newRole })
+toast({ title: "Role updated", description: `${memberName}'s role changed to ${newRole}.` })
 \`\`\`
 
-**org-member-list.tsx**:
-\`\`\`tsx
-// Add state for dialogs
-const [showInviteDialog, setShowInviteDialog] = useState(false)
-const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-const [selectedMember, setSelectedMember] = useState<string | null>(null)
+**Integration Points**:
+- OrgSwitcher now opens CreateOrganizationDialog when "New Organization" button is clicked
+- Members page now opens InviteMemberDialog when "Invite Member" button is clicked
+- Members page now opens DeleteConfirmationDialog when removing a member
+- All handlers include console logging for debugging
+- All actions provide user feedback via toast notifications
 
-// Wire up handlers
-const handleInvite = () => {
-  setShowInviteDialog(true)
-}
-
-const handleRemove = (memberId: string) => {
-  setSelectedMember(memberId)
-  setShowDeleteDialog(true)
-}
-
-const handleChangeRole = (memberId: string, newRole: string) => {
-  console.log('[v0] Changing role:', { memberId, newRole })
-  toast({
-    title: 'Role updated',
-    description: `Member role has been changed to ${newRole}.`,
-  })
-}
-
-// Add dialog components
-<InviteMemberDialog open={showInviteDialog} onOpenChange={setShowInviteDialog} />
-<DeleteConfirmationDialog
-  open={showDeleteDialog}
-  onOpenChange={setShowDeleteDialog}
-  onConfirm={() => {
-    if (selectedMember) {
-      console.log('[v0] Removing member:', selectedMember)
-      toast({ title: 'Member removed' })
-    }
-  }}
-  itemName="member"
-  itemType="Member"
-/>
-\`\`\`
-
----
+**Future Integration**:
+- Will integrate with backend for real organization creation
+- Will integrate with backend for real member management
+- Mock implementations ready to be replaced with real API calls
 
 ### Task 3.2: Billing Component Handlers
 
@@ -875,8 +870,6 @@ const handleDownloadInvoice = (invoiceId: string) => {
 <PurchaseTokensDialog open={showPurchaseDialog} onOpenChange={setShowPurchaseDialog} />
 \`\`\`
 
----
-
 ### Task 3.3: Memory Component Handlers
 
 **Status**: ❌ NOT STARTED
@@ -890,8 +883,6 @@ const handleDownloadInvoice = (invoiceId: string) => {
 4. `components/memory/url-scraper.tsx` - Wire up scrape handler
 
 **Changes Required**: [Similar pattern to above tasks]
-
----
 
 ### Task 3.4: Dashboard Component Handlers
 
@@ -984,8 +975,6 @@ const handleViewAnalytics = () => {
 </Card>
 \`\`\`
 
----
-
 ### Task 3.5: Settings Component Handlers
 
 **Status**: ❌ NOT STARTED
@@ -997,8 +986,6 @@ const handleViewAnalytics = () => {
 2. `components/settings/preferences-panel.tsx` - Wire up save handler
 
 **Changes Required**: [Similar pattern to above tasks]
-
----
 
 ### Task 3.6: Chat/Debate Component Handlers
 
@@ -1119,18 +1106,19 @@ const handleShare = (targetModelId: string) => {
 
 1. ✅ **Audit Complete** - Found 4 missing components + 40+ non-functional handlers
 2. ✅ **Phase 1 Complete** - Created organization pages with mobile-first architecture (4/4 tasks, 3.5 hours)
-3. 🔄 **Phase 2 In Progress** - Create required dialogs (5/6 tasks complete, ~3.75 hours)
-   - ✅ Task 2.1: Invite Member Dialog
-   - ✅ Task 2.2: Change Plan Dialog
-   - ✅ Task 2.3: Cancel Subscription Dialog
-   - ✅ Task 2.4: Purchase Tokens Dialog
-   - ✅ Task 2.5: Edit Memory Dialog
-   - ✅ Task 2.6: Delete Confirmation Dialog
-4. ⏭️ **Phase 3** - Wire up all handlers (6 hours)
+3. ✅ **Phase 2 Complete** - Created required dialogs (6/6 tasks complete, ~4 hours)
+4. ⏭️ **Phase 3 In Progress** - Wire up all handlers (6 hours)
+   - ✅ Task 3.1: Organization Component Handlers
+   - ❌ Task 3.2: Billing Component Handlers
+   - ❌ Task 3.3: Memory Component Handlers
+   - ❌ Task 3.4: Dashboard Component Handlers
+   - ❌ Task 3.5: Settings Component Handlers
+   - ❌ Task 3.6: Chat/Debate Component Handlers
 5. ⏭️ **Phase 4** - Test everything (2 hours)
 6. ⏭️ **Backend Integration** - Can start after UI is 100% functional
 
-**Progress**: 9/42 tasks complete (21.4%)
+**Progress**: 10/42 tasks complete (23.8%)
 **Total Estimated Time**: 15.5 hours
 **Phase 1 Completion**: October 14, 2025
-**Phase 2 Progress**: 5/6 tasks complete
+**Phase 2 Completion**: October 15, 2025
+**Phase 3 Progress**: 1/6 tasks complete
