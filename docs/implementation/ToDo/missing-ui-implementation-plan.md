@@ -1,6 +1,6 @@
 # Missing UI Implementation Plan - Complete Functional UI
 
-**Status**: 🔄 IN PROGRESS (28.6% complete - 12/42 tasks done)
+**Status**: 🔄 IN PROGRESS (31.0% complete - 13/42 tasks done)
 **Priority**: P0 - CRITICAL (Must complete before backend integration)
 **Last Updated**: October 15, 2025
 **Estimated Duration**: 15.5 hours
@@ -8,7 +8,7 @@
 **Time Remaining**: ~6.75 hours
 **Phase 1 Status**: ✅ COMPLETE (4/4 tasks done)
 **Phase 2 Status**: ✅ COMPLETE (6/6 tasks done)
-**Phase 3 Status**: 🔄 IN PROGRESS (3/6 tasks done)
+**Phase 3 Status**: 🔄 IN PROGRESS (4/6 tasks done)
 **Phase 4 Status**: ❌ NOT STARTED
 
 **⚠️ IMPORTANT**: This plan follows the patterns and standards defined in `docs/guides/mobile-first-best-practices.md`. All implementations MUST adhere to those guidelines.
@@ -80,7 +80,7 @@ UI_UX_SPRINT_PLAN focused on building UI components but didn't wire up all inter
 - Task 3.1: Organization Component Handlers - ✅ COMPLETE
 - Task 3.2: Billing Component Handlers - ✅ COMPLETE
 - Task 3.3: Memory Component Handlers - ✅ COMPLETE
-- Task 3.4: Dashboard Component Handlers - ❌ NOT STARTED
+- Task 3.4: Dashboard Component Handlers - ✅ COMPLETE
 - Task 3.5: Settings Component Handlers - ❌ NOT STARTED
 - Task 3.6: Chat/Debate Component Handlers - ❌ NOT STARTED
 
@@ -975,94 +975,71 @@ toast({ title: "Memories imported", description: `${newMemories.length} memories
 
 ### Task 3.4: Dashboard Component Handlers
 
-**Status**: ❌ NOT STARTED
+**Status**: ✅ COMPLETE
 **Priority**: P2 - MEDIUM
 **Estimated Time**: 1 hour
+**Completed**: October 15, 2025
 
-**Files to Update**:
-1. `components/dashboard/QuickActions.tsx` - Wire up card clicks
-2. `components/sessions/SessionList.tsx` - Wire up resume/delete
-3. `components/agents/AgentLibrary.tsx` - Wire up favorite/edit/delete
-4. `components/chat/ChatSidebar.tsx` - Wire up edit/delete session buttons
+**Files Updated**:
+1. `components/chat/edit-session-dialog.tsx` - Created new dialog component
+2. `components/chat/ChatSidebar.tsx` - Wired up edit/delete session buttons
 
-**Changes Required**:
+**Changes Made**:
 
-**ChatSidebar.tsx** (lines ~176, ~181):
-\`\`\`tsx
-const [showEditDialog, setShowEditDialog] = useState(false)
-const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-const [selectedSession, setSelectedSession] = useState<string | null>(null)
+**Edit Session Dialog**:
+- Created new `EditSessionDialog` component using AdaptiveModal
+- Form field: session title input
+- Real-time validation (title required)
+- Mock API call with 1s delay
+- Success toast notification
+- Touch targets: 48px input, 44px buttons
 
-const handleEditSession = (sessionId: string, e: React.MouseEvent) => {
-  e.stopPropagation()
-  setSelectedSession(sessionId)
-  setShowEditDialog(true)
-}
+**ChatSidebar**:
+- Added state for edit and delete dialogs (`showEditDialog`, `showDeleteDialog`, `selectedSession`)
+- Added `handleEditSession` handler to open edit dialog
+- Added `handleDeleteSession` handler to open delete dialog
+- Added `handleSaveSessionTitle` handler to update session title
+- Added `confirmDeleteSession` handler to delete session
+- Wired up Edit button to open edit dialog
+- Wired up Delete button to open delete confirmation dialog
+- Integrated `EditSessionDialog` and `DeleteConfirmationDialog` components
+- All handlers include console logging for debugging
+- All actions provide user feedback via toast notifications
 
-const handleDeleteSession = (sessionId: string, e: React.MouseEvent) => {
-  e.stopPropagation()
-  setSelectedSession(sessionId)
-  setShowDeleteDialog(true)
-}
+**Other Components (Already Working)**:
+- `components/dashboard/QuickActions.tsx` - All cards use Link components with proper hrefs (no changes needed)
+- `components/dashboard/SessionList.tsx` - Already has working resume/delete handlers (no changes needed)
+- `components/sessions/session-list.tsx` - Already has working resume/archive/delete handlers (no changes needed)
+- `components/dashboard/AgentLibrary.tsx` - Already has working favorite/edit/delete handlers (no changes needed)
 
-<Button 
-  variant="ghost" 
-  size="sm" 
-  className="h-6 w-6 p-0 hover:bg-sidebar-accent"
-  onClick={(e) => handleEditSession(session.id, e)}
->
-  <Edit3 className="h-3 w-3" />
-</Button>
-<Button
-  variant="ghost"
-  size="sm"
-  className="h-6 w-6 p-0 hover:bg-destructive/20 hover:text-destructive"
-  onClick={(e) => handleDeleteSession(session.id, e)}
->
-  <Trash2 className="h-3 w-3" />
-</Button>
+**Mock Implementation**:
+\`\`\`typescript
+// Edit session
+await new Promise((resolve) => setTimeout(resolve, 1000))
+console.log("[v0] Renaming session:", sessionId, newTitle)
+setSessions((prev) =>
+  prev.map((session) =>
+    session.id === selectedSession ? { ...session, title: newTitle } : session
+  )
+)
+toast({ title: "Session renamed", description: `Session renamed to "${newTitle}"` })
 
-<EditSessionDialog
-  open={showEditDialog}
-  onOpenChange={setShowEditDialog}
-  sessionId={selectedSession}
-  onSave={(newTitle) => {
-    console.log('[v0] Renaming session:', selectedSession, newTitle)
-    toast({ title: 'Session renamed', description: `Session renamed to "${newTitle}"` })
-  }}
-/>
-<DeleteConfirmationDialog
-  open={showDeleteDialog}
-  onOpenChange={setShowDeleteDialog}
-  onConfirm={() => {
-    if (selectedSession) {
-      console.log('[v0] Deleting session:', selectedSession)
-      toast({ title: 'Session deleted', description: 'The session has been deleted.' })
-    }
-  }}
-  itemName={sessions.find(s => s.id === selectedSession)?.title || 'session'}
-  itemType="Session"
-/>
+// Delete session
+console.log("[v0] Deleting session:", selectedSession)
+setSessions((prev) => prev.filter((s) => s.id !== selectedSession))
+toast({ title: "Session deleted", description: `"${session?.title}" has been deleted.`, variant: "destructive" })
 \`\`\`
 
-**QuickActions.tsx**:
-\`\`\`tsx
-const handleNewDebate = () => {
-  window.location.href = '/debates'
-}
+**Integration Points**:
+- Edit button in ChatSidebar opens EditSessionDialog
+- Delete button in ChatSidebar opens DeleteConfirmationDialog
+- All handlers include console logging for debugging
+- All actions provide user feedback via toast notifications
+- Session list updates in real-time after edit/delete
 
-const handleViewAgents = () => {
-  window.location.href = '/agents'
-}
-
-const handleViewAnalytics = () => {
-  window.location.href = '/analytics'
-}
-
-<Card onClick={handleNewDebate} className="cursor-pointer hover:bg-accent transition-colors">
-  {/* ... existing card content ... */}
-</Card>
-\`\`\`
+**Future Integration**:
+- Will integrate with backend for real session management
+- Mock implementations ready to be replaced with real API calls
 
 ### Task 3.5: Settings Component Handlers
 
@@ -1200,14 +1177,14 @@ const handleShare = (targetModelId: string) => {
    - ✅ Task 3.1: Organization Component Handlers
    - ✅ Task 3.2: Billing Component Handlers
    - ✅ Task 3.3: Memory Component Handlers
-   - ❌ Task 3.4: Dashboard Component Handlers
+   - ✅ Task 3.4: Dashboard Component Handlers
    - ❌ Task 3.5: Settings Component Handlers
    - ❌ Task 3.6: Chat/Debate Component Handlers
 5. ⏭️ **Phase 4** - Test everything (2 hours)
 6. ⏭️ **Backend Integration** - Can start after UI is 100% functional
 
-**Progress**: 12/42 tasks complete (28.6%)
+**Progress**: 13/42 tasks complete (31.0%)
 **Total Estimated Time**: 15.5 hours
 **Phase 1 Completion**: October 14, 2025
 **Phase 2 Completion**: October 15, 2025
-**Phase 3 Progress**: 3/6 tasks complete
+**Phase 3 Progress**: 4/6 tasks complete
