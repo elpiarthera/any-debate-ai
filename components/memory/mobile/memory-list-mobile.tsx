@@ -7,6 +7,7 @@ import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal"
 import { MemoryCardMobile } from "./memory-card-mobile"
 import { MemorySearch } from "../shared/memory-search"
 import { MemoryFilters } from "../shared/memory-filters"
+import { EditMemoryDialog } from "../edit-memory-dialog"
 import type { Memory, MemoryScope, MemoryCategory } from "../memory-dashboard"
 
 interface MemoryListMobileProps {
@@ -17,6 +18,8 @@ interface MemoryListMobileProps {
   onScopeChange: (scope: MemoryScope | "all") => void
   selectedCategory: MemoryCategory | "all"
   onCategoryChange: (category: MemoryCategory | "all") => void
+  onEditMemory?: (memoryId: string, updatedMemory: Partial<Memory>) => void
+  onDeleteMemory?: (memoryId: string) => void
 }
 
 export function MemoryListMobile({
@@ -27,8 +30,23 @@ export function MemoryListMobile({
   onScopeChange,
   selectedCategory,
   onCategoryChange,
+  onEditMemory,
+  onDeleteMemory,
 }: MemoryListMobileProps) {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null)
+
+  const handleEdit = (memory: Memory) => {
+    setSelectedMemory(memory)
+    setIsEditDialogOpen(true)
+  }
+
+  const handleSave = (memoryId: string, updatedMemory: Partial<Memory>) => {
+    onEditMemory?.(memoryId, updatedMemory)
+    setIsEditDialogOpen(false)
+    setSelectedMemory(null)
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -57,7 +75,9 @@ export function MemoryListMobile({
             <p className="text-sm mt-2">Try adjusting your filters or add a new memory</p>
           </div>
         ) : (
-          memories.map((memory) => <MemoryCardMobile key={memory.id} memory={memory} />)
+          memories.map((memory) => (
+            <MemoryCardMobile key={memory.id} memory={memory} onEdit={handleEdit} onDelete={onDeleteMemory} />
+          ))
         )}
       </div>
 
@@ -83,6 +103,17 @@ export function MemoryListMobile({
           onCategoryChange={onCategoryChange}
         />
       </AdaptiveModal>
+
+      {/* Edit Memory Dialog */}
+      <EditMemoryDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => {
+          setIsEditDialogOpen(false)
+          setSelectedMemory(null)
+        }}
+        onSave={handleSave}
+        memory={selectedMemory}
+      />
     </div>
   )
 }

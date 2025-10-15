@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useDevice } from "@/contexts/DeviceProvider"
+import { useToast } from "@/hooks/use-toast"
 import { MemoryListMobile } from "./mobile/memory-list-mobile"
 import { MemoryGridDesktop } from "./desktop/memory-grid-desktop"
 
@@ -80,6 +81,7 @@ const mockMemories: Memory[] = [
 
 export function MemoryDashboard() {
   const { isMobile } = useDevice()
+  const { toast } = useToast()
   const [memories, setMemories] = useState<Memory[]>(mockMemories)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedScope, setSelectedScope] = useState<MemoryScope | "all">("all")
@@ -98,6 +100,19 @@ export function MemoryDashboard() {
     return matchesSearch && matchesScope && matchesCategory
   })
 
+  const handleEditMemory = (memoryId: string, updatedMemory: Partial<Memory>) => {
+    setMemories((prev) => prev.map((memory) => (memory.id === memoryId ? { ...memory, ...updatedMemory } : memory)))
+  }
+
+  const handleDeleteMemory = (memoryId: string) => {
+    const memory = memories.find((m) => m.id === memoryId)
+    setMemories((prev) => prev.filter((m) => m.id !== memoryId))
+    toast({
+      title: "Memory deleted",
+      description: `"${memory?.title}" has been deleted.`,
+    })
+  }
+
   const sharedProps = {
     memories: filteredMemories,
     searchQuery,
@@ -106,6 +121,8 @@ export function MemoryDashboard() {
     onScopeChange: setSelectedScope,
     selectedCategory,
     onCategoryChange: setSelectedCategory,
+    onEditMemory: handleEditMemory,
+    onDeleteMemory: handleDeleteMemory,
   }
 
   return isMobile ? <MemoryListMobile {...sharedProps} /> : <MemoryGridDesktop {...sharedProps} />

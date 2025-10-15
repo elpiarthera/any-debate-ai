@@ -4,10 +4,13 @@ import { FileText, LinkIcon, File, Clock, Tag, MoreVertical } from "lucide-react
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import type { Memory } from "../memory-dashboard"
 
 interface MemoryCardDesktopProps {
   memory: Memory
+  onEdit?: (memory: Memory) => void
+  onDelete?: (memoryId: string) => void
 }
 
 const scopeColors = {
@@ -23,12 +26,12 @@ const sourceIcons = {
   url: LinkIcon,
 }
 
-export function MemoryCardDesktop({ memory }: MemoryCardDesktopProps) {
+export function MemoryCardDesktop({ memory, onEdit, onDelete }: MemoryCardDesktopProps) {
   const SourceIcon = sourceIcons[memory.source]
   const timeAgo = getTimeAgo(memory.createdAt)
 
   return (
-    <Card className="p-5 hover:shadow-lg transition-all cursor-pointer group">
+    <Card className="p-5 hover:shadow-lg transition-all group">
       <div className="space-y-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
@@ -43,13 +46,23 @@ export function MemoryCardDesktop({ memory }: MemoryCardDesktopProps) {
               </Badge>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="opacity-0 group-hover:opacity-100 transition-opacity min-h-[44px] min-w-[44px]"
-          >
-            <MoreVertical className="h-4 w-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="opacity-0 group-hover:opacity-100 transition-opacity min-h-[44px] min-w-[44px]"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit?.(memory)}>Edit</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onDelete?.(memory.id)} className="text-destructive">
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Content */}

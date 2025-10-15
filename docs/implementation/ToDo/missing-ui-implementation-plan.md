@@ -2,7 +2,7 @@
 
 **Status**: ❌ NOT STARTED (0%)
 **Priority**: P0 - CRITICAL (Must complete before backend integration)
-**Last Updated**: October 14, 2025
+**Last Updated**: October 15, 2025
 **Estimated Duration**: 15.5 hours
 **Phase 1 Status**: ✅ COMPLETE (4/4 tasks done)
 
@@ -604,11 +604,11 @@ toast({
 **Status**: ✅ COMPLETE
 **Priority**: P1 - HIGH
 **Estimated Time**: 45 minutes
-**Completed**: October 14, 2025
+**Completed**: October 15, 2025
 
 **File**: `components/memory/edit-memory-dialog.tsx`
 
-**Architecture**: Reuse add-memory-form.tsx logic
+**Architecture**: Uses AdaptiveModal (Drawer on mobile, Dialog on desktop)
 
 **Touch Targets**:
 - All inputs: `min-h-[48px]` (prevents iOS zoom)
@@ -616,10 +616,16 @@ toast({
 - Form spacing: `gap-4` (adequate spacing)
 
 **Features Implemented**:
-- Pre-fill with existing memory data
-- All fields from add-memory-form
-- Save button
-- Mock update function
+- Pre-fills form with existing memory data
+- All fields from add-memory-form (title, category, content, tags, scope, source, sourceUrl)
+- Real-time validation with error messages
+- Save button with loading state
+- Cancel button to close dialog
+- Mock update function with 1s delay
+- Success toast notification
+- Error handling and display
+- Disabled state during submission
+- Dropdown menu in memory cards (mobile and desktop) for edit/delete actions
 
 **Mobile Specifications**:
 - Bottom drawer presentation
@@ -632,25 +638,43 @@ toast({
 **Desktop Specifications**:
 - Center modal presentation
 - Standard input widths
-- Right-aligned buttons (side-by-side)
+- Side-by-side buttons (horizontal)
 - Hover states on interactive elements
 - Click outside to dismiss
+
+**Validation Rules**:
+- Title is required
+- Category is required
+- Content is required
+- Source URL is required if source type is "url"
 
 **Mock Implementation**:
 \`\`\`typescript
 // Mock API call with 1s delay
 await new Promise((resolve) => setTimeout(resolve, 1000))
-console.log("[v0] Editing memory:", { memoryId, newData })
+console.log("[v0] Updating memory:", { memoryId: memory.id, updatedData: formData })
+onSave(memory.id, formData)
 toast({
   title: "Memory updated",
-  description: `Memory "${memoryId}" has been successfully updated.`,
+  description: `"${formData.title}" has been successfully updated.`,
 })
 \`\`\`
 
 **Integration Points**:
-- Used in `app/dashboard/memory/[id]/page.tsx`
-- Triggered by "Edit" button in memory list
+- Used in `components/memory/mobile/memory-list-mobile.tsx`
+- Used in `components/memory/desktop/memory-grid-desktop.tsx`
+- Triggered by "Edit" option in dropdown menu on memory cards
 - Shares state with parent component via `open` and `onOpenChange` props
+- Accepts `memory` prop to pre-fill form data
+- Calls `onSave` callback with updated memory data
+
+**Files Modified**:
+- Created `components/memory/edit-memory-dialog.tsx` (main dialog component)
+- Updated `components/memory/mobile/memory-card-mobile.tsx` (added dropdown menu with edit/delete)
+- Updated `components/memory/desktop/memory-card-desktop.tsx` (added dropdown menu with edit/delete)
+- Updated `components/memory/mobile/memory-list-mobile.tsx` (added edit dialog integration)
+- Updated `components/memory/desktop/memory-grid-desktop.tsx` (added edit dialog integration)
+- Updated `components/memory/memory-dashboard.tsx` (added edit and delete handlers)
 
 **Future Integration**:
 - Will integrate with backend for real memory updates
@@ -1107,7 +1131,7 @@ const handleShare = (targetModelId: string) => {
 **Time Spent**: ~7.25 hours
 **Time Remaining**: ~8.25 hours
 
-**Last Updated**: October 14, 2025
+**Last Updated**: October 15, 2025
 **Total Estimated Time**: 15.5 hours
 **Phase 1 Completion**: October 14, 2025
 **Phase 2 Progress**: 5/6 tasks complete

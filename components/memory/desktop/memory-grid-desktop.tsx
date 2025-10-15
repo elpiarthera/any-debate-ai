@@ -1,10 +1,12 @@
 "use client"
 
 import { Plus, Upload, LinkIcon } from "lucide-react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { MemoryCardDesktop } from "./memory-card-desktop"
 import { MemorySearch } from "../shared/memory-search"
 import { MemoryFilters } from "../shared/memory-filters"
+import { EditMemoryDialog } from "../edit-memory-dialog"
 import type { Memory, MemoryScope, MemoryCategory } from "../memory-dashboard"
 
 interface MemoryGridDesktopProps {
@@ -15,6 +17,8 @@ interface MemoryGridDesktopProps {
   onScopeChange: (scope: MemoryScope | "all") => void
   selectedCategory: MemoryCategory | "all"
   onCategoryChange: (category: MemoryCategory | "all") => void
+  onEditMemory?: (memoryId: string, updatedMemory: Partial<Memory>) => void
+  onDeleteMemory?: (memoryId: string) => void
 }
 
 export function MemoryGridDesktop({
@@ -25,7 +29,23 @@ export function MemoryGridDesktop({
   onScopeChange,
   selectedCategory,
   onCategoryChange,
+  onEditMemory,
+  onDeleteMemory,
 }: MemoryGridDesktopProps) {
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null)
+
+  const handleEdit = (memory: Memory) => {
+    setSelectedMemory(memory)
+    setIsEditDialogOpen(true)
+  }
+
+  const handleSave = (memoryId: string, updatedMemory: Partial<Memory>) => {
+    onEditMemory?.(memoryId, updatedMemory)
+    setIsEditDialogOpen(false)
+    setSelectedMemory(null)
+  }
+
   return (
     <div className="flex h-full">
       {/* Sidebar filters */}
@@ -76,12 +96,23 @@ export function MemoryGridDesktop({
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {memories.map((memory) => (
-                <MemoryCardDesktop key={memory.id} memory={memory} />
+                <MemoryCardDesktop key={memory.id} memory={memory} onEdit={handleEdit} onDelete={onDeleteMemory} />
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* EditMemoryDialog */}
+      <EditMemoryDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => {
+          setIsEditDialogOpen(false)
+          setSelectedMemory(null)
+        }}
+        onSave={handleSave}
+        memory={selectedMemory}
+      />
     </div>
   )
 }
