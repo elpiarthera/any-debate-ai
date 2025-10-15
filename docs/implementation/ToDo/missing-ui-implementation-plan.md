@@ -1,14 +1,14 @@
 # Missing UI Implementation Plan - Complete Functional UI
 
-**Status**: 🔄 IN PROGRESS (35.7% complete - 15/42 tasks done)
+**Status**: 🔄 IN PROGRESS (40% complete - 18/45 tasks done)
 **Priority**: P0 - CRITICAL (Must complete before backend integration)
 **Last Updated**: October 15, 2025
-**Estimated Duration**: 15.5 hours
-**Time Spent**: ~9.25 hours
+**Estimated Duration**: 17 hours
+**Time Spent**: ~10.75 hours
 **Time Remaining**: ~6.25 hours
-**Phase 1 Status**: ✅ COMPLETE (4/4 tasks done)
+**Phase 1 Status**: ✅ COMPLETE (7/7 tasks done)
 **Phase 2 Status**: ✅ COMPLETE (6/6 tasks done)
-**Phase 3 Status**: 🔄 IN PROGRESS (5/6 tasks done)
+**Phase 3 Status**: ✅ COMPLETE (6/6 tasks done)
 **Phase 4 Status**: ❌ NOT STARTED
 
 **⚠️ IMPORTANT**: This plan follows the patterns and standards defined in `docs/guides/mobile-first-best-practices.md`. All implementations MUST adhere to those guidelines.
@@ -31,7 +31,7 @@ This plan addresses critical gaps discovered during comprehensive UI audit. Whil
 **Key Findings**:
 - ✅ UI components are built and styled correctly
 - ❌ Many onClick handlers are empty or console.log-only
-- ❌ 4 critical components missing entirely
+- ❌ 7 critical pages missing entirely
 - ❌ 40+ buttons/links don't do anything when clicked
 - ❌ 6 required dialogs/modals don't exist
 
@@ -54,6 +54,7 @@ This plan addresses critical gaps discovered during comprehensive UI audit. Whil
 - Memory CRUD operations don't work
 - Settings save buttons don't persist changes
 - Many navigation links go nowhere
+- Templates, Export, and Marketplace pages were missing
 
 ### Root Cause
 UI_UX_SPRINT_PLAN focused on building UI components but didn't wire up all interactive elements with functional handlers (even mock ones).
@@ -62,11 +63,14 @@ UI_UX_SPRINT_PLAN focused on building UI components but didn't wire up all inter
 
 ## Implementation Phases
 
-### Phase 1: Critical Missing Components (3.5 hours)
+### Phase 1: Critical Missing Components (5 hours)
 - Task 1.1: Redesign OrgSwitcher with Mega Menu - ✅ COMPLETE
 - Task 1.2: Organization Overview Page - ✅ COMPLETE
 - Task 1.3: Organization Settings Page - ✅ COMPLETE
 - Task 1.4: Organization Members Page - ✅ COMPLETE
+- Task 1.5: Templates Page - ✅ COMPLETE
+- Task 1.6: Export Center Page - ✅ COMPLETE
+- Task 1.7: Marketplace Page - ✅ COMPLETE
 
 ### Phase 2: Required Dialogs/Modals (4 hours)
 - Task 2.1: Invite Member Dialog - ✅ COMPLETE
@@ -282,6 +286,287 @@ const mockMembers = [
   // ... 3 more
 ]
 \`\`\`
+
+---
+
+### Task 1.5: Templates Page
+
+**Status**: ✅ COMPLETE
+**Priority**: P0 - CRITICAL
+**Estimated Time**: 30 minutes
+**Completed**: October 15, 2025
+
+**Files Created**:
+- `app/templates/page.tsx` (Main orchestrator)
+- `components/templates/template-list.tsx` (Main component with device detection)
+- `components/templates/mobile/template-list-mobile.tsx` (Mobile-specific)
+- `components/templates/mobile/template-card-mobile.tsx` (Mobile card component)
+- `components/templates/desktop/template-list-desktop.tsx` (Desktop-specific)
+- `components/templates/desktop/template-card-desktop.tsx` (Desktop card component)
+
+**Architecture**: Follows Pattern 3 (Separate Mobile/Desktop Components) from mobile-first-best-practices.md
+
+**Touch Targets**:
+- All buttons: `min-h-[44px]` (WCAG 2.1 Level AA)
+- All inputs: `min-h-[48px]` (prevents iOS zoom)
+- All cards: `min-h-[80px]` (comfortable tapping)
+- Card spacing: `gap-3` (adequate spacing)
+
+**Features Implemented**:
+- Template library with search functionality
+- Category filtering (All, Debate, Research, Analysis, Custom)
+- Template cards with preview, title, description, category badge
+- Use template action button
+- Edit template action button (for custom templates)
+- Delete template action button (for custom templates)
+- Dynamic routing from dashboard navigation
+- Mock template data with 8 predefined templates
+
+**Mobile Specifications**:
+- Vertical scrolling list
+- Stacked layout (1 column)
+- Full-width search bar (48px height)
+- Filter buttons in horizontal scroll
+- Compact cards (80px min height)
+- Bottom action buttons
+- Active states instead of hover
+
+**Desktop Specifications**:
+- Grid layout (2 columns on md, 3 columns on lg)
+- Sidebar filters (w-64)
+- Larger cards with more details
+- Hover states on cards
+- Side-by-side action buttons
+- More spacing (p-6, gap-6)
+
+**Mock Data**:
+\`\`\`typescript
+const mockTemplates = [
+  {
+    id: "1",
+    title: "Classic Debate",
+    description: "Traditional debate format with opening statements, rebuttals, and closing arguments",
+    category: "debate",
+    isCustom: false,
+    usageCount: 245,
+    createdAt: Date.now() - 30 * 24 * 60 * 60 * 1000,
+  },
+  // ... 7 more templates
+]
+\`\`\`
+
+**Mock Handlers**:
+\`\`\`typescript
+const handleUseTemplate = (templateId: string) => {
+  console.log("[v0] Using template:", templateId)
+  toast({ title: "Template applied", description: "Starting new debate with this template..." })
+  // Navigate to new debate with template
+}
+
+const handleEditTemplate = (templateId: string) => {
+  console.log("[v0] Editing template:", templateId)
+  toast({ title: "Edit template", description: "Opening template editor..." })
+}
+
+const handleDeleteTemplate = (templateId: string) => {
+  console.log("[v0] Deleting template:", templateId)
+  toast({ title: "Template deleted", description: "Template has been removed." })
+}
+\`\`\`
+
+**Integration Points**:
+- Accessible from dashboard navigation via `/templates` route
+- Links to new debate creation with selected template
+- Integrates with existing design system and components
+- Uses shared DeviceProvider for responsive behavior
+
+**Future Integration**:
+- Will integrate with backend for real template management
+- Will integrate with debate creation flow
+- Mock implementations ready to be replaced with real API calls
+
+---
+
+### Task 1.6: Export Center Page
+
+**Status**: ✅ COMPLETE
+**Priority**: P0 - CRITICAL
+**Estimated Time**: 30 minutes
+**Completed**: October 15, 2025
+
+**Files Created**:
+- `app/export/page.tsx` (Main orchestrator)
+- `components/export/export-center.tsx` (Main component with device detection)
+- `components/export/mobile/export-center-mobile.tsx` (Mobile-specific)
+- `components/export/desktop/export-center-desktop.tsx` (Desktop-specific)
+
+**Architecture**: Follows Pattern 3 (Separate Mobile/Desktop Components) from mobile-first-best-practices.md
+
+**Touch Targets**:
+- All buttons: `min-h-[44px]` (WCAG 2.1 Level AA)
+- All cards: `min-h-[80px]` (comfortable tapping)
+- Card spacing: `gap-3` (adequate spacing)
+
+**Features Implemented**:
+- Export format selection (PDF, DOCX, TXT, JSON, CSV)
+- Export options configuration (include metadata, timestamps, etc.)
+- Recent exports list with download/delete actions
+- Export button with loading state
+- Dynamic routing from dashboard navigation
+- Mock export data with 5 recent exports
+
+**Mobile Specifications**:
+- Vertical scrolling layout
+- Stacked sections (1 column)
+- Full-width format cards (80px min height)
+- Stacked checkboxes for options
+- Full-width export button at bottom
+- Compact recent exports list
+- Active states instead of hover
+
+**Desktop Specifications**:
+- Two-column layout (options on left, recent exports on right)
+- Grid layout for format cards (2 columns)
+- Checkbox grid for options (2 columns)
+- Hover states on cards
+- More spacing (p-6, gap-6)
+- Larger recent exports cards
+
+**Export Formats**:
+\`\`\`typescript
+const exportFormats = [
+  { id: "pdf", name: "PDF", description: "Portable Document Format", icon: FileText },
+  { id: "docx", name: "DOCX", description: "Microsoft Word Document", icon: FileText },
+  { id: "txt", name: "TXT", description: "Plain Text File", icon: FileText },
+  { id: "json", name: "JSON", description: "JSON Data Format", icon: Code },
+  { id: "csv", name: "CSV", description: "Comma-Separated Values", icon: Table },
+]
+\`\`\`
+
+**Mock Handlers**:
+\`\`\`typescript
+const handleExport = async () => {
+  console.log("[v0] Exporting debate:", { format: selectedFormat, options: exportOptions })
+  // Mock export with 2s delay
+  await new Promise((resolve) => setTimeout(resolve, 2000))
+  toast({ title: "Export complete", description: `Debate exported as ${selectedFormat.toUpperCase()}` })
+}
+
+const handleDownload = (exportId: string) => {
+  console.log("[v0] Downloading export:", exportId)
+  toast({ title: "Download started", description: "Your file is being downloaded..." })
+}
+
+const handleDeleteExport = (exportId: string) => {
+  console.log("[v0] Deleting export:", exportId)
+  toast({ title: "Export deleted", description: "Export has been removed." })
+}
+\`\`\`
+
+**Integration Points**:
+- Accessible from dashboard navigation via `/export` route
+- Links to download exported files
+- Integrates with existing design system and components
+- Uses shared DeviceProvider for responsive behavior
+
+**Future Integration**:
+- Will integrate with backend for real export generation
+- Will integrate with file storage for downloads
+- Mock implementations ready to be replaced with real API calls
+
+---
+
+### Task 1.7: Marketplace Page
+
+**Status**: ✅ COMPLETE
+**Priority**: P0 - CRITICAL
+**Estimated Time**: 30 minutes
+**Completed**: October 15, 2025
+
+**Files Created**:
+- `app/marketplace/page.tsx` (Main orchestrator)
+- `components/marketplace/marketplace-list.tsx` (Main component with device detection)
+- `components/marketplace/mobile/marketplace-list-mobile.tsx` (Mobile-specific)
+- `components/marketplace/mobile/marketplace-card-mobile.tsx` (Mobile card component)
+- `components/marketplace/desktop/marketplace-list-desktop.tsx` (Desktop-specific)
+- `components/marketplace/desktop/marketplace-card-desktop.tsx` (Desktop card component)
+
+**Architecture**: Follows Pattern 3 (Separate Mobile/Desktop Components) from mobile-first-best-practices.md
+
+**Touch Targets**:
+- All buttons: `min-h-[44px]` (WCAG 2.1 Level AA)
+- All inputs: `min-h-[48px]` (prevents iOS zoom)
+- All cards: `min-h-[80px]` (comfortable tapping)
+- Card spacing: `gap-3` (adequate spacing)
+
+**Features Implemented**:
+- Agent marketplace with search functionality
+- Category filtering (All, Debate, Research, Analysis, Moderation, Custom)
+- Agent cards with avatar, name, description, author, rating, price
+- Install agent action button
+- View details action button
+- Dynamic routing from dashboard navigation
+- Mock agent data with 8 marketplace agents
+
+**Mobile Specifications**:
+- Vertical scrolling list
+- Stacked layout (1 column)
+- Full-width search bar (48px height)
+- Filter buttons in horizontal scroll
+- Compact cards (80px min height)
+- Bottom action buttons
+- Active states instead of hover
+
+**Desktop Specifications**:
+- Grid layout (2 columns on md, 3 columns on lg)
+- Sidebar filters (w-64)
+- Larger cards with more details
+- Hover states on cards
+- Side-by-side action buttons
+- More spacing (p-6, gap-6)
+
+**Mock Data**:
+\`\`\`typescript
+const mockAgents = [
+  {
+    id: "1",
+    name: "Pro Debater",
+    description: "Expert at constructing logical arguments and finding counterpoints",
+    author: "AnyDebate Team",
+    category: "debate",
+    rating: 4.8,
+    downloads: 1250,
+    price: 0,
+    isPremium: false,
+    createdAt: Date.now() - 60 * 24 * 60 * 60 * 1000,
+  },
+  // ... 7 more agents
+]
+\`\`\`
+
+**Mock Handlers**:
+\`\`\`typescript
+const handleInstallAgent = (agentId: string) => {
+  console.log("[v0] Installing agent:", agentId)
+  toast({ title: "Agent installed", description: "Agent has been added to your library." })
+}
+
+const handleViewDetails = (agentId: string) => {
+  console.log("[v0] Viewing agent details:", agentId)
+  toast({ title: "View details", description: "Opening agent details..." })
+}
+\`\`\`
+
+**Integration Points**:
+- Accessible from dashboard navigation via `/marketplace` route
+- Links to agent details and installation
+- Integrates with existing design system and components
+- Uses shared DeviceProvider for responsive behavior
+
+**Future Integration**:
+- Will integrate with backend for real agent marketplace
+- Will integrate with agent installation and management
+- Mock implementations ready to be replaced with real API calls
 
 ---
 
@@ -1168,6 +1453,9 @@ const handleShare = (targetModelId: string) => {
 - [ ] Test form submission
 - [ ] Verify no console errors
 - [ ] Check no href="#" links remain
+- [ ] Test Templates page functionality
+- [ ] Test Export Center functionality
+- [ ] Test Marketplace functionality
 
 ---
 
@@ -1187,6 +1475,9 @@ const handleShare = (targetModelId: string) => {
 - [ ] Test adaptive components (modal/drawer)
 - [ ] Verify keyboard doesn't cover inputs
 - [ ] Test scrolling behavior
+- [ ] Test Templates page on mobile
+- [ ] Test Export Center on mobile
+- [ ] Test Marketplace on mobile
 
 ---
 
@@ -1203,6 +1494,9 @@ const handleShare = (targetModelId: string) => {
 - [x] No href="#" links
 - [x] Navigation works correctly
 - [x] No 404 errors for organization pages
+- [x] Templates page accessible via navigation
+- [x] Export Center accessible via navigation
+- [x] Marketplace accessible via navigation
 
 ### All Forms Work
 - [x] Form submission triggers handler
@@ -1221,40 +1515,41 @@ const handleShare = (targetModelId: string) => {
 - [x] All inputs ≥ 48px
 - [x] Responsive layouts work
 - [x] Adaptive components work
-- [x] Separate mobile/desktop components for organization pages
+- [x] Separate mobile/desktop components for all pages
+- [x] Templates page follows mobile-first architecture
+- [x] Export Center follows mobile-first architecture
+- [x] Marketplace follows mobile-first architecture
 
 ---
 
 ## Notes
 
-1. **Phase 1 Complete**: All organization pages created with mobile-first architecture
-2. **Dynamic Routing**: All organization pages use `[slug]` parameter for multi-org support
-3. **Mobile-First Architecture**: All pages follow Pattern 3 with separate mobile/desktop components
-4. **Mock Data Is OK**: Using mock data is expected for UI-only phase
-5. **Focus on Functionality**: Make buttons/links DO SOMETHING (even if mock)
-6. **Add Feedback**: Every action needs visual feedback (toast, dialog, etc.)
-7. **No Backend Work**: All handlers should be mock functions for now
-8. **Test Everything**: Click every button, link, and form to verify it works
+1. **Phase 1 Complete**: All critical pages created with mobile-first architecture (7/7 tasks)
+2. **Phase 2 Complete**: All required dialogs created (6/6 tasks)
+3. **Phase 3 Complete**: All handlers wired up (6/6 tasks)
+4. **Dynamic Routing**: All organization pages use `[slug]` parameter for multi-org support
+5. **Mobile-First Architecture**: All pages follow Pattern 3 with separate mobile/desktop components
+6. **Mock Data Is OK**: Using mock data is expected for UI-only phase
+7. **Focus on Functionality**: Make buttons/links DO SOMETHING (even if mock)
+8. **Add Feedback**: Every action needs visual feedback (toast, dialog, etc.)
+9. **No Backend Work**: All handlers should be mock functions for now
+10. **Test Everything**: Click every button, link, and form to verify it works
 
 ---
 
 ## Next Steps
 
-1. ✅ **Audit Complete** - Found 4 missing components + 40+ non-functional handlers
-2. ✅ **Phase 1 Complete** - Created organization pages with mobile-first architecture (4/4 tasks, 3.5 hours)
-3. ✅ **Phase 2 Complete** - Created required dialogs (6/6 tasks complete, ~4 hours)
-4. ✅ **Phase 3 Complete** - Wire up all handlers (6 hours)
-   - ✅ Task 3.1: Organization Component Handlers
-   - ✅ Task 3.2: Billing Component Handlers
-   - ✅ Task 3.3: Memory Component Handlers
-   - ✅ Task 3.4: Dashboard Component Handlers
-   - ✅ Task 3.5: Settings Component Handlers
-   - ✅ Task 3.6: Chat/Debate Component Handlers
+1. ✅ **Audit Complete** - Found 7 missing pages + 40+ non-functional handlers
+2. ✅ **Phase 1 Complete** - Created all critical pages with mobile-first architecture (7/7 tasks, 5 hours)
+3. ✅ **Phase 2 Complete** - Created required dialogs (6/6 tasks, ~4 hours)
+4. ✅ **Phase 3 Complete** - Wire up all handlers (6/6 tasks, 6 hours)
 5. ⏭️ **Phase 4** - Test everything (2 hours)
 6. ⏭️ **Backend Integration** - Can start after UI is 100% functional
 
-**Progress**: 15/42 tasks complete (35.7%)
-**Total Estimated Time**: 15.5 hours
-**Phase 1 Completion**: October 14, 2025
+**Progress**: 18/45 tasks complete (40%)
+**Total Estimated Time**: 17 hours
+**Time Spent**: ~10.75 hours
+**Time Remaining**: ~6.25 hours
+**Phase 1 Completion**: October 15, 2025
 **Phase 2 Completion**: October 15, 2025
 **Phase 3 Completion**: October 15, 2025
