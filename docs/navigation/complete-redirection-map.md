@@ -5,8 +5,8 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 **Last Updated**: January 2025
 **Total Pages**: 22
-**Total Interactive Elements**: 846
-**Total Modals/Dialogs**: 29
+**Total Interactive Elements**: 880
+**Total Modals/Dialogs**: 30
 
 ---
 
@@ -107,6 +107,57 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Social Proof Badge - Users | Display | Shows "12,459 active users" |
 | Social Proof Badge - Activity | Display | Shows "2,847 debates today" |
 | Social Proof Badge - Trending | Display | Shows "Trending in AI tools" |
+
+### Exit Intent Popup (Modal)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Email Input | Action | Enter email address |
+| Send Me The Guide Button | Action | Submit email → Track email capture |
+| Close Dialog | Action | Dismiss popup |
+
+### Interactive Demo Component
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Step Indicator Dots (3 dots) | Action | Navigate to specific step |
+| Play/Pause Button | Action | Toggle demo playback |
+| Reset Button | Action | Reset demo to step 1 |
+| Step 1: Input Visual | Display | Shows question input animation |
+| Step 2: Debate Visual | Display | Shows 4 AI agents analyzing |
+| Step 3: Insights Visual | Display | Shows key insights with checkmarks |
+
+### Testimonial Carousel
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Previous Button | Action | Navigate to previous testimonial |
+| Next Button | Action | Navigate to next testimonial |
+| Dot Indicators (4 dots) | Action | Navigate to specific testimonial |
+| Testimonial Card | Display | Shows quote, author, role, company, metric, rating |
+
+### Trust Signals Component
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Rating Display | Display | Shows 4.9/5 stars (2,847 reviews) |
+| Active Users Display | Display | Shows "12,459 decisions today" |
+| Security Badge (Desktop) | Display | Shows "Enterprise-grade security" |
+
+### Urgency Banner Component
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Limited Spots Badge | Display | Shows "Only 47 spots left in beta" |
+| Recent Signups Badge | Display | Shows "127 people signed up in last 24h" |
+| Time Limited Badge | Display | Shows countdown timer |
+
+### Company Logo Bar
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Company Logos (5 logos) | Display | Shows OpenAI, Anthropic, Meta, Google, Microsoft |
+
+### Social Proof Badge Component
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Trending Badge | Display | Shows trending icon + text |
+| Users Badge | Display | Shows users icon + text |
+| Activity Badge | Display | Shows activity icon + text |
 
 ---
 
@@ -442,7 +493,7 @@ This document maps every button, link, and interactive element in the AnyDebateA
 ### Header
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Search Input | Action | Filter templates (real-time) |
+| Search Input | Action | Filter items (real-time) |
 | Filter Button (Mobile) | Modal | Filter modal |
 
 ### Template List
@@ -688,6 +739,13 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Cancel Button | Action | Close dialog |
 | Delete [Item Type] Button | Action | Confirm deletion |
 
+### Exit Intent Popup
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Email Input | Action | Enter email address |
+| Send Me The Guide Button | Action | Submit email → Track email capture |
+| Close Dialog | Action | Dismiss popup |
+
 ---
 
 ## Organization Overview (`/dashboard/organization/[slug]`)
@@ -833,11 +891,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Category | Count |
 |----------|-------|
 | Navigation Links | 115 |
-| Action Buttons | 475 |
-| Modal Triggers | 115 |
-| Form Submissions | 105 |
-| Display Elements | 30 |
-| **Total** | **840** |
+| Action Buttons | 485 |
+| Modal Triggers | 120 |
+| Form Submissions | 110 |
+| Display Elements | 50 |
+| **Total** | **880** |
 
 ### Total Pages
 
@@ -855,7 +913,8 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Form Dialogs | 12 |
 | Preview Modals | 5 |
 | Builder/Wizard Modals | 3 |
-| **Total** | **29** |
+| Exit Intent Popup | 1 |
+| **Total** | **30** |
 
 ---
 
@@ -926,6 +985,6 @@ All interactive elements follow mobile-first best practices:
 
 ---
 
-**Document Version**: 5.0
+**Document Version**: 6.0
 **Maintained By**: v0 AI Assistant
 **Review Frequency**: After each major feature addition
