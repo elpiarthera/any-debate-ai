@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Menu, Sparkles, Save } from "lucide-react"
+import { ArrowLeft, Menu, Sparkles, Save, History } from "lucide-react"
 import { ChatSidebar } from "@/components/chat/ChatSidebar"
 import { MentionInput } from "@/components/chat/MentionInput"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
@@ -22,6 +22,10 @@ import { CompareMode } from "@/components/chat/compare/CompareMode"
 import { DebateMode } from "@/components/chat/debate/DebateMode"
 import { AutoDebateMode } from "@/components/chat/auto-debate/AutoDebateMode"
 import type { ChatMode } from "@/lib/chat/modes"
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar"
+import { OrgSwitcher } from "@/components/dashboard/OrgSwitcher"
+import { TokenBalance } from "@/components/dashboard/TokenBalance"
+import { QuickActionsMenu } from "@/components/dashboard/QuickActionsMenu"
 
 interface AIModel {
   id: string
@@ -56,7 +60,8 @@ export default function DebatesPage() {
   const [isCanvasOpen, setIsCanvasOpen] = useState(false)
   const [isAgentBuilderOpen, setIsAgentBuilderOpen] = useState(false)
   const [isSaveTemplateOpen, setIsSaveTemplateOpen] = useState(false)
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isDashboardSidebarOpen, setIsDashboardSidebarOpen] = useState(false)
+  const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false)
   const [currentSessionId, setCurrentSessionId] = useState("1")
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [hasStartedSession, setHasStartedSession] = useState(false)
@@ -211,9 +216,16 @@ export default function DebatesPage() {
   return (
     <div className="flex h-screen bg-background">
       {!isMobile && (
+        <DashboardSidebar
+          isCollapsed={isDashboardSidebarOpen}
+          onToggleCollapse={() => setIsDashboardSidebarOpen(!isDashboardSidebarOpen)}
+        />
+      )}
+
+      {!isMobile && (
         <ChatSidebar
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          isCollapsed={isChatSidebarOpen}
+          onToggleCollapse={() => setIsChatSidebarOpen(!isChatSidebarOpen)}
           currentSessionId={currentSessionId}
           onSessionSelect={handleSessionSelect}
           onNewSession={handleNewSession}
@@ -229,21 +241,35 @@ export default function DebatesPage() {
           <div className={`flex items-center justify-between ${isMobile ? "p-3" : "p-4"}`}>
             <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
               {isMobile && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 flex-shrink-0"
-                  onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                >
-                  <Menu className="h-4 w-4" />
-                </Button>
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 flex-shrink-0"
+                    onClick={() => setIsDashboardSidebarOpen(!isDashboardSidebarOpen)}
+                  >
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 flex-shrink-0"
+                    onClick={() => setIsChatSidebarOpen(!isChatSidebarOpen)}
+                  >
+                    <History className="h-4 w-4" />
+                  </Button>
+                </>
               )}
 
-              <Link href="/overview">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </Link>
+              {!isMobile ? (
+                <OrgSwitcher />
+              ) : (
+                <Link href="/overview">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
 
               <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
                 {!isMobile && <h1 className="text-lg font-semibold flex-shrink-0">AI Debate</h1>}
@@ -260,6 +286,7 @@ export default function DebatesPage() {
             </div>
 
             <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+              {!isMobile && <TokenBalance />}
               <Button
                 variant="outline"
                 size="sm"
@@ -280,6 +307,7 @@ export default function DebatesPage() {
                 {!isMobile && "Templates"}
               </Button>
               <CanvasToggle isCanvasOpen={isCanvasOpen} onToggleCanvas={setIsCanvasOpen} />
+              {!isMobile && <QuickActionsMenu />}
               <ThemeToggle />
             </div>
           </div>
@@ -365,23 +393,39 @@ export default function DebatesPage() {
 
       {isMobile && (
         <AdaptiveModal
-          isOpen={!isSidebarCollapsed}
-          onClose={() => setIsSidebarCollapsed(true)}
+          isOpen={isDashboardSidebarOpen}
+          onClose={() => setIsDashboardSidebarOpen(false)}
+          title="Dashboard Menu"
+          description="Navigate through dashboard sections"
+        >
+          <div className="flex flex-col h-[70vh]">
+            <div className="p-4 border-b">
+              <OrgSwitcher />
+            </div>
+            <DashboardSidebar isCollapsed={false} onToggleCollapse={() => setIsDashboardSidebarOpen(false)} />
+          </div>
+        </AdaptiveModal>
+      )}
+
+      {isMobile && (
+        <AdaptiveModal
+          isOpen={isChatSidebarOpen}
+          onClose={() => setIsChatSidebarOpen(false)}
           title="Chat History"
           description="Browse your previous debate sessions"
         >
           <div className="flex flex-col h-[70vh]">
             <ChatSidebar
               isCollapsed={false}
-              onToggleCollapse={() => setIsSidebarCollapsed(true)}
+              onToggleCollapse={() => setIsChatSidebarOpen(false)}
               currentSessionId={currentSessionId}
               onSessionSelect={(sessionId) => {
                 handleSessionSelect(sessionId)
-                setIsSidebarCollapsed(true)
+                setIsChatSidebarOpen(false)
               }}
               onNewSession={() => {
                 handleNewSession()
-                setIsSidebarCollapsed(true)
+                setIsChatSidebarOpen(false)
               }}
             />
           </div>
