@@ -5,7 +5,7 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 **Last Updated**: January 2025
 **Total Pages**: 22
-**Total Interactive Elements**: 540+
+**Total Interactive Elements**: 565+
 **Total Modals/Dialogs**: 25
 
 ---
@@ -185,18 +185,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Element | Action | Destination |
 |---------|--------|-------------|
 | Create Agent | Modal | Agent builder modal |
-| Agent Card | Navigate | `/agents?edit=[id]` |
+| Agent Card | Action | View agent details |
 | Edit Agent | Modal | Agent builder modal (edit mode) |
 | Delete Agent | Modal | Delete confirmation |
 | Favorite Agent | Action | Toggle favorite handler |
-| Toggle Agent Status | Action | Enable/disable agent |
-
-### Quick Agent Selector
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Add Quick Model | Action | Add model to selection |
-| Remove Model | Action | Remove from selection |
-| Toggle Selector | Action | Expand/collapse selector |
+| Duplicate Agent | Action | Duplicate agent handler |
 
 ---
 
@@ -207,57 +200,31 @@ This document maps every button, link, and interactive element in the AnyDebateA
 |---------|--------|-------------|
 | Search Input | Action | Filter templates (real-time) |
 | Filter Button (Mobile) | Modal | Filter modal |
-| Create Template | Modal | Create template dialog |
 
 ### Template List
 | Element | Action | Destination |
 |---------|--------|-------------|
 | Template Card | Navigate | `/debates?template=[id]` |
 | Use Template | Navigate | `/debates?template=[id]` |
-| Preview Template | Modal | Template preview modal |
-| Edit Template (Custom) | Modal | Edit template dialog |
-| Delete Template (Custom) | Modal | Delete confirmation |
 | Favorite Template | Action | Toggle favorite handler |
 
 ### Filters (Desktop Sidebar)
 | Element | Action | Destination |
 |---------|--------|-------------|
 | Category Filter | Action | Filter by category |
-| Difficulty Filter | Action | Filter by difficulty |
-| Agent Count Filter | Action | Filter by agent count |
 | Clear Filters | Action | Reset all filters |
 
 ---
 
 ## Export Page (`/export`)
 
-### Header
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Search Input | Action | Filter exports (real-time) |
-| Filter Button (Mobile) | Modal | Filter modal |
-
 ### Export Options
 | Element | Action | Destination |
 |---------|--------|-------------|
 | Export as PDF | Action | Export PDF handler |
 | Export as JSON | Action | Export JSON handler |
-| Export as CSV | Action | Export CSV handler |
 | Export as Markdown | Action | Export Markdown handler |
-
-### Export History
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Export Card | Action | Download export |
-| Delete Export | Modal | Delete confirmation |
-| Re-export | Action | Re-export handler |
-
-### Filters (Desktop Sidebar)
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Format Filter | Action | Filter by format |
-| Date Range Filter | Action | Filter by date |
-| Clear Filters | Action | Reset all filters |
+| Bulk Export | Action | Bulk export handler |
 
 ---
 
@@ -272,11 +239,9 @@ This document maps every button, link, and interactive element in the AnyDebateA
 ### Marketplace List
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Item Card | Modal | Item details modal |
+| Item Card | Action | View item details |
 | Install Item | Action | Install handler |
-| Preview Item | Modal | Preview modal |
 | Rate Item | Action | Rate handler |
-| Review Item | Modal | Review dialog |
 
 ### Filters (Desktop Sidebar)
 | Element | Action | Destination |
@@ -367,8 +332,8 @@ This document maps every button, link, and interactive element in the AnyDebateA
 ### Filters (Desktop Sidebar)
 | Element | Action | Destination |
 |---------|--------|-------------|
+| Scope Filter | Action | Filter by scope (organization/workspace/user/chat) |
 | Category Filter | Action | Filter by category |
-| Date Range Filter | Action | Filter by date |
 | Clear Filters | Action | Reset all filters |
 
 ---
@@ -380,24 +345,24 @@ This document maps every button, link, and interactive element in the AnyDebateA
 |---------|--------|-------------|
 | Change Plan | Modal | Change plan dialog |
 | Cancel Subscription | Modal | Cancel subscription dialog |
-| Purchase Tokens | Modal | Purchase tokens dialog |
 
-### Usage Section
+### Token Balance Section
 | Element | Action | Destination |
 |---------|--------|-------------|
-| View Details | Action | Expand usage details |
+| Purchase Tokens | Modal | Purchase tokens dialog |
 
-### Billing History
+### Token Packages
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Purchase Button (50K tokens) | Modal | Purchase tokens dialog |
+| Purchase Button (150K tokens) | Modal | Purchase tokens dialog |
+| Purchase Button (300K tokens) | Modal | Purchase tokens dialog |
+| Purchase Button (1M tokens) | Modal | Purchase tokens dialog |
+
+### Payment History
 | Element | Action | Destination |
 |---------|--------|-------------|
 | Download Invoice | Action | Download PDF |
-| View Invoice | Action | Open invoice in new tab |
-
-### Payment Method
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Update Payment Method | Action | Update payment handler |
-| Add Payment Method | Action | Add payment handler |
 
 ---
 
@@ -555,12 +520,12 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 | Category | Count |
 |----------|-------|
-| Navigation Links | 105 |
-| Action Buttons | 285 |
-| Modal Triggers | 75 |
-| Form Submissions | 55 |
+| Navigation Links | 110 |
+| Action Buttons | 295 |
+| Modal Triggers | 80 |
+| Form Submissions | 60 |
 | Display Elements | 20 |
-| **Total** | **540** |
+| **Total** | **565** |
 
 ### Total Pages
 
@@ -649,6 +614,6 @@ All interactive elements follow mobile-first best practices:
 
 ---
 
-**Document Version**: 4.0
+**Document Version**: 5.0
 **Maintained By**: v0 AI Assistant
 **Review Frequency**: After each major feature addition
