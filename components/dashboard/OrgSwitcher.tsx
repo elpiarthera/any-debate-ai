@@ -33,7 +33,6 @@ const mockOrganizations: Organization[] = [
 export function OrgSwitcher() {
   const [selectedOrg, setSelectedOrg] = useState<Organization>(mockOrganizations[0])
   const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
   const { isMobile } = useDevice()
   const router = useRouter()
 
@@ -49,14 +48,7 @@ export function OrgSwitcher() {
 
   return (
     <>
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm animate-in fade-in-0"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-
-      <NavigationMenu viewport={false} onValueChange={(value) => setIsOpen(!!value)}>
+      <NavigationMenu viewport={false}>
         <NavigationMenuList>
           <NavigationMenuItem>
             <NavigationMenuTrigger
