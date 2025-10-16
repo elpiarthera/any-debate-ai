@@ -422,10 +422,54 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Purchase Button (300K tokens) | Modal | Purchase tokens dialog |
 | Purchase Button (1M tokens) | Modal | Purchase tokens dialog |
 
+### Token Balance Widget
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Add Tokens Button | Action | Trigger onBuyCredits callback (opens Purchase Tokens Dialog) |
+
+### Token Balance Warning
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Buy Credits Button | Navigate | `/dashboard/billing` |
+| Dismiss Button (Mobile) | Action | Dismiss warning handler |
+
 ### Payment History
 | Element | Action | Destination |
 |---------|--------|-------------|
 | Download Invoice | Action | Download PDF |
+
+---
+
+## Modals & Dialogs
+
+### Cancel Subscription Dialog
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Reason Selector | Action | Select cancellation reason (6 options) |
+| Confirmation Checkbox | Action | Toggle confirmation |
+| Keep Subscription Button | Action | Close dialog |
+| Cancel Subscription Button | Action | Submit cancellation (requires confirmation) |
+
+### Change Plan Dialog
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Free Plan Card | Action | Select Free plan |
+| Pro Plan Card | Action | Select Pro plan |
+| Enterprise Plan Card | Action | Select Enterprise plan |
+| Cancel Button | Action | Close dialog |
+| Switch to [Plan] Button | Action | Submit plan change |
+
+### Purchase Tokens Dialog
+| Element | Action | Destination |
+|---------|--------|-------------|
+| 50K Tokens Package | Action | Select 50K tokens ($10) |
+| 150K Tokens Package | Action | Select 150K tokens ($25) |
+| 300K Tokens Package | Action | Select 300K tokens ($45) |
+| 1M Tokens Package | Action | Select 1M tokens ($120) |
+| Credit Card Payment Method | Action | Select credit card |
+| PayPal Payment Method | Action | Select PayPal |
+| Cancel Button | Action | Close dialog |
+| Purchase for $[amount] Button | Action | Submit purchase |
 
 ---
 
@@ -741,11 +785,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Category | Count |
 |----------|-------|
 | Navigation Links | 110 |
-| Action Buttons | 420 |
+| Action Buttons | 435 |
 | Modal Triggers | 105 |
-| Form Submissions | 85 |
+| Form Submissions | 90 |
 | Display Elements | 25 |
-| **Total** | **745** |
+| **Total** | **765** |
 
 ### Total Pages
 
