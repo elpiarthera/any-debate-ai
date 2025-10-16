@@ -5,21 +5,90 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 **Last Updated**: January 2025
 **Total Pages**: 22
-**Total Interactive Elements**: 600+
-**Total Modals/Dialogs**: 26
+**Total Interactive Elements**: 846
+**Total Modals/Dialogs**: 29
 
 ---
 
 ## Landing Page (`/`)
 
+### Hero Section (Desktop)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Auto-redirect (non-demo mode) | Navigate | `/dashboard` |
-| Try AnyDebate Button (Hero Mobile) | Action | Exit demo mode → `/dashboard` |
-| Watch Demo Button (Hero Mobile) | Action | Scroll to `#interactive-demo` |
-| Try AnyDebate Button (Hero Desktop) | Action | Exit demo mode → `/dashboard` |
-| Watch Demo Button (Hero Desktop) | Action | Scroll to `#interactive-demo` |
-| Try the Demo Now Button (Final CTA) | Action | Exit demo mode → `/dashboard` |
+| Try AnyDebate Button | Action | Exit demo mode → `/dashboard` |
+| Watch Demo Button | Action | Scroll to `#interactive-demo` |
+
+### Hero Section (Mobile)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Try AnyDebate Button | Action | Exit demo mode → `/dashboard` |
+| Watch Demo Button | Action | Scroll to `#interactive-demo` |
+
+### Problem Deep Dive Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| AI Service Tabs (8 tabs) | Display | Shows browser tab chaos visualization |
+
+### Problem Solution Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Pain Points List (5 items) | Display | Shows problems with manual copy-paste |
+| Solutions List (5 items) | Display | Shows automated debate benefits |
+
+### Solution Reveal Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Solution Cards (3 cards) | Display | Shows automated debates, richer insights, one interface |
+
+### Three Modes Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Compare Mode Card | Display | Shows Compare Mode features |
+| Debate Mode Card | Display | Shows Debate Mode features |
+| Auto-Debate Mode Card | Display | Shows Auto-Debate Mode features |
+
+### See It In Action Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Old Way Card | Display | Shows manual copy-paste workflow |
+| AnyDebate Way Card | Display | Shows automated debate workflow |
+
+### Stats Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Stats Cards (4 cards) | Display | Shows 5 min, 4x, 87%, 12K+ metrics |
+
+### Benefits Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Benefit Cards (4 cards) | Display | Shows blind spots, save hours, richer debates, artifacts |
+
+### Features Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Feature Cards (6 cards) | Display | Shows AI debates, agent builder, artifacts, chat, export, dashboard |
+| Feature CTA Buttons (6 buttons) | Action | Navigate to respective features (placeholder) |
+
+### Agent Builder Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Agent Component Cards (3 cards) | Display | Shows 50 roles, 8 personas, 16 frameworks |
+| Pre-built Team Cards (8 cards) | Display | Shows business, product, creative, research, legal, marketing, tech, investment teams |
+
+### How It Works Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Step Cards (3 cards) | Display | Shows select agents, start debate, generate artifacts |
+
+### Final CTA Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Try the Demo Now Button | Action | Exit demo mode → `/dashboard` |
+
+### Auto-redirect (non-demo mode)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Page Load | Navigate | `/dashboard` |
 
 ---
 
