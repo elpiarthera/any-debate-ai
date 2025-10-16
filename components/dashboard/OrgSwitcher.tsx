@@ -62,7 +62,7 @@ export function OrgSwitcher() {
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </NavigationMenuTrigger>
             <NavigationMenuContent>
-              <div className={`${isMobile ? "w-[320px]" : "w-[700px]"} p-6`}>
+              <div className={`${isMobile ? "w-[320px]" : "w-[700px]"} p-6 bg-popover`}>
                 <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-[2fr_1fr]"} gap-6`}>
                   {/* Organizations List */}
                   <div className="space-y-4">
