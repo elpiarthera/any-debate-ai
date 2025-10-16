@@ -5,7 +5,7 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 **Last Updated**: January 2025
 **Total Pages**: 19
-**Total Interactive Elements**: 250+
+**Total Interactive Elements**: 400+
 **Total Modals/Dialogs**: 23
 
 ---
@@ -15,9 +15,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Element | Action | Destination |
 |---------|--------|-------------|
 | Auto-redirect (non-demo mode) | Navigate | `/dashboard` |
-| Start Demo Button (Hero) | Action | Exit demo mode → `/dashboard` |
-| Watch Demo Button (Hero) | Action | Scroll to interactive demo section |
-| Get Started Button (Final CTA) | Action | Exit demo mode → `/dashboard` |
+| Try AnyDebate Button (Hero Mobile) | Action | Exit demo mode → `/dashboard` |
+| Watch Demo Button (Hero Mobile) | Action | Scroll to `#interactive-demo` |
+| Try AnyDebate Button (Hero Desktop) | Action | Exit demo mode → `/dashboard` |
+| Watch Demo Button (Hero Desktop) | Action | Scroll to `#interactive-demo` |
+| Try the Demo Now Button (Final CTA) | Action | Exit demo mode → `/dashboard` |
 
 ---
 
@@ -65,10 +67,8 @@ This document maps every button, link, and interactive element in the AnyDebateA
 ### Recent Activity (Main Content)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| View All | Navigate | `/sessions` |
-| Session Card | Navigate | `/debates?sessionId=[id]` |
-| Resume Button | Action | Resume session handler |
-| Delete Button | Modal | Delete confirmation |
+| View All | Navigate | `/history` |
+| Activity Card | Action | Click handler (placeholder) |
 
 ### Agent Library (Main Content)
 | Element | Action | Destination |
@@ -168,13 +168,14 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Element | Action | Destination |
 |---------|--------|-------------|
 | Back Button | Navigate | `/debates` |
+| Theme Toggle | Action | Toggle dark/light mode |
 
-### Template Selection
+### Quick Start Panel
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Template Card | Action | Select template handler |
-| Start Debate | Navigate | `/debates?template=[id]` |
-| Choose Template Button | Modal | Template selector modal |
+| Scenario Card | Action | Load scenario → `/debates` |
+| Preset Card | Action | Load preset → `/debates` |
+| Start from Scratch | Navigate | `/debates` (clear session storage) |
 
 ---
 
@@ -205,7 +206,8 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Element | Action | Destination |
 |---------|--------|-------------|
 | Search Input | Action | Filter templates (real-time) |
-| Filter Button | Modal | Filter modal (mobile) |
+| Filter Button (Mobile) | Modal | Filter modal |
+| Create Template | Modal | Create template dialog |
 
 ### Template List
 | Element | Action | Destination |
@@ -215,117 +217,259 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Preview Template | Modal | Template preview modal |
 | Edit Template (Custom) | Modal | Edit template dialog |
 | Delete Template (Custom) | Modal | Delete confirmation |
+| Favorite Template | Action | Toggle favorite handler |
 
 ### Filters (Desktop Sidebar)
 | Element | Action | Destination |
 |---------|--------|-------------|
 | Category Filter | Action | Filter by category |
 | Difficulty Filter | Action | Filter by difficulty |
+| Agent Count Filter | Action | Filter by agent count |
 | Clear Filters | Action | Reset all filters |
 
 ---
 
-## Sessions Page (`/sessions`)
+## Export Page (`/export`)
 
 ### Header
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Search Input | Action | Filter sessions (real-time) |
-| Filter Button | Modal | Filter modal (mobile) |
-| Create New Session | Navigate | `/chat/new` |
+| Search Input | Action | Filter exports (real-time) |
+| Filter Button (Mobile) | Modal | Filter modal |
 
-### Session List
+### Export Options
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Session Card | Navigate | `/chat?session=[id]` |
-| Resume Session | Navigate | `/chat?session=[id]` |
-| Archive Session | Action | Archive handler |
-| Delete Session | Modal | Delete confirmation |
+| Export as PDF | Action | Export PDF handler |
+| Export as JSON | Action | Export JSON handler |
+| Export as CSV | Action | Export CSV handler |
+| Export as Markdown | Action | Export Markdown handler |
 
----
-
-## Messages Page (`/messages`)
-
-### Message List
+### Export History
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Message Card | Action | Expand message |
-| Reply Button | Action | Reply to message |
-| Like Button | Action | Add like reaction |
-| Dislike Button | Action | Add dislike reaction |
-| Bookmark Button | Action | Toggle bookmark |
-| Load More | Action | Load more messages |
+| Export Card | Action | Download export |
+| Delete Export | Modal | Delete confirmation |
+| Re-export | Action | Re-export handler |
 
----
-
-## Artifacts Page (`/artifacts`)
-
-### Header
+### Filters (Desktop Sidebar)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| View Mode Toggle (Grid/List) | Action | Switch view mode |
-| Show Favorites Only | Action | Filter favorites |
-| Remove Tag Filter | Action | Remove tag from filter |
-| Bulk Move | Action | Move selected artifacts |
-| Bulk Tag | Action | Tag selected artifacts |
-| Clear Selection | Action | Deselect all artifacts |
-
-### Artifact List
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Artifact Card | Modal | Artifact preview modal |
-| Select Artifact | Action | Toggle selection |
-| Favorite Artifact | Action | Toggle favorite |
-| Download Artifact | Action | Download file |
-| Delete Artifact | Modal | Delete confirmation |
-| Export Artifact | Modal | Artifact export modal |
-
-### Artifact Canvas
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Toggle Layout (Split/Full/Minimal) | Action | Switch canvas layout |
-| Close Canvas | Action | Close artifact canvas |
-| Show Filters | Action | Toggle filter panel |
-| Search Artifacts | Action | Filter by search query |
-
-### Artifact Search
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Search Input | Action | Filter artifacts |
-| Clear Search | Action | Clear search query |
-
-### Artifact Filter
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Type Filter | Action | Filter by type |
+| Format Filter | Action | Filter by format |
 | Date Range Filter | Action | Filter by date |
-| Sort By | Action | Change sort order |
-| Sort Order | Action | Toggle asc/desc |
 | Clear Filters | Action | Reset all filters |
 
 ---
 
-## Chat Sidebar
+## Marketplace Page (`/marketplace`)
 
 ### Header
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Toggle Collapse | Action | Collapse/expand sidebar |
-| New Debate | Action | Create new session |
-| Start from Template | Navigate | `/quick-start` |
+| Search Input | Action | Filter items (real-time) |
+| Filter Button (Mobile) | Modal | Filter modal |
 
-### Session List
+### Marketplace List
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Session Card | Action | Select session |
-| Export Session | Modal | Export dialog |
-| Edit Session | Modal | Edit session dialog |
-| Delete Session | Modal | Delete confirmation |
+| Item Card | Modal | Item details modal |
+| Install Item | Action | Install handler |
+| Preview Item | Modal | Preview modal |
+| Rate Item | Action | Rate handler |
+| Review Item | Modal | Review dialog |
 
-### Footer
+### Filters (Desktop Sidebar)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Settings | Navigate | `/settings` |
+| Category Filter | Action | Filter by category |
+| Price Filter | Action | Filter by price |
+| Rating Filter | Action | Filter by rating |
+| Clear Filters | Action | Reset all filters |
+
+---
+
+## Pricing Page (`/pricing`)
+
+### Pricing Cards
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Get Started (Free Plan) | Action | Sign up handler |
+| Subscribe (Starter Plan) | Action | Checkout handler |
+| Subscribe (Pro Plan) | Action | Checkout handler |
+
+### FAQ Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| FAQ Tab | Action | Expand/collapse FAQ item |
+
+### Final CTA
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Start Free Trial | Action | Sign up handler |
+
+---
+
+## Settings Page (`/settings`)
+
+### Tab Navigation
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Profile Tab | Action | Switch to profile panel |
+| Preferences Tab | Action | Switch to preferences panel |
+
+### Profile Panel
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Save Profile | Action | Save profile handler |
+| Upload Avatar | Action | Upload image handler |
+| Change Password | Action | Change password handler |
+
+### Preferences Panel
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Save Preferences | Action | Save preferences handler |
+| Theme Toggle | Action | Toggle dark/light mode |
+| Language Selector | Action | Change language |
+| Notification Settings | Action | Update notification preferences |
+
+---
+
+## Analytics Page (`/analytics`)
+
+### Metric Cards
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Total Debates Card | Display | Shows metric (no action) |
+| Active Agents Card | Display | Shows metric (no action) |
+| Avg. Session Time Card | Display | Shows metric (no action) |
+| Engagement Rate Card | Display | Shows metric (no action) |
+
+---
+
+## Memory Page (`/dashboard/memory`)
+
+### Header
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Input | Action | Filter memories (real-time) |
+| Filter Button (Mobile) | Modal | Filter modal |
+| Add Memory | Modal | Add memory dialog |
+| Import from Document | Action | Import handler |
+
+### Memory List
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Memory Card | Action | Expand memory details |
+| Edit Memory | Modal | Edit memory dialog |
+| Delete Memory | Modal | Delete confirmation |
+| Tag Filter | Action | Filter by tag |
+
+### Filters (Desktop Sidebar)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Category Filter | Action | Filter by category |
+| Date Range Filter | Action | Filter by date |
+| Clear Filters | Action | Reset all filters |
+
+---
+
+## Billing Page (`/dashboard/billing`)
+
+### Current Plan Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Change Plan | Modal | Change plan dialog |
+| Cancel Subscription | Modal | Cancel subscription dialog |
+| Purchase Tokens | Modal | Purchase tokens dialog |
+
+### Usage Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| View Details | Action | Expand usage details |
+
+### Billing History
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Download Invoice | Action | Download PDF |
+| View Invoice | Action | Open invoice in new tab |
+
+### Payment Method
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Update Payment Method | Action | Update payment handler |
+| Add Payment Method | Action | Add payment handler |
+
+---
+
+## Organization Overview (`/dashboard/organization/[slug]`)
+
+### Header
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Back to Dashboard | Navigate | `/dashboard` |
+| Organization Settings | Navigate | `/dashboard/organization/[slug]/settings` |
+| Invite Member | Modal | Invite member dialog |
+
+### Stats Cards
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Total Members Card | Display | Shows metric (no action) |
+| Active Debates Card | Display | Shows metric (no action) |
+| Token Usage Card | Display | Shows metric (no action) |
+
+### Recent Activity
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Activity Card | Action | View activity details |
+| View All Activity | Navigate | `/dashboard/organization/[slug]/activity` |
+
+### Quick Actions
+| Element | Action | Destination |
+|---------|--------|-------------|
+| View Members | Navigate | `/dashboard/organization/[slug]/members` |
+| Organization Settings | Navigate | `/dashboard/organization/[slug]/settings` |
+| View Billing | Navigate | `/dashboard/billing` |
+
+### Members Preview
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Member Avatar | Navigate | `/dashboard/organization/[slug]/members` |
+| View All Members | Navigate | `/dashboard/organization/[slug]/members` |
+
+---
+
+## Organization Settings (`/dashboard/organization/[slug]/settings`)
+
+### Header
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Back Button | Navigate | `/dashboard/organization/[slug]` |
+
+### Settings Form
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Save Settings | Action | Save settings handler |
+| Upload Logo | Action | Upload image handler |
+| Delete Organization | Modal | Delete confirmation |
+
+---
+
+## Organization Members (`/dashboard/organization/[slug]/members`)
+
+### Header
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Back Button | Navigate | `/dashboard/organization/[slug]` |
+| Invite Member | Modal | Invite member dialog |
+| Search Members | Action | Filter members (real-time) |
+
+### Member List
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Member Card | Action | View member details |
+| Change Role | Action | Change role handler |
+| Remove Member | Modal | Remove confirmation |
+| Resend Invitation | Action | Resend invite handler |
 
 ---
 
@@ -335,11 +479,12 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 | Category | Count |
 |----------|-------|
-| Navigation Links | 75 |
-| Action Buttons | 180 |
-| Modal Triggers | 55 |
-| Form Submissions | 40 |
-| **Total** | **350** |
+| Navigation Links | 95 |
+| Action Buttons | 240 |
+| Modal Triggers | 65 |
+| Form Submissions | 50 |
+| Display Elements | 15 |
+| **Total** | **465** |
 
 ### Total Pages
 
@@ -354,10 +499,10 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Type | Count |
 |------|-------|
 | Confirmation Dialogs | 8 |
-| Form Dialogs | 8 |
+| Form Dialogs | 10 |
 | Preview Modals | 5 |
 | Builder/Wizard Modals | 2 |
-| **Total** | **23** |
+| **Total** | **25** |
 
 ---
 
@@ -428,6 +573,6 @@ All interactive elements follow mobile-first best practices:
 
 ---
 
-**Document Version**: 3.0
+**Document Version**: 4.0
 **Maintained By**: v0 AI Assistant
 **Review Frequency**: After each major feature addition
