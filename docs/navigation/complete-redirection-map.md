@@ -25,6 +25,35 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 ## Dashboard Home (`/dashboard`)
 
+### Dashboard Header
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Menu Button (Mobile) | Action | Toggle sidebar modal |
+| Back to Landing | Navigate | `/` |
+| Organization Switcher | Modal | Organization dropdown menu |
+| Search Input (Desktop) | Action | Search debates/agents (real-time) |
+| Search Button (Mobile) | Action | Open search modal |
+| Notifications Button (Badge: 3) | Modal | Notifications dropdown |
+| New Debate Button | Navigate | `/debates` |
+| Theme Toggle | Action | Toggle dark/light mode |
+
+### Dashboard Layout
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Breadcrumb Links | Navigate | Navigate to breadcrumb path |
+
+### Organization Switcher (Mega Menu)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Organization Card | Action | Select organization |
+| Overview Link (per org) | Navigate | `/dashboard/organization/[slug]` |
+| Settings Link (per org, admin/owner) | Navigate | `/dashboard/organization/[slug]/settings` |
+| Members Link (per org, admin/owner) | Navigate | `/dashboard/organization/[slug]/members` |
+| New Organization Button | Modal | Create organization dialog |
+| Overview Quick Link | Navigate | `/dashboard/organization/[slug]` |
+| Manage Members Quick Link | Navigate | `/dashboard/organization/[slug]/members` |
+| Settings Quick Link | Navigate | `/dashboard/organization/[slug]/settings` |
+
 ### Sidebar Navigation
 | Element | Action | Destination |
 |---------|--------|-------------|
@@ -53,6 +82,21 @@ This document maps every button, link, and interactive element in the AnyDebateA
 |---------|--------|-------------|
 | Activity Card | Action | Click handler (placeholder) |
 
+### Quick Actions Menu (Header Dropdown)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| New Debate | Navigate | `/debates` |
+| Create Agent | Navigate | `/agents` |
+| Import Template | Navigate | `/dashboard/export` |
+| Export Data | Navigate | `/dashboard/export` |
+| Settings | Navigate | `/settings` |
+
+### Token Balance Widget (Header)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Token Balance Button | Modal | Token balance popover |
+| Add Tokens Button (in popover) | Navigate | `/dashboard/billing` |
+
 ### Quick Actions (Main Content)
 | Element | Action | Destination |
 |---------|--------|-------------|
@@ -73,11 +117,24 @@ This document maps every button, link, and interactive element in the AnyDebateA
 ### Agent Library (Main Content)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Create Agent | Navigate | `/agents` |
-| Agent Card | Navigate | `/agents?edit=[id]` |
-| Favorite Button | Action | Toggle favorite handler |
-| Delete Button | Modal | Delete confirmation |
-| Show Favorites Only Toggle | Action | Filter favorites |
+| New Agent Button | Navigate | `/agents` |
+| Search Agents Input | Action | Filter agents (real-time) |
+| Favorites Toggle Button | Action | Toggle favorites filter |
+| Agent Card | Action | View agent details |
+| Favorite Button (per agent) | Action | Toggle favorite handler |
+| Edit Button (per agent) | Navigate | `/agents?edit=[id]` |
+| Delete Button (per agent) | Modal | Delete confirmation |
+| Create First Agent Link (empty state) | Navigate | `/agents` |
+
+### Session List (Main Content)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Sessions Input | Action | Filter sessions (real-time) |
+| Filter Status Button | Action | Cycle through all/active/archived |
+| Session Card | Action | View session details |
+| Resume Button (per session) | Navigate | `/debates?session=[id]` |
+| Delete Button (per session) | Modal | Delete confirmation |
+| Start First Debate Link (empty state) | Navigate | `/debates` |
 
 ---
 
