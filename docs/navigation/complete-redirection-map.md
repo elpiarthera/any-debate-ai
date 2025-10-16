@@ -90,6 +90,24 @@ This document maps every button, link, and interactive element in the AnyDebateA
 |---------|--------|-------------|
 | Page Load | Navigate | `/dashboard` |
 
+### Company Logos Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Company Logo Bar | Display | Shows trusted company logos |
+
+### Interactive Demo Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Interactive Demo Component | Display | Shows demo interface |
+
+### Social Proof Section
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Testimonial Carousel | Display | Shows user testimonials (carousel) |
+| Social Proof Badge - Users | Display | Shows "12,459 active users" |
+| Social Proof Badge - Activity | Display | Shows "2,847 debates today" |
+| Social Proof Badge - Trending | Display | Shows "Trending in AI tools" |
+
 ---
 
 ## Dashboard Home (`/dashboard`)
