@@ -188,6 +188,60 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 ## Agents Page (`/agents`)
 
+### Header (Mobile)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Input | Action | Filter agents (real-time) |
+| Filter Button | Modal | Filter sheet (bottom drawer) |
+| Create Agent Button | Navigate | `/agents/new` |
+
+### Header (Desktop)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Input | Action | Filter agents (real-time) |
+| Create Agent Button | Navigate | `/agents/new` |
+
+### Quick Filters (Mobile - Horizontal Scroll)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| All Badge | Action | Clear category filter |
+| Business & Strategy Badge | Action | Filter by category |
+| Technology & Engineering Badge | Action | Filter by category |
+| Creative & Design Badge | Action | Filter by category |
+| Research & Analysis Badge | Action | Filter by category |
+
+### Filter Sheet (Mobile)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Favorites Badge | Action | Toggle favorites filter |
+| Templates Badge | Action | Toggle templates filter |
+| All Category Badge | Action | Clear category filter |
+| Category Badges (8 categories) | Action | Filter by category |
+
+### Sidebar Filters (Desktop)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| All Tab | Action | Show all agents |
+| Favorites Tab | Action | Show favorites only |
+| Templates Tab | Action | Show templates only |
+| All Categories Button | Action | Clear category filter |
+| Category Buttons (8 categories with counts) | Action | Filter by category |
+
+### Agent Card Actions
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Favorite Button (Star) | Action | Toggle favorite handler |
+| More Menu Button | Modal | Dropdown menu |
+| Use Agent (Menu) | Navigate | `/chat?agent=[id]` |
+| Edit (Menu) | Navigate | `/agents/[id]/edit` |
+| Duplicate (Menu) | Action | Duplicate agent handler |
+| Delete (Menu) | Action | Delete agent handler |
+
+### Empty State
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Create Agent Button | Navigate | `/agents/new` |
+
 ### Agent List
 | Element | Action | Destination |
 |---------|--------|-------------|
