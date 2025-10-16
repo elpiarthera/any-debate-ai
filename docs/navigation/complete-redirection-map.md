@@ -102,36 +102,73 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Canvas Toggle | Action | Open/close artifact canvas |
 | Theme Toggle | Action | Toggle dark/light mode |
 
+### Chat Sidebar
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Collapse/Expand Sidebar | Action | Toggle sidebar width |
+| New Debate Button | Action | Create new session handler |
+| Start from Template Button | Navigate | `/quick-start` |
+| Session Card | Action | Select session handler |
+| Export Session Button | Modal | Export dialog |
+| Edit Session Button | Modal | Edit session dialog |
+| Delete Session Button | Modal | Delete confirmation dialog |
+| Settings Button | Navigate | `/settings` |
+
+### Chat Thread
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Messages Button | Modal | Message search modal |
+| Export Chat Button | Modal | Export dialog |
+| Copy Message Button | Action | Copy to clipboard |
+| Like Message Button (AI only) | Action | Add like reaction |
+| Dislike Message Button (AI only) | Action | Add dislike reaction |
+| More Actions Button | Modal | Message actions dropdown |
+
+### Mention Input
+| Element | Action | Destination |
+|---------|--------|-------------|
+| @ Mention Button | Action | Show mention dropdown |
+| Send Message Button | Action | Submit message handler |
+| Agent Mention Selection | Action | Insert agent mention |
+
 ### Mode Selector
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Compare Mode | Action | Switch to compare mode |
-| Debate Mode | Action | Switch to debate mode |
-| Auto-Debate Mode | Action | Switch to auto-debate mode |
+| Compare Mode Button | Action | Switch to compare mode |
+| Debate Mode Button | Action | Switch to debate mode |
+| Auto-Debate Mode Button | Action | Switch to auto-debate mode |
+
+### Auto-Debate Setup
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Agent Selection Buttons | Action | Toggle agent selection |
+| Rounds Slider | Action | Set number of rounds (1-10) |
+| Initial Topic Textarea | Action | Enter debate topic |
+| Start Auto-Debate Button | Action | Start auto-debate |
+
+### Auto-Debate Mode (Running)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Pause Button | Action | Pause auto-debate |
+| Resume Button | Action | Resume auto-debate |
+| Stop Button | Action | Stop auto-debate |
+| Reset Button | Action | Reset and return to setup |
+| Start New Debate Button | Action | Reset configuration |
 
 ### Compare Mode
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Copy Response | Action | Copy to clipboard |
-| Like Response | Action | Add like reaction |
-| Dislike Response | Action | Add dislike reaction |
+| Copy Response Button | Action | Copy to clipboard |
+| Like Button | Action | Add like reaction |
+| Dislike Button | Action | Add dislike reaction |
 
 ### Debate Mode
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Reply to Message | Action | Set reply context |
-| Copy Message | Action | Copy to clipboard |
-| Ask Another Agent | Action | Mention agent in reply |
-| Cancel Reply | Action | Clear reply context |
-
-### Auto-Debate Mode
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Pause Debate | Action | Pause auto-debate |
-| Resume Debate | Action | Resume auto-debate |
-| Stop Debate | Action | Stop auto-debate |
-| Reset Debate | Action | Reset and start new |
-| Start New Debate | Action | Reset configuration |
+| Reply Button | Action | Set reply context |
+| Copy Button | Action | Copy to clipboard |
+| Ask Another Agent Button | Action | Mention agent in reply |
+| Cancel Reply Button | Action | Clear reply context |
 
 ### Empty State
 | Element | Action | Destination |
@@ -470,6 +507,13 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | PayPal Payment Method | Action | Select PayPal |
 | Cancel Button | Action | Close dialog |
 | Purchase for $[amount] Button | Action | Submit purchase |
+
+### Edit Session Dialog
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Session Title Input | Action | Enter new title |
+| Cancel Button | Action | Close dialog |
+| Save Changes Button | Action | Save title handler |
 
 ---
 
