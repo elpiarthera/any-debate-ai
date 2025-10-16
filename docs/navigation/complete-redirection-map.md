@@ -546,83 +546,191 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Search Artifacts | Action | Filter artifacts (real-time) |
 | Grid View | Action | Switch to grid view |
 | List View | Action | Switch to list view |
+| Theme Toggle | Action | Toggle dark/light mode |
 
-### Filters
+### Canvas Header
 | Element | Action | Destination |
 |---------|--------|-------------|
-| All Types Tab | Action | Show all artifacts |
+| Layout Toggle (Split/Full/Minimal) | Action | Cycle through layout modes |
+| Close Canvas | Action | Close artifact canvas |
+
+### Canvas Toolbar
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Create Artifact Dropdown | Modal | Artifact type selector |
+| Create Document | Action | Create document artifact |
+| Create Data Table | Action | Create data table artifact |
+| Create Checklist | Action | Create checklist artifact |
+| Create Chart | Action | Create chart artifact |
+| Templates Button | Modal | Template selector modal |
+| History Button | Modal | Version history panel |
+| Share Button | Action | Share artifact handler |
+| Export Button | Modal | Export modal |
+
+### Artifact List Panel (Left Side)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Artifacts Input | Action | Filter artifacts (real-time) |
+| Filter Toggle Button | Action | Show/hide filters |
+| Artifact Card | Action | Select artifact |
+| No Artifacts Empty State | Display | Shows empty state message |
+
+### Artifact Search Component
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Input | Action | Filter artifacts (real-time) |
+| Clear Search | Action | Clear search query |
+| Recent Searches | Action | Select recent search |
+| Popular Searches Badge | Action | Select popular search |
+
+### Artifact Filter Component
+| Element | Action | Destination |
+|---------|--------|-------------|
+| All Types Button | Action | Show all artifact types |
+| Documents Button | Action | Filter by documents |
+| Data Tables Button | Action | Filter by data tables |
+| Checklists Button | Action | Filter by checklists |
+| Charts Button | Action | Filter by charts |
+| Date Range Selector | Action | Filter by date range |
+| Sort By Selector | Action | Change sort order |
+| Sort Order Toggle | Action | Toggle asc/desc |
+| Tag Badge | Action | Toggle tag filter |
+| Collaborator Badge | Action | Toggle collaborator filter |
+| Clear All Filters | Action | Reset all filters |
+
+### Document Artifact
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Edit Button | Action | Enter edit mode |
+| Save Button | Action | Save document changes |
+| Cancel Button | Action | Cancel editing |
+| Fullscreen Toggle | Action | Toggle fullscreen mode |
+| Bold Button | Action | Insert bold markdown |
+| Italic Button | Action | Insert italic markdown |
+| Heading 1 Button | Action | Insert H1 markdown |
+| Heading 2 Button | Action | Insert H2 markdown |
+| List Button | Action | Insert list markdown |
+| Checklist Button | Action | Insert checklist markdown |
+| Code Button | Action | Insert code markdown |
+| Preview Toggle | Action | Toggle preview mode |
+| Section Card | Action | Navigate to section |
+| Add Section Button | Action | Add new section |
+
+### Data Table Artifact
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Table Input | Action | Filter table rows |
+| Column Filter Selector | Action | Filter by column |
+| Add Row Button | Action | Add new row |
+| Sort Column Header | Action | Sort by column |
+| Edit Cell | Action | Enter cell edit mode |
+| Save Cell Edit | Action | Save cell changes |
+| Delete Row Button | Action | Delete row |
+| Download Table | Action | Export table data |
+
+### Checklist Artifact
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Add Item Button | Action | Show add item form |
+| Toggle Item Checkbox | Action | Mark item complete/incomplete |
+| Add Item Input | Action | Enter new item text |
+| Priority Selector | Action | Set item priority |
+| Add Item Submit | Action | Create new item |
+| Cancel Add Item | Action | Hide add item form |
+| Complete All Button | Action | Mark all items complete |
+| Delete Completed Button | Action | Remove completed items |
+| Edit Item | Action | Edit item text |
+| Delete Item Button | Action | Delete item |
+
+### Chart Artifact
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Chart Type Selector | Action | Change chart type (bar/line/pie/area/scatter) |
+| Refresh Chart Button | Action | Refresh chart data |
+| Download Chart | Action | Export chart image |
+
+### Artifact Export Modal
+| Element | Action | Destination |
+|---------|--------|-------------|
+| PDF Format Card | Action | Select PDF export |
+| PNG Format Card | Action | Select PNG export |
+| CSV Format Card | Action | Select CSV export |
+| JSON Format Card | Action | Select JSON export |
+| Include Metadata Toggle | Action | Toggle metadata inclusion |
+| Export Button | Action | Download artifact |
+| Cancel Button | Action | Close modal |
+
+### Artifact Template Selector
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Templates Input | Action | Filter templates (real-time) |
+| All Types Tab | Action | Show all template types |
+| Documents Tab | Action | Filter by document templates |
+| Data Tables Tab | Action | Filter by table templates |
+| Checklists Tab | Action | Filter by checklist templates |
+| Charts Tab | Action | Filter by chart templates |
+| All Categories Button | Action | Show all categories |
+| Category Button | Action | Filter by category |
+| Template Card | Action | Select template (mobile) or preview (desktop) |
+| Use Template Button | Action | Create artifact from template |
+| Cancel Button | Action | Close modal |
+
+### Version History Panel
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Versions Input | Action | Filter versions (real-time) |
+| Author Filter Selector | Action | Filter by author |
+| Change Type Filter Selector | Action | Filter by change type |
+| Export History Button | Action | Download version history JSON |
+| Version Card | Action | Select version |
+| Compare Version Button | Action | Show version diff |
+| Restore Version Button | Action | Restore to version |
+| Close Button | Action | Close panel |
+
+### Artifact Library
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Artifacts Input | Action | Filter artifacts (real-time) |
+| Grid View Button | Action | Switch to grid view |
+| List View Button | Action | Switch to list view |
+| All Types Tab | Action | Show all artifact types |
 | Documents Tab | Action | Filter by documents |
-| Tables Tab | Action | Filter by data tables |
-| Lists Tab | Action | Filter by checklists |
+| Data Tables Tab | Action | Filter by tables |
+| Checklists Tab | Action | Filter by checklists |
 | Charts Tab | Action | Filter by charts |
 | Folder Selector | Action | Filter by folder |
 | Sort By Selector | Action | Change sort order |
 | Favorites Toggle | Action | Show favorites only |
-
-### Artifact List
-| Element | Action | Destination |
-|---------|--------|-------------|
 | Artifact Card | Action | Select artifact |
-| Toggle Favorite | Action | Add/remove favorite |
-| Edit Artifact | Modal | Edit artifact dialog |
-| Move to Folder | Modal | Folder selector dropdown |
-| Delete Artifact | Modal | Delete confirmation |
+| Toggle Favorite Button | Action | Add/remove favorite |
+| More Menu Button | Modal | Artifact actions dropdown |
+| Edit Artifact (Menu) | Modal | Edit artifact dialog |
+| Move to Folder (Menu) | Modal | Folder selector |
+| Delete Artifact (Menu) | Modal | Delete confirmation |
+| Bulk Move to Folder | Modal | Folder selector dropdown |
+| Bulk Add Tag | Modal | Tag selector dropdown |
+| Cancel Selection | Action | Clear bulk selection |
 
-### Bulk Actions
+### Save Artifact as Memory Form
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Move to Folder | Modal | Folder selector dropdown |
-| Add Tag | Modal | Tag selector dropdown |
-| Cancel Selection | Action | Clear selection |
+| Memory Title Input | Action | Set memory title |
+| Edit Learning Button | Action | Enter learning edit mode |
+| Save Learning | Action | Save learning changes |
+| Cancel Learning Edit | Action | Cancel learning edit |
+| Remove Learning Button | Action | Remove learning |
+| Scope Selector | Action | Set memory scope (user/workspace/organization) |
+| Tag Input | Action | Enter tag text |
+| Add Tag Button | Action | Add tag to memory |
+| Remove Tag Button | Action | Remove tag from memory |
+| Save to Memory Button | Action | Create memory from artifact |
+| Cancel Button | Action | Close modal |
 
----
-
-## Agent Builder Modal
-
-### Navigation
+### Collaboration Indicator
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Previous Button | Action | Go to previous step |
-| Next Button | Action | Go to next step |
-| Create Agent Button | Action | Save agent configuration |
-| Close Modal | Action | Close modal |
-
-### Step 1: Role Selector
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Search Roles Input | Action | Filter roles (real-time) |
-| All Categories Button | Action | Show all roles |
-| Business & Strategy Button | Action | Filter by category |
-| Technology & Engineering Button | Action | Filter by category |
-| Creative & Design Button | Action | Filter by category |
-| Research & Analysis Button | Action | Filter by category |
-| Communication & Media Button | Action | Filter by category |
-| Education & Training Button | Action | Filter by category |
-| Healthcare & Science Button | Action | Filter by category |
-| Legal & Compliance Button | Action | Filter by category |
-| Role Card | Action | Select role |
-
-### Step 2: Persona Selector
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Search Personas Input | Action | Filter personas (real-time) |
-| Persona Card | Action | Select persona |
-
-### Step 3: Framework Selector
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Search Frameworks Input | Action | Filter frameworks (real-time) |
-| All Tab | Action | Show all frameworks |
-| Analysis Tab | Action | Filter by analysis frameworks |
-| Creative Tab | Action | Filter by creative frameworks |
-| Strategic Tab | Action | Filter by strategic frameworks |
-| Framework Card | Action | Select framework |
-
-### Step 4: Agent Preview
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Agent Name Input | Action | Set agent name |
-| Custom Instructions Textarea | Action | Set custom instructions |
+| Collaboration Panel Toggle | Action | Expand/collapse activity feed |
+| Activity Card | Display | Shows collaboration event |
 
 ---
 
@@ -633,11 +741,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Category | Count |
 |----------|-------|
 | Navigation Links | 110 |
-| Action Buttons | 320 |
-| Modal Triggers | 85 |
-| Form Submissions | 65 |
-| Display Elements | 20 |
-| **Total** | **600** |
+| Action Buttons | 420 |
+| Modal Triggers | 105 |
+| Form Submissions | 85 |
+| Display Elements | 25 |
+| **Total** | **745** |
 
 ### Total Pages
 
