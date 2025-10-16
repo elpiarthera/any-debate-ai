@@ -48,7 +48,7 @@ export function OrgSwitcher() {
 
   return (
     <>
-      <NavigationMenu>
+      <NavigationMenu viewport={false}>
         <NavigationMenuList>
           <NavigationMenuItem>
             <NavigationMenuTrigger
