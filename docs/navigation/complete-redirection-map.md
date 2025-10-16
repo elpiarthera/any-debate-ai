@@ -838,54 +838,123 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 ## Organization Overview (`/dashboard/organization/[slug]`)
 
-### Header
+### Header (Desktop)
 | Element | Action | Destination |
 |---------|--------|-------------|
 | Back to Dashboard | Navigate | `/dashboard` |
 | Organization Settings | Navigate | `/dashboard/organization/[slug]/settings` |
 | Invite Member | Modal | Invite member dialog |
 
-### Stats Cards
+### Header (Mobile)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Total Members Card | Display | Shows metric (no action) |
-| Active Debates Card | Display | Shows metric (no action) |
-| Token Usage Card | Display | Shows metric (no action) |
+| Back to Dashboard | Navigate | `/dashboard` |
 
-### Recent Activity
+### Stats Cards (Desktop - 4 columns)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Activity Card | Action | View activity details |
-| View All Activity | Navigate | `/dashboard/organization/[slug]/activity` |
+| Total Members Card | Display | Shows count + growth (+2 from last month) |
+| Active Debates Card | Display | Shows count + growth (+3 from last week) |
+| Token Usage Card | Display | Shows percentage + used/total tokens |
+| Growth Card | Display | Shows +12% vs last month |
 
-### Quick Actions
+### Stats Cards (Mobile - 2 columns)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| View Members | Navigate | `/dashboard/organization/[slug]/members` |
-| Organization Settings | Navigate | `/dashboard/organization/[slug]/settings` |
-| View Billing | Navigate | `/dashboard/billing` |
+| Members Card | Display | Shows count + growth (+2 this month) |
+| Debates Card | Display | Shows count + growth (+3 this week) |
+| Tokens Card | Display | Shows percentage + used/total tokens |
+| Growth Card | Display | Shows +12% vs last month |
 
-### Members Preview
+### Quick Actions (Desktop - 3 columns)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Member Avatar | Navigate | `/dashboard/organization/[slug]/members` |
-| View All Members | Navigate | `/dashboard/organization/[slug]/members` |
+| Invite Members Card | Navigate | `/dashboard/organization/[slug]/members` |
+| Organization Settings Card | Navigate | `/dashboard/organization/[slug]/settings` |
+| View Reports Card | Action | View reports handler (placeholder) |
+
+### Quick Actions (Mobile - Stacked)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Invite Members Card | Navigate | `/dashboard/organization/[slug]/members` |
+| Settings Card | Navigate | `/dashboard/organization/[slug]/settings` |
+| View Reports Card | Action | View reports handler (placeholder) |
+
+### Recent Activity (Desktop)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Activity Item | Display | Shows user, action, time with icon |
+
+### Recent Activity (Mobile)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Activity Item | Display | Shows user, action, time with icon |
+
+### Team Members Preview (Desktop)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Member Avatar | Display | Shows member initials |
+| Member Name | Display | Shows member name |
+| Member Role | Display | Shows member role |
+| View All Members Button | Navigate | `/dashboard/organization/[slug]/members` |
+
+### Team Members Preview (Mobile)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Member Avatar | Display | Shows member initials |
+| Member Name | Display | Shows member name |
+| Member Role | Display | Shows member role |
+| View All Members Button | Navigate | `/dashboard/organization/[slug]/members` |
 
 ---
 
 ## Organization Settings (`/dashboard/organization/[slug]/settings`)
 
-### Header
+### Header (Desktop)
 | Element | Action | Destination |
 |---------|--------|-------------|
 | Back Button | Navigate | `/dashboard/organization/[slug]` |
 
-### Settings Form
+### Header (Mobile)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Save Settings | Action | Save settings handler |
-| Upload Logo | Action | Upload image handler |
-| Delete Organization | Modal | Delete confirmation |
+| Back Button | Navigate | `/dashboard/organization/[slug]` |
+
+### General Settings Form (Desktop)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Organization Name Input | Action | Update name field (3-50 chars) |
+| Organization Slug Input | Action | Update slug field (lowercase, numbers, hyphens) |
+| Description Textarea | Action | Update description field (max 500 chars) |
+| Character Counter | Display | Shows [count]/500 characters |
+| Cancel Button | Action | Reset form + show toast |
+| Save Changes Button | Action | Submit form + show toast |
+
+### General Settings Form (Mobile)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Organization Name Input | Action | Update name field (3-50 chars) |
+| Organization Slug Input | Action | Update slug field (lowercase, numbers, hyphens) |
+| Description Textarea | Action | Update description field (max 500 chars) |
+| Character Counter | Display | Shows [count]/500 characters |
+| Save Changes Button | Action | Submit form + show toast |
+| Cancel Button | Action | Reset form + show toast |
+
+### Danger Zone (Desktop)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Delete Organization Button | Modal | Delete organization confirmation dialog |
+
+### Danger Zone (Mobile)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Delete Organization Button | Modal | Delete organization confirmation dialog |
+
+### Delete Organization Confirmation Dialog
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Cancel Button | Action | Close dialog |
+| Delete Organization Button | Action | Delete organization → Navigate to `/dashboard` |
 
 ---
 
@@ -903,72 +972,28 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Search Members Input | Action | Filter members (real-time) |
 | Role Filter Selector | Action | Filter by role (All/Admin/Member) |
 
-### Member List
+### Member List (Desktop)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Member Card | Display | Shows member info |
-| More Actions Button (Admin only) | Modal | Member actions dropdown |
+| Member Card | Display | Shows avatar, name, email, role, join date |
+| More Actions Button (Non-owner) | Modal | Member actions dropdown |
 | Make Admin (Menu) | Action | Change role to admin |
 | Make Member (Menu) | Action | Change role to member |
-| Remove Member (Menu) | Action | Trigger onRemoveMember callback |
+| Remove Member (Menu) | Action | Remove member handler |
+
+### Member List (Mobile)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Member Card | Display | Shows avatar, name, email, role, join date |
+| More Actions Button (Non-owner) | Modal | Member actions dropdown |
+| Make Admin (Menu) | Action | Change role to admin |
+| Make Member (Menu) | Action | Change role to member |
+| Remove Member (Menu) | Action | Remove member handler |
 
 ### Empty State
 | Element | Action | Destination |
 |---------|--------|-------------|
 | No Members Message | Display | Shows empty state |
-
----
-
-## Organization Components (Used Throughout App)
-
-### Multi-Org Indicator
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Multi-Org Badge (Mobile) | Modal | Organization switcher modal |
-| Multi-Org Badge (Desktop) | Display | Shows organization count |
-| Organization Switcher (Desktop) | Modal | Organization dropdown |
-
-### Organization Context Display
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Organization Button | Action | Trigger onSwitchOrg callback |
-| Organization Avatar | Display | Shows organization icon |
-| Organization Name | Display | Shows organization name |
-| Role Badge | Display | Shows user role (Admin/Member) |
-| Member Count | Display | Shows member count |
-| Switch Indicator | Display | Shows chevron icon |
-
-### Organization Loading States
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Spinner Variant | Display | Shows loading spinner |
-| Skeleton Variant | Display | Shows skeleton loader |
-| Card Variant | Display | Shows card skeleton |
-| Error State - Try Again Button | Action | Retry loading |
-
-### Organization Member List
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Invite Member Button (Admin) | Action | Trigger onInviteMember callback |
-| Search Members Input | Action | Filter members (real-time) |
-| Role Filter Selector | Action | Filter by role (All/Admin/Member) |
-| Member Card | Display | Shows member info with avatar, name, email, role, join date |
-| More Actions Button (Admin) | Modal | Member actions dropdown |
-| Make Admin (Menu) | Action | Change role to admin |
-| Make Member (Menu) | Action | Change role to member |
-| Remove Member (Menu) | Action | Trigger onRemoveMember callback |
-
-### Role Badge
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Admin Badge | Display | Shows "Admin" with tooltip |
-| Member Badge | Display | Shows "Member" with tooltip |
-
-### Admin Only Guard
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Back to Dashboard Button | Navigate | `/dashboard` |
-| Access Denied Message | Display | Shows admin-only message |
 
 ---
 
