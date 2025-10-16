@@ -133,7 +133,7 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Filter Status Button | Action | Cycle through all/active/archived |
 | Session Card | Action | View session details |
 | Resume Button (per session) | Navigate | `/debates?session=[id]` |
-| Delete Button (per session) | Modal | Delete confirmation |
+| Delete Button (per session) | Modal | Delete confirmation dialog |
 | Start First Debate Link (empty state) | Navigate | `/debates` |
 
 ---
@@ -442,17 +442,23 @@ This document maps every button, link, and interactive element in the AnyDebateA
 ### Profile Panel
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Save Profile | Action | Save profile handler |
-| Upload Avatar | Action | Upload image handler |
-| Change Password | Action | Change password handler |
+| Upload Photo Button | Action | Upload image handler |
+| Full Name Input | Action | Update name field |
+| Email Input | Action | Update email field |
+| Bio Textarea | Action | Update bio field |
+| Change Password Button | Action | Change password handler |
+| Save Profile Button | Action | Save profile handler |
 
 ### Preferences Panel
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Save Preferences | Action | Save preferences handler |
-| Theme Toggle | Action | Toggle dark/light mode |
-| Language Selector | Action | Change language |
-| Notification Settings | Action | Update notification preferences |
+| Theme Selector (Light/Dark/System) | Action | Change theme |
+| Default Model Selector (GPT-4/GPT-3.5/Claude-3/Gemini) | Action | Change default model |
+| Auto-save Toggle | Action | Toggle auto-save |
+| Notifications Toggle | Action | Toggle notifications |
+| Sound Effects Toggle | Action | Toggle sound effects |
+| Language Selector (English/Español/Français/Deutsch/中文) | Action | Change language |
+| Save Preferences Button | Action | Save preferences handler |
 
 ---
 
@@ -886,11 +892,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Category | Count |
 |----------|-------|
 | Navigation Links | 110 |
-| Action Buttons | 435 |
+| Action Buttons | 450 |
 | Modal Triggers | 105 |
-| Form Submissions | 90 |
+| Form Submissions | 95 |
 | Display Elements | 25 |
-| **Total** | **765** |
+| **Total** | **785** |
 
 ### Total Pages
 
