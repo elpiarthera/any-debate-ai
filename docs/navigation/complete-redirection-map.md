@@ -5,8 +5,8 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 **Last Updated**: January 2025
 **Total Pages**: 22
-**Total Interactive Elements**: 900
-**Total Modals/Dialogs**: 30
+**Total Interactive Elements**: 970
+**Total Modals/Dialogs**: 33
 
 ---
 
@@ -652,7 +652,8 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Search Input | Action | Filter memories (real-time) |
 | Filter Button (Mobile) | Modal | Filter modal |
 | Add Memory | Modal | Add memory dialog |
-| Import from Document | Action | Import handler |
+| Import from Document | Modal | Document upload dialog |
+| Import from URL | Action | Show URL scraper component |
 
 ### Memory List
 | Element | Action | Destination |
@@ -665,8 +666,8 @@ This document maps every button, link, and interactive element in the AnyDebateA
 ### Filters (Desktop Sidebar)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Scope Filter | Action | Filter by scope (organization/workspace/user/chat) |
-| Category Filter | Action | Filter by category |
+| Scope Filter (All/Organization/Workspace/User/Chat) | Action | Filter by scope |
+| Category Filter (All/Technical/Business/Process/Product/Other) | Action | Filter by category |
 | Clear Filters | Action | Reset all filters |
 
 ---
@@ -777,6 +778,61 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Email Input | Action | Enter email address |
 | Send Me The Guide Button | Action | Submit email → Track email capture |
 | Close Dialog | Action | Dismiss popup |
+
+### Add Memory Form Dialog
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Title Input | Action | Enter memory title |
+| Category Selector (8 categories) | Action | Select category |
+| Scope Selector (Organization/Workspace/User/Chat) | Action | Select memory scope |
+| Source Type Buttons (Manual/Document/URL) | Action | Select source type |
+| Source URL Input (if URL selected) | Action | Enter source URL |
+| Content Textarea | Action | Enter memory content (Markdown supported) |
+| Tag Input | Action | Enter tag name |
+| Add Tag Button | Action | Add tag to list |
+| Remove Tag Button (per tag) | Action | Remove tag from list |
+| Cancel Button | Action | Close dialog |
+| Save Memory Button | Action | Submit form → Create memory |
+
+### Edit Memory Dialog
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Title Input | Action | Update memory title |
+| Category Selector (5 categories) | Action | Update category |
+| Scope Selector (Organization/Workspace/User/Chat) | Action | Update memory scope |
+| Source Type Buttons (Manual/Document/URL) | Action | Update source type |
+| Source URL Input (if URL selected) | Action | Update source URL |
+| Content Textarea | Action | Update memory content (Markdown supported) |
+| Tag Input | Action | Enter tag name |
+| Add Tag Button | Action | Add tag to list |
+| Remove Tag Button (per tag) | Action | Remove tag from list |
+| Cancel Button | Action | Close dialog |
+| Save Changes Button | Action | Submit form → Update memory |
+
+### Document Upload Dialog
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Drag & Drop Zone (Desktop) | Action | Drop file to upload |
+| Choose File Button (Desktop) | Action | Open file picker |
+| Tap to Choose File (Mobile) | Action | Open file picker |
+| Remove File Button | Action | Remove uploaded file |
+| Extracted Memory Card | Display | Shows AI-extracted memory |
+| Remove Memory Button (per memory) | Action | Remove from extraction list |
+| Cancel Button | Action | Close dialog |
+| Approve All Button | Action | Add all extracted memories |
+
+### URL Scraper Component
+| Element | Action | Destination |
+|---------|--------|-------------|
+| URL Input | Action | Enter URL to scrape |
+| Scrape Content Button | Action | Fetch and scrape URL |
+| Scraped Content Preview | Display | Shows title, description, image |
+| External Link Button | Navigate | Open URL in new tab |
+| Extracted Memory Card | Display | Shows AI-extracted memory |
+| Approve Button (per memory) | Action | Add memory to collection |
+| Reject Button (per memory) | Action | Remove from extraction list |
+| Start Over Button | Action | Reset scraper |
+| Scrape Another URL Button | Action | Reset scraper |
 
 ---
 
@@ -923,11 +979,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Category | Count |
 |----------|-------|
 | Navigation Links | 115 |
-| Action Buttons | 495 |
-| Modal Triggers | 121 |
-| Form Submissions | 110 |
-| Display Elements | 59 |
-| **Total** | **900** |
+| Action Buttons | 545 |
+| Modal Triggers | 125 |
+| Form Submissions | 125 |
+| Display Elements | 60 |
+| **Total** | **970** |
 
 ### Total Pages
 
@@ -942,11 +998,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Type | Count |
 |------|-------|
 | Confirmation Dialogs | 9 |
-| Form Dialogs | 12 |
+| Form Dialogs | 15 |
 | Preview Modals | 5 |
 | Builder/Wizard Modals | 3 |
 | Exit Intent Popup | 1 |
-| **Total** | **30** |
+| **Total** | **33** |
 
 ---
 
