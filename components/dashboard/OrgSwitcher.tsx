@@ -33,6 +33,7 @@ const mockOrganizations: Organization[] = [
 export function OrgSwitcher() {
   const [selectedOrg, setSelectedOrg] = useState<Organization>(mockOrganizations[0])
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const { isMobile } = useDevice()
   const router = useRouter()
 
@@ -48,7 +49,14 @@ export function OrgSwitcher() {
 
   return (
     <>
-      <NavigationMenu viewport={false}>
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm animate-in fade-in-0"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <NavigationMenu viewport={false} onValueChange={(value) => setIsOpen(!!value)}>
         <NavigationMenuList>
           <NavigationMenuItem>
             <NavigationMenuTrigger
@@ -62,7 +70,7 @@ export function OrgSwitcher() {
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </NavigationMenuTrigger>
             <NavigationMenuContent>
-              <div className={`${isMobile ? "w-[320px] max-h-[70vh]" : "w-[700px]"} bg-popover`}>
+              <div className={`${isMobile ? "w-[320px] max-h-[70vh]" : "w-[700px]"} bg-popover relative z-50`}>
                 <div className={`${isMobile ? "p-4 overflow-y-auto max-h-[70vh]" : "p-6"}`}>
                   <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-[2fr_1fr]"} gap-6`}>
                     {/* Organizations List */}
@@ -188,7 +196,6 @@ export function OrgSwitcher() {
                         </div>
                       </div>
                     )}
-                    {/* </CHANGE> */}
                   </div>
                 </div>
               </div>
