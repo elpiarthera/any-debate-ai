@@ -1,5 +1,5 @@
 import type { DebateTemplate } from "../types"
-import { AGENT_TEAM_PRESETS } from "./agent-teams.ts"
+import { AGENT_TEAM_PRESETS } from "./agent-teams"
 
 export interface QuickStartScenario {
   id: string
