@@ -4,8 +4,8 @@ export {
   getPresetsByCategory,
   searchPresets,
   getPresetCategories,
-} from "./agent-teams"
-export type { AgentTeamPreset } from "./agent-teams"
+} from "./agent-teams.ts"
+export type { AgentTeamPreset } from "./agent-teams.ts"
 
 export {
   QUICK_START_SCENARIOS,
@@ -13,5 +13,5 @@ export {
   getScenariosByCategory,
   searchScenarios,
   convertScenarioToTemplate,
-} from "./quick-start"
-export type { QuickStartScenario } from "./quick-start"
+} from "./quick-start.ts"
+export type { QuickStartScenario } from "./quick-start.ts"
