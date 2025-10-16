@@ -4,8 +4,8 @@
 This document maps every button, link, and interactive element in the AnyDebateAI application, documenting their actions and destinations.
 
 **Last Updated**: January 2025
-**Total Pages**: 16
-**Total Interactive Elements**: 150+
+**Total Pages**: 19
+**Total Interactive Elements**: 180+
 
 ---
 
@@ -83,7 +83,7 @@ This document maps every button, link, and interactive element in the AnyDebateA
 |---------|--------|-------------|
 | Toggle Sidebar | Action | Toggle sidebar collapse |
 | Back to Overview | Navigate | `/overview` |
-| Save as Template | Action | Save template handler |
+| Save as Template | Modal | Save template modal |
 | New Debate | Navigate | `/quick-start` |
 
 ### Empty State
@@ -113,6 +113,7 @@ This document maps every button, link, and interactive element in the AnyDebateA
 |---------|--------|-------------|
 | Template Card | Action | Select template handler |
 | Start Debate | Navigate | `/debates?template=[id]` |
+| Choose Template Button | Modal | Template selector modal |
 
 ---
 
@@ -121,9 +122,9 @@ This document maps every button, link, and interactive element in the AnyDebateA
 ### Agent List
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Create Agent | Modal | Create agent dialog |
+| Create Agent | Modal | Agent builder modal |
 | Agent Card | Navigate | `/agents?edit=[id]` |
-| Edit Agent | Navigate | `/agents?edit=[id]` |
+| Edit Agent | Modal | Agent builder modal (edit mode) |
 | Delete Agent | Modal | Delete confirmation |
 | Favorite Agent | Action | Toggle favorite handler |
 
@@ -386,6 +387,7 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Artifact Card | Modal | Artifact preview modal |
 | Download Artifact | Action | Download file |
 | Delete Artifact | Modal | Delete confirmation |
+| Export Artifact | Modal | Artifact export modal |
 
 ---
 
@@ -394,7 +396,7 @@ This document maps every button, link, and interactive element in the AnyDebateA
 ### Create Organization Dialog
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Create Button | Action | Create org handler → Navigate to new org |
+| Create Button | Action | Create org handler → Navigate to `/dashboard/organization/[slug]` |
 | Cancel Button | Action | Close dialog |
 
 ### Invite Member Dialog
@@ -451,6 +453,49 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Upload & Extract | Action | Upload handler → Close dialog |
 | Cancel Button | Action | Close dialog |
 
+### Save Template Modal
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Save Template | Action | Save template handler → Close modal |
+| Cancel Button | Action | Close modal |
+| Add Tag | Action | Add tag to template |
+| Remove Tag | Action | Remove tag from template |
+| Include Current Topic | Action | Toggle topic inclusion |
+
+### Template Selector Modal
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Quick Start Tab | Action | Switch to quick start view |
+| Templates Tab | Action | Switch to templates view |
+| Template Card | Action | Select template → Navigate to `/debates?template=[id]` |
+| Preview Template | Action | Show template details |
+| Use Template | Action | Select template → Navigate to `/debates?template=[id]` |
+| Start from Scratch | Action | Close modal → Navigate to `/debates` |
+| Cancel Button | Action | Close modal |
+
+### Agent Builder Modal
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Next Button | Action | Advance to next step |
+| Previous Button | Action | Go back to previous step |
+| Create Agent | Action | Save agent config → Close modal |
+| Role Selection | Action | Select agent role |
+| Persona Selection | Action | Select agent persona |
+| Framework Selection | Action | Select debate framework |
+| Name Input | Action | Set agent name |
+| Custom Instructions | Action | Add custom instructions |
+
+### Artifact Export Modal
+| Element | Action | Destination |
+|---------|--------|-------------|
+| PDF Format | Action | Select PDF export format |
+| PNG Format | Action | Select PNG export format |
+| CSV Format | Action | Select CSV export format |
+| JSON Format | Action | Select JSON export format |
+| Include Metadata Toggle | Action | Toggle metadata inclusion |
+| Export Button | Action | Download file → Close modal |
+| Cancel Button | Action | Close modal |
+
 ---
 
 ## Summary Statistics
@@ -459,11 +504,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 | Category | Count |
 |----------|-------|
-| Navigation Links | 45 |
-| Action Buttons | 62 |
-| Modal Triggers | 28 |
-| Form Submissions | 15 |
-| **Total** | **150** |
+| Navigation Links | 52 |
+| Action Buttons | 78 |
+| Modal Triggers | 35 |
+| Form Submissions | 18 |
+| **Total** | **183** |
 
 ### Total Pages
 
@@ -478,9 +523,10 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Type | Count |
 |------|-------|
 | Confirmation Dialogs | 8 |
-| Form Dialogs | 6 |
-| Preview Modals | 4 |
-| **Total** | **18** |
+| Form Dialogs | 8 |
+| Preview Modals | 5 |
+| Builder/Wizard Modals | 2 |
+| **Total** | **23** |
 
 ---
 
@@ -494,13 +540,14 @@ This document maps every button, link, and interactive element in the AnyDebateA
 ### Secondary Navigation
 - Breadcrumbs (organization pages)
 - Back buttons (detail pages)
-- Tab navigation (settings, billing, organization)
+- Tab navigation (settings, billing, organization, template selector)
 
 ### Action Patterns
 - Modal dialogs for destructive actions
 - Inline actions for quick operations
 - Form submissions with validation
 - Real-time filtering and search
+- Multi-step wizards (Agent Builder)
 
 ---
 
@@ -512,6 +559,7 @@ All interactive elements follow mobile-first best practices:
 - Cards: ≥ 80px height
 - Modals: Adaptive (drawer on mobile, dialog on desktop)
 - Navigation: Collapsible sidebar on mobile
+- Wizards: Step-by-step progression with clear navigation
 
 ---
 
@@ -525,9 +573,11 @@ All interactive elements follow mobile-first best practices:
 6. All delete actions require confirmation dialogs
 7. All filters support real-time updates
 8. All search inputs support debounced filtering
+9. Multi-step modals (Agent Builder) include progress indicators
+10. Export modals support multiple format options with metadata toggles
 
 ---
 
-**Document Version**: 1.0
+**Document Version**: 2.0
 **Maintained By**: v0 AI Assistant
 **Review Frequency**: After each major feature addition
