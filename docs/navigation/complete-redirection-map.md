@@ -4,9 +4,9 @@
 This document maps every button, link, and interactive element in the AnyDebateAI application, documenting their actions and destinations.
 
 **Last Updated**: January 2025
-**Total Pages**: 19
-**Total Interactive Elements**: 400+
-**Total Modals/Dialogs**: 23
+**Total Pages**: 22
+**Total Interactive Elements**: 540+
+**Total Modals/Dialogs**: 25
 
 ---
 
@@ -473,26 +473,102 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 ---
 
+## Sessions Page (`/sessions`)
+
+### Header
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Sessions | Action | Filter sessions (real-time) |
+| Create New Session | Navigate | `/chat/new` |
+
+### Session List
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Session Card | Navigate | `/chat?session=[id]` |
+| Resume Session | Navigate | `/chat?session=[id]` |
+| Archive Session | Action | Toggle archive status |
+| Delete Session | Modal | Delete confirmation |
+
+---
+
+## Messages Page (`/messages`)
+
+### Header
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Messages | Action | Filter messages (real-time) |
+
+### Message List
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Message Card | Action | Expand message details |
+| Reply to Message | Action | Reply handler |
+| Like Message | Action | Add like reaction |
+| Dislike Message | Action | Add dislike reaction |
+| Bookmark Message | Action | Toggle bookmark |
+| Load More | Action | Load more messages |
+
+---
+
+## Artifacts Page (`/artifacts`)
+
+### Header
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Artifacts | Action | Filter artifacts (real-time) |
+| Grid View | Action | Switch to grid view |
+| List View | Action | Switch to list view |
+
+### Filters
+| Element | Action | Destination |
+|---------|--------|-------------|
+| All Types Tab | Action | Show all artifacts |
+| Documents Tab | Action | Filter by documents |
+| Tables Tab | Action | Filter by data tables |
+| Lists Tab | Action | Filter by checklists |
+| Charts Tab | Action | Filter by charts |
+| Folder Selector | Action | Filter by folder |
+| Sort By Selector | Action | Change sort order |
+| Favorites Toggle | Action | Show favorites only |
+
+### Artifact List
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Artifact Card | Action | Select artifact |
+| Toggle Favorite | Action | Add/remove favorite |
+| Edit Artifact | Modal | Edit artifact dialog |
+| Move to Folder | Modal | Folder selector dropdown |
+| Delete Artifact | Modal | Delete confirmation |
+
+### Bulk Actions
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Move to Folder | Modal | Folder selector dropdown |
+| Add Tag | Modal | Tag selector dropdown |
+| Cancel Selection | Action | Clear selection |
+
+---
+
 ## Summary Statistics
 
 ### Total Interactive Elements by Category
 
 | Category | Count |
 |----------|-------|
-| Navigation Links | 95 |
-| Action Buttons | 240 |
-| Modal Triggers | 65 |
-| Form Submissions | 50 |
-| Display Elements | 15 |
-| **Total** | **465** |
+| Navigation Links | 105 |
+| Action Buttons | 285 |
+| Modal Triggers | 75 |
+| Form Submissions | 55 |
+| Display Elements | 20 |
+| **Total** | **540** |
 
 ### Total Pages
 
 | Type | Count |
 |------|-------|
-| Main Pages | 16 |
+| Main Pages | 19 |
 | Dynamic Routes | 3 |
-| **Total** | **19** |
+| **Total** | **22** |
 
 ### Total Modals/Dialogs
 
