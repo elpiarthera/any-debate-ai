@@ -5,7 +5,7 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 **Last Updated**: January 2025
 **Total Pages**: 22
-**Total Interactive Elements**: 880
+**Total Interactive Elements**: 900
 **Total Modals/Dialogs**: 30
 
 ---
@@ -269,9 +269,10 @@ This document maps every button, link, and interactive element in the AnyDebateA
 |---------|--------|-------------|
 | Search Sessions Input | Action | Filter sessions (real-time) |
 | Filter Status Button | Action | Cycle through all/active/archived |
-| Session Card | Action | View session details |
-| Resume Button (per session) | Navigate | `/debates?session=[id]` |
-| Delete Button (per session) | Modal | Delete confirmation dialog |
+| Session Card | Action | Select session handler |
+| Export Session Button | Modal | Export dialog |
+| Edit Session Button | Modal | Edit session dialog |
+| Delete Session Button | Modal | Delete confirmation dialog |
 | Start First Debate Link (empty state) | Navigate | `/debates` |
 
 ---
@@ -525,26 +526,57 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 ## Marketplace Page (`/marketplace`)
 
-### Header
+### Header (Mobile)
 | Element | Action | Destination |
 |---------|--------|-------------|
 | Search Input | Action | Filter items (real-time) |
-| Filter Button (Mobile) | Modal | Filter modal |
+| Filter Button | Modal | Filter modal |
 
-### Marketplace List
+### Header (Desktop)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Item Card | Action | View item details |
-| Install Item | Action | Install handler |
-| Rate Item | Action | Rate handler |
+| Search Input | Action | Filter items (real-time) |
 
-### Filters (Desktop Sidebar)
+### Marketplace List (Mobile)
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Category Filter | Action | Filter by category |
-| Price Filter | Action | Filter by price |
-| Rating Filter | Action | Filter by rating |
-| Clear Filters | Action | Reset all filters |
+| Item Card | Display | Shows item details |
+| Install Button | Action | Install item handler |
+| Installed Button | Action | Uninstall item handler |
+| Rating Display | Display | Shows star rating |
+| Downloads Display | Display | Shows download count |
+| Price Badge | Display | Shows Free/Premium |
+
+### Marketplace List (Desktop)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Item Card | Display | Shows item details |
+| Install Button | Action | Install item handler |
+| Installed Button | Action | Uninstall item handler |
+| Rating Display | Display | Shows star rating |
+| Downloads Display | Display | Shows download count |
+| Price Badge | Display | Shows Free/Premium |
+
+### Filters Modal (Mobile)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| All Categories Button | Action | Clear category filter |
+| Agent Category Button | Action | Filter by Agent |
+| Template Pack Category Button | Action | Filter by Template Pack |
+| Extension Category Button | Action | Filter by Extension |
+
+### Filters Sidebar (Desktop)
+| Element | Action | Destination |
+|---------|--------|-------------|
+| All Categories Button | Action | Clear category filter |
+| Agent Category Button | Action | Filter by Agent |
+| Template Pack Category Button | Action | Filter by Template Pack |
+| Extension Category Button | Action | Filter by Extension |
+
+### Empty State
+| Element | Action | Destination |
+|---------|--------|-------------|
+| No Items Found Message | Display | Shows empty state with suggestion |
 
 ---
 
@@ -891,11 +923,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Category | Count |
 |----------|-------|
 | Navigation Links | 115 |
-| Action Buttons | 485 |
-| Modal Triggers | 120 |
+| Action Buttons | 495 |
+| Modal Triggers | 121 |
 | Form Submissions | 110 |
-| Display Elements | 50 |
-| **Total** | **880** |
+| Display Elements | 59 |
+| **Total** | **900** |
 
 ### Total Pages
 
