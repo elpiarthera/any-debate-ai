@@ -86,15 +86,56 @@ This document maps every button, link, and interactive element in the AnyDebateA
 ### Header
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Toggle Sidebar | Action | Toggle sidebar collapse |
+| Toggle Sidebar (Mobile) | Action | Toggle sidebar collapse |
 | Back to Overview | Navigate | `/overview` |
+| Quick Agent Selector | Action | Add/remove models |
+| Open Agent Builder | Modal | Agent builder modal |
 | Save as Template | Modal | Save template modal |
-| New Debate | Navigate | `/quick-start` |
+| Templates Button | Navigate | `/quick-start` |
+| Canvas Toggle | Action | Open/close artifact canvas |
+| Theme Toggle | Action | Toggle dark/light mode |
+
+### Mode Selector
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Compare Mode | Action | Switch to compare mode |
+| Debate Mode | Action | Switch to debate mode |
+| Auto-Debate Mode | Action | Switch to auto-debate mode |
+
+### Compare Mode
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Copy Response | Action | Copy to clipboard |
+| Like Response | Action | Add like reaction |
+| Dislike Response | Action | Add dislike reaction |
+
+### Debate Mode
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Reply to Message | Action | Set reply context |
+| Copy Message | Action | Copy to clipboard |
+| Ask Another Agent | Action | Mention agent in reply |
+| Cancel Reply | Action | Clear reply context |
+
+### Auto-Debate Mode
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Pause Debate | Action | Pause auto-debate |
+| Resume Debate | Action | Resume auto-debate |
+| Stop Debate | Action | Stop auto-debate |
+| Reset Debate | Action | Reset and start new |
+| Start New Debate | Action | Reset configuration |
 
 ### Empty State
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Start Your First Debate | Navigate | `/quick-start` |
+| Open Quick Start | Navigate | `/quick-start` |
+
+### Message Input
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Send Message | Action | Submit message |
+| @ Mention Agent | Action | Insert agent mention |
 
 ### Chat Interface
 | Element | Action | Destination |
@@ -118,15 +159,6 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Remove Model | Action | Remove model column |
 | Retry Message | Action | Regenerate response |
 | Stop Streaming | Action | Stop generation |
-
-### Auto-Debate Mode
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Pause Debate | Action | Pause auto-debate |
-| Resume Debate | Action | Resume auto-debate |
-| Stop Debate | Action | Stop auto-debate |
-| Reset Debate | Action | Reset and start new |
-| Start New Debate | Action | Reset configuration |
 
 ---
 
@@ -200,209 +232,15 @@ This document maps every button, link, and interactive element in the AnyDebateA
 |---------|--------|-------------|
 | Search Input | Action | Filter sessions (real-time) |
 | Filter Button | Modal | Filter modal (mobile) |
+| Create New Session | Navigate | `/chat/new` |
 
 ### Session List
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Session Card | Navigate | `/debates?sessionId=[id]` |
-| Resume Session | Navigate | `/debates?sessionId=[id]` |
+| Session Card | Navigate | `/chat?session=[id]` |
+| Resume Session | Navigate | `/chat?session=[id]` |
 | Archive Session | Action | Archive handler |
 | Delete Session | Modal | Delete confirmation |
-
-### Filters (Desktop Sidebar)
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Status Filter | Action | Filter by status |
-| Date Filter | Action | Filter by date range |
-| Clear Filters | Action | Reset all filters |
-
----
-
-## Memory Page (`/dashboard/memory`)
-
-### Header
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Search Input | Action | Filter memories (real-time) |
-| Filter Button | Modal | Filter modal (mobile) |
-| Add Memory | Modal | Add memory dialog |
-| Upload Document | Modal | Document upload dialog |
-| Import from URL | Modal | URL scraper modal |
-
-### Memory List
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Memory Card | Action | Expand/collapse card |
-| Edit Memory | Modal | Edit memory dialog |
-| Delete Memory | Modal | Delete confirmation |
-
-### Filters (Desktop Sidebar)
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Type Filter | Action | Filter by type |
-| Source Filter | Action | Filter by source |
-| Clear Filters | Action | Reset all filters |
-
----
-
-## Analytics Page (`/analytics`)
-
-### Analytics Dashboard
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Date Range Picker | Action | Update date range |
-| Export Data | Action | Download CSV |
-| Metric Card | Action | Expand details |
-
----
-
-## Export Page (`/export`)
-
-### Export Options
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Export Debates | Action | Download debates JSON |
-| Export Agents | Action | Download agents JSON |
-| Export Templates | Action | Download templates JSON |
-| Export All Data | Action | Download complete backup |
-| Schedule Export | Modal | Schedule export dialog |
-
----
-
-## Marketplace Page (`/marketplace`)
-
-### Header
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Search Input | Action | Filter items (real-time) |
-| Filter Button | Modal | Filter modal (mobile) |
-
-### Marketplace List
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Item Card | Modal | Item details modal |
-| Install Item | Action | Install handler |
-| Preview Item | Modal | Preview modal |
-| Rate Item | Action | Rating handler |
-
-### Filters (Desktop Sidebar)
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Category Filter | Action | Filter by category |
-| Price Filter | Action | Filter by price |
-| Rating Filter | Action | Filter by rating |
-| Clear Filters | Action | Reset all filters |
-
----
-
-## Settings Page (`/settings`)
-
-### Profile Tab
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Save Profile | Action | Save profile handler |
-| Upload Avatar | Action | Upload image handler |
-| Change Password | Modal | Change password dialog |
-
-### Preferences Tab
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Save Preferences | Action | Save preferences handler |
-| Theme Toggle | Action | Toggle theme |
-| Language Selector | Action | Change language |
-
-### Notifications Tab
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Email Toggle | Action | Toggle email notifications |
-| Push Toggle | Action | Toggle push notifications |
-| Save Settings | Action | Save notification settings |
-
-### Privacy Tab
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Data Export | Action | Download user data |
-| Delete Account | Modal | Delete account confirmation |
-
----
-
-## Billing Page (`/dashboard/billing`)
-
-### Subscription Section
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Change Plan | Modal | Change plan dialog |
-| Cancel Subscription | Modal | Cancel subscription dialog |
-
-### Token Usage Section
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Purchase Tokens | Modal | Purchase tokens dialog |
-
-### Credit Packages Section
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Purchase Package | Modal | Purchase tokens dialog |
-
-### Payment History Section
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Download Invoice | Action | Download PDF invoice |
-
----
-
-## Organization Overview (`/dashboard/organization/[slug]`)
-
-### Header
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Organization Switcher | Navigate | Various org pages |
-| Settings | Navigate | `/dashboard/organization/[slug]/settings` |
-| Members | Navigate | `/dashboard/organization/[slug]/members` |
-
-### Overview Content
-| Element | Action | Destination |
-|---------|--------|-------------|
-| View Members | Navigate | `/dashboard/organization/[slug]/members` |
-| View Settings | Navigate | `/dashboard/organization/[slug]/settings` |
-| Quick Action Cards | Navigate | Various destinations |
-
----
-
-## Organization Settings (`/dashboard/organization/[slug]/settings`)
-
-### Settings Form
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Save Settings | Action | Save settings handler |
-| Delete Organization | Modal | Delete confirmation |
-| Upload Logo | Action | Upload image handler |
-
----
-
-## Organization Members (`/dashboard/organization/[slug]/members`)
-
-### Header
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Invite Member | Modal | Invite member dialog |
-
-### Members List
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Change Role | Action | Change role handler |
-| Remove Member | Modal | Delete confirmation |
-
----
-
-## Pricing Page (`/pricing`)
-
-### Pricing Cards
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Get Started (Free) | Navigate | `/dashboard` |
-| Upgrade (Pro) | Modal | Payment modal |
-| Contact Sales (Enterprise) | Action | Open contact form |
 
 ---
 
@@ -411,8 +249,12 @@ This document maps every button, link, and interactive element in the AnyDebateA
 ### Message List
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Message Card | Navigate | `/messages/[id]` |
-| Delete Message | Modal | Delete confirmation |
+| Message Card | Action | Expand message |
+| Reply Button | Action | Reply to message |
+| Like Button | Action | Add like reaction |
+| Dislike Button | Action | Add dislike reaction |
+| Bookmark Button | Action | Toggle bookmark |
+| Load More | Action | Load more messages |
 
 ---
 
@@ -441,302 +283,49 @@ This document maps every button, link, and interactive element in the AnyDebateA
 ### Artifact Canvas
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Toggle Layout | Action | Switch canvas layout |
+| Toggle Layout (Split/Full/Minimal) | Action | Switch canvas layout |
 | Close Canvas | Action | Close artifact canvas |
 | Show Filters | Action | Toggle filter panel |
+| Search Artifacts | Action | Filter by search query |
 
-### Artifact Toolbar
+### Artifact Search
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Create Artifact | Action | Create new artifact |
-| Open Template Selector | Modal | Template selector modal |
-| Version History | Modal | Version history panel |
-| Export Artifact | Modal | Export modal |
-
-### Document Artifact
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Edit Mode | Action | Enable editing |
-| Save Document | Action | Save changes |
-| Cancel Edit | Action | Discard changes |
-| Toggle Fullscreen | Action | Fullscreen mode |
-| Bold Text | Action | Insert bold markdown |
-| Italic Text | Action | Insert italic markdown |
-| Heading 1 | Action | Insert H1 markdown |
-| Heading 2 | Action | Insert H2 markdown |
-| List | Action | Insert list markdown |
-| Checklist | Action | Insert checklist markdown |
-| Code Block | Action | Insert code markdown |
-| Toggle Preview | Action | Show/hide preview |
-
-### Checklist Artifact
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Add Item | Action | Show add item form |
-| Complete All | Action | Mark all complete |
-| Delete Completed | Action | Remove completed items |
-| Toggle Item | Action | Check/uncheck item |
-| Delete Item | Action | Remove item |
-
-### Data Table Artifact
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Add Row | Action | Insert new row |
-| Sort Column | Action | Sort by column |
-| Edit Cell | Action | Enable cell editing |
-| Save Edit | Action | Save cell changes |
-| Delete Row | Action | Remove row |
-
-### Collaboration Indicator
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Expand Collaborators | Action | Show collaborator list |
-
----
-
-## Bookmarks System
-
-### Bookmark Button
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Toggle Bookmark | Action | Add/remove bookmark |
-
-### Bookmark Panel
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Manage Collections | Modal | Collection manager |
-| Select Collection Tab | Action | Filter by collection |
-| Navigate to Message | Action | Scroll to bookmarked message |
-| Edit Bookmark | Modal | Bookmark editor |
-| Delete Bookmark | Action | Remove bookmark |
-| Search by Tag | Action | Filter by tag |
-
-### Bookmark Editor
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Add Tag | Action | Add tag to bookmark |
-| Remove Tag | Action | Remove tag |
-| Save Bookmark | Action | Save changes |
-| Cancel | Action | Close editor |
-
-### Collection Manager
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Create Collection | Action | Show create form |
-| Select Color | Action | Choose collection color |
-| Select Icon | Action | Choose collection icon |
-| Edit Collection | Action | Edit existing collection |
-| Delete Collection | Action | Remove collection |
-| Save Collection | Action | Save changes |
-| Cancel | Action | Close manager |
-
----
-
-## Message Search System
-
-### Message Search
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Open Search | Modal | Message search modal |
+| Search Input | Action | Filter artifacts |
 | Clear Search | Action | Clear search query |
-| Close Search | Action | Close search modal |
-| Search Suggestion | Action | Apply suggestion |
-| Search History | Action | Apply history query |
-| Search Result | Action | Navigate to message |
 
-### Search Filters
+### Artifact Filter
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Remove Sender Filter | Action | Clear sender filter |
-| Select Sender | Action | Filter by sender |
-| Clear All Filters | Action | Reset filters |
-| Open Filter Modal | Modal | Filter modal (mobile) |
+| Type Filter | Action | Filter by type |
+| Date Range Filter | Action | Filter by date |
+| Sort By | Action | Change sort order |
+| Sort Order | Action | Toggle asc/desc |
+| Clear Filters | Action | Reset all filters |
 
 ---
 
-## Threading System
+## Chat Sidebar
 
-### Thread Indicator
+### Header
 | Element | Action | Destination |
 |---------|--------|-------------|
-| View Thread | Modal | Thread view modal |
-| Expand Thread | Action | Show thread preview |
+| Toggle Collapse | Action | Collapse/expand sidebar |
+| New Debate | Action | Create new session |
+| Start from Template | Navigate | `/quick-start` |
 
-### Thread View
+### Session List
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Close Thread | Action | Close thread modal |
-| Reply to Thread | Action | Show reply input |
+| Session Card | Action | Select session |
+| Export Session | Modal | Export dialog |
+| Edit Session | Modal | Edit session dialog |
+| Delete Session | Modal | Delete confirmation |
 
-### Reply Input
+### Footer
 | Element | Action | Destination |
 |---------|--------|-------------|
-| Cancel Reply | Action | Close reply input |
-| Send Reply | Action | Submit reply |
-
----
-
-## Reactions System
-
-### Reaction Bar
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Show Picker | Modal | Reaction picker |
-| React with Emoji | Action | Add/remove reaction |
-
-### Reaction Picker
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Select Emoji | Action | Add reaction |
-| Select Recent | Action | Add recent reaction |
-
----
-
-## Comparison System
-
-### Comparison Selector
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Toggle Session | Action | Select/deselect session |
-| Compare Sessions | Action | Open comparison view |
-| Cancel | Action | Close selector |
-
-### Comparison View
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Close Comparison | Action | Close view |
-
-### Compare Round View
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Like Response | Action | React with like |
-| Dislike Response | Action | React with dislike |
-| Copy Response | Action | Copy to clipboard |
-
----
-
-## Dialogs & Modals
-
-### Create Organization Dialog
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Create Button | Action | Create org → Navigate to `/dashboard/organization/[slug]` |
-| Cancel Button | Action | Close dialog |
-
-### Invite Member Dialog
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Send Invite | Action | Send invite → Close dialog |
-| Cancel Button | Action | Close dialog |
-
-### Change Plan Dialog
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Confirm Change | Action | Change plan → Close dialog |
-| Cancel Button | Action | Close dialog |
-
-### Cancel Subscription Dialog
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Confirm Cancel | Action | Cancel subscription → Close dialog |
-| Keep Subscription | Action | Close dialog |
-
-### Purchase Tokens Dialog
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Purchase Button | Action | Purchase → Close dialog |
-| Cancel Button | Action | Close dialog |
-
-### Edit Memory Dialog
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Save Changes | Action | Update memory → Close dialog |
-| Cancel Button | Action | Close dialog |
-
-### Delete Confirmation Dialog
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Confirm Delete | Action | Delete → Close dialog |
-| Cancel Button | Action | Close dialog |
-
-### Edit Session Dialog
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Save Changes | Action | Update session → Close dialog |
-| Cancel Button | Action | Close dialog |
-
-### Add Memory Dialog
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Save Memory | Action | Create memory → Close dialog |
-| Cancel Button | Action | Close dialog |
-
-### Document Upload Dialog
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Upload & Extract | Action | Upload → Close dialog |
-| Cancel Button | Action | Close dialog |
-
-### Save Template Modal
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Save Template | Action | Save → Close modal |
-| Cancel Button | Action | Close modal |
-| Add Tag | Action | Add tag to template |
-| Remove Tag | Action | Remove tag |
-| Include Current Topic | Action | Toggle topic inclusion |
-
-### Template Selector Modal
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Quick Start Tab | Action | Switch to quick start |
-| Templates Tab | Action | Switch to templates |
-| Template Card | Action | Select template → Navigate to `/debates?template=[id]` |
-| Preview Template | Action | Show details |
-| Use Template | Action | Select → Navigate to `/debates?template=[id]` |
-| Start from Scratch | Action | Close → Navigate to `/debates` |
-| Cancel Button | Action | Close modal |
-
-### Agent Builder Modal
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Next Button | Action | Advance step |
-| Previous Button | Action | Go back |
-| Create Agent | Action | Save → Close modal |
-| Role Selection | Action | Select role |
-| Persona Selection | Action | Select persona |
-| Framework Selection | Action | Select framework |
-| Name Input | Action | Set name |
-| Custom Instructions | Action | Add instructions |
-
-### Artifact Export Modal
-| Element | Action | Destination |
-|---------|--------|-------------|
-| PDF Format | Action | Select PDF |
-| PNG Format | Action | Select PNG |
-| CSV Format | Action | Select CSV |
-| JSON Format | Action | Select JSON |
-| Include Metadata | Action | Toggle metadata |
-| Export Button | Action | Download → Close modal |
-| Cancel Button | Action | Close modal |
-
-### Artifact Template Selector
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Select Category | Action | Filter by category |
-| Select Template | Action | Choose template |
-| Use Template | Action | Apply template |
-| Cancel | Action | Close selector |
-
-### Version History Panel
-| Element | Action | Destination |
-|---------|--------|-------------|
-| Export History | Action | Download history |
-| Select Version | Action | View version |
-| Restore Version | Action | Restore version |
-| Compare Versions | Action | Show diff |
-| Close Diff | Action | Hide diff |
-| Close Panel | Action | Close panel |
+| Settings | Navigate | `/settings` |
 
 ---
 
@@ -746,11 +335,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 | Category | Count |
 |----------|-------|
-| Navigation Links | 65 |
-| Action Buttons | 125 |
-| Modal Triggers | 45 |
-| Form Submissions | 25 |
-| **Total** | **260** |
+| Navigation Links | 75 |
+| Action Buttons | 180 |
+| Modal Triggers | 55 |
+| Form Submissions | 40 |
+| **Total** | **350** |
 
 ### Total Pages
 
