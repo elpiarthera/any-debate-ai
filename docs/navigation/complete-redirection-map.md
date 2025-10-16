@@ -5,8 +5,8 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 **Last Updated**: January 2025
 **Total Pages**: 22
-**Total Interactive Elements**: 565+
-**Total Modals/Dialogs**: 25
+**Total Interactive Elements**: 600+
+**Total Modals/Dialogs**: 26
 
 ---
 
@@ -89,6 +89,13 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Toggle Sidebar (Mobile) | Action | Toggle sidebar collapse |
 | Back to Overview | Navigate | `/overview` |
 | Quick Agent Selector | Action | Add/remove models |
+| Quick Agent Selector - Add Agent Button | Modal | Agent selector dropdown/drawer |
+| Quick Agent Selector - Add GPT-4 | Action | Add GPT-4 model handler |
+| Quick Agent Selector - Add Claude-3.5 | Action | Add Claude-3.5 model handler |
+| Quick Agent Selector - Add Llama-3 | Action | Add Llama-3 model handler |
+| Quick Agent Selector - Add Gemini | Action | Add Gemini model handler |
+| Quick Agent Selector - Create Custom Agent | Modal | Agent builder modal |
+| Quick Agent Selector - Remove Model | Action | Remove model handler |
 | Open Agent Builder | Modal | Agent builder modal |
 | Save as Template | Modal | Save template modal |
 | Templates Button | Navigate | `/quick-start` |
@@ -186,8 +193,10 @@ This document maps every button, link, and interactive element in the AnyDebateA
 |---------|--------|-------------|
 | Create Agent | Modal | Agent builder modal |
 | Agent Card | Action | View agent details |
-| Edit Agent | Modal | Agent builder modal (edit mode) |
-| Delete Agent | Modal | Delete confirmation |
+| Agent Card - Activate/Deactivate | Action | Toggle agent status |
+| Agent Card - Edit (Custom only) | Modal | Agent builder modal (edit mode) |
+| Agent Card - Delete (Custom only) | Modal | Delete confirmation |
+| Agent Card - Start/Pause Button | Action | Toggle agent status |
 | Favorite Agent | Action | Toggle favorite handler |
 | Duplicate Agent | Action | Duplicate agent handler |
 
@@ -514,6 +523,55 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 ---
 
+## Agent Builder Modal
+
+### Navigation
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Previous Button | Action | Go to previous step |
+| Next Button | Action | Go to next step |
+| Create Agent Button | Action | Save agent configuration |
+| Close Modal | Action | Close modal |
+
+### Step 1: Role Selector
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Roles Input | Action | Filter roles (real-time) |
+| All Categories Button | Action | Show all roles |
+| Business & Strategy Button | Action | Filter by category |
+| Technology & Engineering Button | Action | Filter by category |
+| Creative & Design Button | Action | Filter by category |
+| Research & Analysis Button | Action | Filter by category |
+| Communication & Media Button | Action | Filter by category |
+| Education & Training Button | Action | Filter by category |
+| Healthcare & Science Button | Action | Filter by category |
+| Legal & Compliance Button | Action | Filter by category |
+| Role Card | Action | Select role |
+
+### Step 2: Persona Selector
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Personas Input | Action | Filter personas (real-time) |
+| Persona Card | Action | Select persona |
+
+### Step 3: Framework Selector
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Frameworks Input | Action | Filter frameworks (real-time) |
+| All Tab | Action | Show all frameworks |
+| Analysis Tab | Action | Filter by analysis frameworks |
+| Creative Tab | Action | Filter by creative frameworks |
+| Strategic Tab | Action | Filter by strategic frameworks |
+| Framework Card | Action | Select framework |
+
+### Step 4: Agent Preview
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Agent Name Input | Action | Set agent name |
+| Custom Instructions Textarea | Action | Set custom instructions |
+
+---
+
 ## Summary Statistics
 
 ### Total Interactive Elements by Category
@@ -521,11 +579,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Category | Count |
 |----------|-------|
 | Navigation Links | 110 |
-| Action Buttons | 295 |
-| Modal Triggers | 80 |
-| Form Submissions | 60 |
+| Action Buttons | 320 |
+| Modal Triggers | 85 |
+| Form Submissions | 65 |
 | Display Elements | 20 |
-| **Total** | **565** |
+| **Total** | **600** |
 
 ### Total Pages
 
@@ -542,8 +600,8 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Confirmation Dialogs | 8 |
 | Form Dialogs | 10 |
 | Preview Modals | 5 |
-| Builder/Wizard Modals | 2 |
-| **Total** | **25** |
+| Builder/Wizard Modals | 3 |
+| **Total** | **26** |
 
 ---
 
