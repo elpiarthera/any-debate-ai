@@ -5,8 +5,8 @@ This document maps every button, link, and interactive element in the AnyDebateA
 
 **Last Updated**: January 2025
 **Total Pages**: 22
-**Total Interactive Elements**: 970
-**Total Modals/Dialogs**: 33
+**Total Interactive Elements**: 1075
+**Total Modals/Dialogs**: 37
 
 ---
 
@@ -510,6 +510,73 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Category Filter | Action | Filter by category |
 | Clear Filters | Action | Reset all filters |
 
+### Template Selector Modal
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Quick Start Tab | Action | Switch to quick start view |
+| Templates Tab | Action | Switch to templates view |
+| Search Input | Action | Filter templates (real-time) |
+| Category Chips (9 categories) | Action | Filter by category |
+| Custom Only Toggle | Action | Toggle custom templates filter |
+| Template Card | Action | Select template (mobile: show detail, desktop: preview) |
+| Template Card - Preview Button | Action | Show template preview |
+| Template Card - Duplicate Button | Action | Duplicate template handler |
+| Use Template Button | Action | Load template → `/debates` |
+| Cancel Button | Action | Close modal |
+
+### Template Gallery Component
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Search Input | Action | Filter templates (real-time) |
+| Grid View Button (Desktop) | Action | Switch to grid view |
+| List View Button (Desktop) | Action | Switch to list view |
+| Filters Button | Action | Toggle filters panel |
+| Sort by Popular Button | Action | Sort by popularity |
+| Sort by Recent Button | Action | Sort by recent |
+| Sort by Name Button | Action | Sort alphabetically |
+| Category Chips (9 categories) | Action | Filter by category |
+| Clear Search Button | Action | Clear search query |
+| Clear Filters Button | Action | Reset all filters |
+| Template Card | Action | Select template handler |
+
+### Template Preview Component
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Agent Team Cards | Display | Shows agent configurations |
+| Suggested Questions List | Display | Shows suggested questions |
+| Tags Display | Display | Shows template tags |
+
+### Save Template Modal
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Template Name Input | Action | Enter template name (3-50 chars) |
+| Description Textarea | Action | Enter description (10-200 chars) |
+| Category Selector (8 categories) | Action | Select template category |
+| Conversation Type Selector (3 types) | Action | Select debate/collaboration/analysis |
+| Tag Input | Action | Enter tag name (max 20 chars) |
+| Add Tag Button | Action | Add tag to list (max 5 tags) |
+| Remove Tag Button (per tag) | Action | Remove tag from list |
+| Suggested Tag Badge | Action | Add suggested tag |
+| Include Current Topic Checkbox | Action | Toggle topic inclusion |
+| Agents in Template List | Display | Shows configured agents |
+| Cancel Button | Action | Close modal |
+| Save Template Button | Action | Submit form → Save custom template |
+
+### Quick Start Panel Component
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Scenario Card | Action | Load scenario → `/debates` |
+| Preset Card | Action | Load preset → `/debates` |
+| Start from Scratch Button | Navigate | `/debates` (clear session storage) |
+
+### Template Management Panel Component
+| Element | Action | Destination |
+|---------|--------|-------------|
+| Edit Template Button | Modal | Save template modal (edit mode) |
+| Delete Template Button | Modal | Delete confirmation |
+| Duplicate Template Button | Action | Duplicate template handler |
+| Export Template Button | Action | Export template as JSON |
+
 ---
 
 ## Export Page (`/export`)
@@ -1004,11 +1071,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Category | Count |
 |----------|-------|
 | Navigation Links | 115 |
-| Action Buttons | 545 |
-| Modal Triggers | 125 |
-| Form Submissions | 125 |
-| Display Elements | 60 |
-| **Total** | **970** |
+| Action Buttons | 620 |
+| Modal Triggers | 135 |
+| Form Submissions | 140 |
+| Display Elements | 65 |
+| **Total** | **1075** |
 
 ### Total Pages
 
@@ -1023,11 +1090,11 @@ This document maps every button, link, and interactive element in the AnyDebateA
 | Type | Count |
 |------|-------|
 | Confirmation Dialogs | 9 |
-| Form Dialogs | 15 |
-| Preview Modals | 5 |
-| Builder/Wizard Modals | 3 |
+| Form Dialogs | 17 |
+| Preview Modals | 6 |
+| Builder/Wizard Modals | 4 |
 | Exit Intent Popup | 1 |
-| **Total** | **33** |
+| **Total** | **37** |
 
 ---
 
