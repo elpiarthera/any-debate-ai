@@ -29,25 +29,6 @@ export function MarketplaceListDesktop({
 }: MarketplaceListDesktopProps) {
   return (
     <div className="flex h-full">
-      {/* Sidebar Filters */}
-      <div className="w-64 border-r p-6 space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Categories</h2>
-          <div className="space-y-2">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "ghost"}
-                className="w-full justify-start min-h-[44px]"
-                onClick={() => onCategoryChange(category)}
-              >
-                {category === "all" ? "All Categories" : category}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
@@ -87,6 +68,25 @@ export function MarketplaceListDesktop({
               ))}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Sidebar Filters */}
+      <div className="w-64 border-r p-6 space-y-6 flex-shrink-0">
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Categories</h2>
+          <div className="space-y-2">
+            {categories.map((category) => (
+              <Button
+                key={category}
+                variant={selectedCategory === category ? "default" : "ghost"}
+                className="w-full justify-start min-h-[44px]"
+                onClick={() => onCategoryChange(category)}
+              >
+                {category === "all" ? "All Categories" : category}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
