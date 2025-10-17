@@ -58,9 +58,9 @@ export function MemoryGridDesktop({
   }
 
   return (
-    <>
+    <div className="flex h-full">
       {/* Filters sidebar - second level */}
-      <div className="w-64 border-r p-6 space-y-6 bg-background">
+      <div className="w-64 border-r p-6 space-y-6 bg-background overflow-y-auto">
         <div>
           <h2 className="text-lg font-semibold mb-4">Filters</h2>
           <MemoryFilters
@@ -164,6 +164,6 @@ export function MemoryGridDesktop({
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }

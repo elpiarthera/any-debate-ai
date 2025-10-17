@@ -68,7 +68,7 @@ export default function BillingPage() {
 
   return (
     <DashboardLayout title="Billing & Usage" subtitle="Manage your subscription, tokens, and payment methods">
-      <div className="p-4 md:p-6 lg:p-8 space-y-6">
+      <div className="h-full overflow-auto p-4 md:p-6 lg:p-8 space-y-6">
         <AdaptiveGrid mobileColumns={1} tabletColumns={2} desktopColumns={2} className="gap-4 md:gap-6">
           {/* Current Plan Card */}
           <Card>
