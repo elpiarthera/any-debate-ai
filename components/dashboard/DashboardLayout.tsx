@@ -33,7 +33,7 @@ export function DashboardLayout({ children, title = "Dashboard", subtitle, bread
   const { isMobile } = useDevice()
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen w-full bg-background">
       {/* Desktop Sidebar */}
       {!isMobile && (
         <DashboardSidebar
@@ -43,7 +43,7 @@ export function DashboardLayout({ children, title = "Dashboard", subtitle, bread
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col min-h-0 w-full min-w-0">
         {/* Header */}
         <motion.header
           initial={{ y: -20, opacity: 0 }}
@@ -108,7 +108,7 @@ export function DashboardLayout({ children, title = "Dashboard", subtitle, bread
         </motion.header>
 
         {/* Content */}
-        <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
+        <div className="flex-1 min-h-0 overflow-hidden w-full">{children}</div>
       </div>
 
       {/* Mobile Sidebar Modal */}
@@ -119,11 +119,13 @@ export function DashboardLayout({ children, title = "Dashboard", subtitle, bread
           title="Dashboard Menu"
           description="Navigate through dashboard sections"
         >
-          <div className="flex flex-col h-[70vh]">
-            <div className="p-4 border-b">
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="p-4 border-b shrink-0">
               <OrgSwitcher />
             </div>
-            <DashboardSidebar isCollapsed={false} onToggleCollapse={() => setIsSidebarCollapsed(true)} />
+            <div className="flex-1 min-h-0">
+              <DashboardSidebar isCollapsed={false} onToggleCollapse={() => setIsSidebarCollapsed(true)} />
+            </div>
           </div>
         </AdaptiveModal>
       )}

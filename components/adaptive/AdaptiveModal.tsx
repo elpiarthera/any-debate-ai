@@ -33,7 +33,7 @@ export function AdaptiveModal({ isOpen, onClose, title, children, className, des
               </span>
             )}
           </DrawerHeader>
-          <div className="flex-1 overflow-hidden">{children}</div>
+          <div className="flex flex-col flex-1 min-h-0 overflow-hidden">{children}</div>
         </DrawerContent>
       </Drawer>
     )

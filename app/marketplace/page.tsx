@@ -14,7 +14,7 @@ export default function MarketplacePage() {
   const { isMobile } = useDevice()
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen w-full bg-background">
       {!isMobile && (
         <DashboardSidebar
           isCollapsed={isDashboardSidebarOpen}
@@ -22,7 +22,7 @@ export default function MarketplacePage() {
         />
       )}
 
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col min-h-0 w-full min-w-0">
         {isMobile && (
           <div className="border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-40">
             <div className="flex items-center justify-between p-3">
@@ -51,11 +51,13 @@ export default function MarketplacePage() {
           title="Dashboard Menu"
           description="Navigate through dashboard sections"
         >
-          <div className="flex flex-col h-[70vh]">
-            <div className="p-4 border-b">
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="p-4 border-b shrink-0">
               <OrgSwitcher />
             </div>
-            <DashboardSidebar isCollapsed={false} onToggleCollapse={() => setIsDashboardSidebarOpen(false)} />
+            <div className="flex-1 min-h-0">
+              <DashboardSidebar isCollapsed={false} onToggleCollapse={() => setIsDashboardSidebarOpen(false)} />
+            </div>
           </div>
         </AdaptiveModal>
       )}
