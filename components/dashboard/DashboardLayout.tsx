@@ -26,9 +26,16 @@ interface DashboardLayoutProps {
   title?: string
   subtitle?: string
   breadcrumbs?: Array<{ label: string; href?: string }>
+  actions?: ReactNode
 }
 
-export function DashboardLayout({ children, title = "Dashboard", subtitle, breadcrumbs }: DashboardLayoutProps) {
+export function DashboardLayout({
+  children,
+  title = "Dashboard",
+  subtitle,
+  breadcrumbs,
+  actions,
+}: DashboardLayoutProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const { isMobile } = useDevice()
 
@@ -94,6 +101,7 @@ export function DashboardLayout({ children, title = "Dashboard", subtitle, bread
             </div>
 
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
+              {actions}
               <TokenBalance />
               <QuickActionsMenu />
               <ThemeToggle />
@@ -102,7 +110,9 @@ export function DashboardLayout({ children, title = "Dashboard", subtitle, bread
         </motion.header>
 
         {/* Content */}
-        <div className="flex-1 min-h-0 overflow-hidden w-full">{children}</div>
+        <div className="flex-1 min-h-0 overflow-auto w-full">
+          <div className="container mx-auto p-4 md:p-6 lg:p-8">{children}</div>
+        </div>
       </div>
 
       {/* Mobile Sidebar Modal */}
@@ -130,3 +140,5 @@ export function DashboardLayout({ children, title = "Dashboard", subtitle, bread
     </div>
   )
 }
+
+export default DashboardLayout

@@ -36,13 +36,7 @@ export function OrganizationOverviewDesktop({
   const router = useRouter()
 
   return (
-    <div className="container mx-auto p-6 lg:p-8 space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Organization Overview</h1>
-        <p className="text-muted-foreground mt-1">Manage your organization and track activity for {slug}</p>
-      </div>
-
+    <div className="space-y-6">
       {/* Stats Grid - 4 columns on desktop */}
       <div className="grid grid-cols-4 gap-4">
         {/* Total Members */}
@@ -85,7 +79,7 @@ export function OrganizationOverviewDesktop({
 
         {/* Growth */}
         <Card className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardHeader>
             <CardTitle className="text-sm font-medium">Growth</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>

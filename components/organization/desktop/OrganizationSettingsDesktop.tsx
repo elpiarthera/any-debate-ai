@@ -106,13 +106,7 @@ export function OrganizationSettingsDesktop({ slug, organization }: Organization
   }
 
   return (
-    <div className="container mx-auto p-6 lg:p-8 space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Organization Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your organization details and preferences for {slug}</p>
-      </div>
-
+    <div className="space-y-6">
       {/* General Settings */}
       <Card className="hover:shadow-md transition-shadow">
         <CardHeader>

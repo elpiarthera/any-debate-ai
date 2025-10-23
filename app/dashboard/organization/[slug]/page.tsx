@@ -4,6 +4,7 @@ import { useDevice } from "@/contexts/DeviceProvider"
 import { OrganizationOverviewMobile } from "@/components/organization/mobile/OrganizationOverviewMobile"
 import { OrganizationOverviewDesktop } from "@/components/organization/desktop/OrganizationOverviewDesktop"
 import { MessageSquare, UserPlus, SettingsIcon, FileText } from "lucide-react"
+import DashboardLayout from "@/components/dashboard/DashboardLayout"
 
 // Mock data
 const mockOrgStats = {
@@ -40,5 +41,9 @@ export default function OrganizationPage({ params }: { params: { slug: string } 
     members: mockMembers,
   }
 
-  return isMobile ? <OrganizationOverviewMobile {...sharedProps} /> : <OrganizationOverviewDesktop {...sharedProps} />
+  return (
+    <DashboardLayout title="Organization Overview" subtitle={`Manage your organization and track activity for ${slug}`}>
+      {isMobile ? <OrganizationOverviewMobile {...sharedProps} /> : <OrganizationOverviewDesktop {...sharedProps} />}
+    </DashboardLayout>
+  )
 }

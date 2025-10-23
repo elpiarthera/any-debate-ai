@@ -9,6 +9,7 @@ import { MemberListDesktop } from "@/components/organization/desktop/MemberListD
 import { InviteMemberDialog } from "@/components/organization/invite-member-dialog"
 import { DeleteConfirmationDialog } from "@/components/shared/delete-confirmation-dialog"
 import { useState } from "react"
+import DashboardLayout from "@/components/dashboard/DashboardLayout"
 
 // Mock data
 const mockMembers = [
@@ -57,22 +58,16 @@ export default function OrganizationMembersPage({ params }: { params: { slug: st
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">Team Members</h1>
-          <p className="text-sm md:text-base text-muted-foreground mt-1">
-            Manage your organization members and their roles for {slug}
-          </p>
-        </div>
-        <Button onClick={handleInviteMember} className="min-h-[48px] md:min-h-[44px] w-full md:w-auto">
+    <DashboardLayout
+      title="Team Members"
+      subtitle={`Manage your organization members and their roles for ${slug}`}
+      actions={
+        <Button onClick={handleInviteMember} className="min-h-[48px] md:min-h-[44px]">
           <UserPlus className="h-4 w-4 mr-2" />
           Invite Member
         </Button>
-      </div>
-
-      {/* Member List */}
+      }
+    >
       {isMobile ? (
         <div>
           <div className="mb-3">
@@ -106,6 +101,6 @@ export default function OrganizationMembersPage({ params }: { params: { slug: st
         itemName={selectedMember?.name || "member"}
         itemType="Member"
       />
-    </div>
+    </DashboardLayout>
   )
 }
