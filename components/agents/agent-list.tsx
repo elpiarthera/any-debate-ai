@@ -6,7 +6,12 @@ import { AgentListMobile } from "./mobile/agent-list-mobile"
 import { AgentListDesktop } from "./desktop/agent-list-desktop"
 import { mockAgents, type AgentWithMetadata } from "@/lib/mock-data/agents"
 
-export function AgentList() {
+interface AgentListProps {
+  selectedFilter: string
+  selectedCategory: string
+}
+
+export function AgentList({ selectedFilter, selectedCategory }: AgentListProps) {
   const { isMobile } = useDevice()
   const [agents, setAgents] = useState<AgentWithMetadata[]>(mockAgents)
 
@@ -47,6 +52,8 @@ export function AgentList() {
       onFavoriteToggle={handleFavoriteToggle}
       onDelete={handleDelete}
       onDuplicate={handleDuplicate}
+      selectedFilter={selectedFilter}
+      selectedCategory={selectedCategory}
     />
   ) : (
     <AgentListDesktop
@@ -54,6 +61,8 @@ export function AgentList() {
       onFavoriteToggle={handleFavoriteToggle}
       onDelete={handleDelete}
       onDuplicate={handleDuplicate}
+      selectedFilter={selectedFilter}
+      selectedCategory={selectedCategory}
     />
   )
 }

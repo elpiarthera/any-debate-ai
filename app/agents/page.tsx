@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { AgentList } from "@/components/agents/agent-list"
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar"
+import { AgentFilterSidebar } from "@/components/agents/AgentFilterSidebar"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal"
 import { Menu } from "lucide-react"
@@ -12,6 +13,9 @@ import { OrgSwitcher } from "@/components/dashboard/OrgSwitcher"
 export default function AgentsPage() {
   const { isMobile } = useDevice()
   const [isDashboardSidebarOpen, setIsDashboardSidebarOpen] = useState(false)
+  const [isAgentFilterSidebarOpen, setIsAgentFilterSidebarOpen] = useState(false)
+  const [selectedFilter, setSelectedFilter] = useState("All")
+  const [selectedCategory, setSelectedCategory] = useState("All Categories")
 
   return (
     <div className="flex h-screen bg-background">
@@ -19,6 +23,17 @@ export default function AgentsPage() {
         <DashboardSidebar
           isCollapsed={isDashboardSidebarOpen}
           onToggleCollapse={() => setIsDashboardSidebarOpen(!isDashboardSidebarOpen)}
+        />
+      )}
+
+      {!isMobile && (
+        <AgentFilterSidebar
+          isCollapsed={isAgentFilterSidebarOpen}
+          onToggleCollapse={() => setIsAgentFilterSidebarOpen(!isAgentFilterSidebarOpen)}
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
         />
       )}
 
@@ -37,7 +52,7 @@ export default function AgentsPage() {
           </div>
         )}
 
-        <AgentList />
+        <AgentList selectedFilter={selectedFilter} selectedCategory={selectedCategory} />
       </div>
 
       {isMobile && (
@@ -52,6 +67,26 @@ export default function AgentsPage() {
               <OrgSwitcher />
             </div>
             <DashboardSidebar isCollapsed={false} onToggleCollapse={() => setIsDashboardSidebarOpen(false)} />
+          </div>
+        </AdaptiveModal>
+      )}
+
+      {isMobile && (
+        <AdaptiveModal
+          isOpen={isAgentFilterSidebarOpen}
+          onClose={() => setIsAgentFilterSidebarOpen(false)}
+          title="Filters"
+          description="Filter and categorize agents"
+        >
+          <div className="flex flex-col h-[70vh]">
+            <AgentFilterSidebar
+              isCollapsed={false}
+              onToggleCollapse={() => setIsAgentFilterSidebarOpen(false)}
+              selectedFilter={selectedFilter}
+              onFilterChange={setSelectedFilter}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
           </div>
         </AdaptiveModal>
       )}

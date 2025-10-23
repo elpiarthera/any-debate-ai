@@ -19,14 +19,20 @@ interface AgentListMobileProps {
   onFavoriteToggle: (id: string) => void
   onDelete: (id: string) => void
   onDuplicate: (id: string) => void
+  selectedFilter: string
+  selectedCategory: string
 }
 
-export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicate }: AgentListMobileProps) {
+export function AgentListMobile({
+  agents,
+  onFavoriteToggle,
+  onDelete,
+  onDuplicate,
+  selectedFilter,
+  selectedCategory,
+}: AgentListMobileProps) {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
-  const [showTemplatesOnly, setShowTemplatesOnly] = useState(false)
 
   const filteredAgents = agents.filter((agent) => {
     const matchesSearch =
@@ -34,11 +40,14 @@ export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicat
       agent.role.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       agent.persona.name.toLowerCase().includes(searchQuery.toLowerCase())
 
-    const matchesCategory = !selectedCategory || agent.metadata.category === selectedCategory
-    const matchesFavorites = !showFavoritesOnly || agent.isFavorite
-    const matchesTemplates = !showTemplatesOnly || agent.isTemplate
+    const matchesCategory = selectedCategory === "All Categories" || agent.metadata.category === selectedCategory
 
-    return matchesSearch && matchesCategory && matchesFavorites && matchesTemplates
+    const matchesFilter =
+      selectedFilter === "All" ||
+      (selectedFilter === "Favorites" && agent.isFavorite) ||
+      (selectedFilter === "Templates" && agent.isTemplate)
+
+    return matchesSearch && matchesCategory && matchesFilter
   })
 
   return (
@@ -79,16 +88,16 @@ export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicat
                   <h3 className="text-sm font-medium mb-3">Quick Filters</h3>
                   <div className="flex flex-wrap gap-2">
                     <Badge
-                      variant={showFavoritesOnly ? "default" : "outline"}
+                      variant={selectedFilter === "Favorites" ? "default" : "outline"}
                       className="cursor-pointer min-h-[44px] px-4"
-                      onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                      onClick={() => console.log("Toggle Favorites")}
                     >
                       Favorites
                     </Badge>
                     <Badge
-                      variant={showTemplatesOnly ? "default" : "outline"}
+                      variant={selectedFilter === "Templates" ? "default" : "outline"}
                       className="cursor-pointer min-h-[44px] px-4"
-                      onClick={() => setShowTemplatesOnly(!showTemplatesOnly)}
+                      onClick={() => console.log("Toggle Templates")}
                     >
                       Templates
                     </Badge>
@@ -99,18 +108,18 @@ export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicat
                   <h3 className="text-sm font-medium mb-3">Category</h3>
                   <div className="flex flex-wrap gap-2">
                     <Badge
-                      variant={selectedCategory === null ? "default" : "outline"}
+                      variant={selectedCategory === "All Categories" ? "default" : "outline"}
                       className="cursor-pointer min-h-[44px] px-4"
-                      onClick={() => setSelectedCategory(null)}
+                      onClick={() => console.log("Select All Categories")}
                     >
-                      All
+                      All Categories
                     </Badge>
                     {ROLE_CATEGORIES.map((category) => (
                       <Badge
                         key={category}
                         variant={selectedCategory === category ? "default" : "outline"}
                         className="cursor-pointer min-h-[44px] px-4"
-                        onClick={() => setSelectedCategory(category)}
+                        onClick={() => console.log(`Select ${category}`)}
                       >
                         {category}
                       </Badge>
@@ -128,18 +137,18 @@ export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicat
 
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           <Badge
-            variant={selectedCategory === null ? "default" : "outline"}
+            variant={selectedCategory === "All Categories" ? "default" : "outline"}
             className="cursor-pointer shrink-0 min-h-[44px] px-4"
-            onClick={() => setSelectedCategory(null)}
+            onClick={() => console.log("Select All Categories")}
           >
-            All
+            All Categories
           </Badge>
           {ROLE_CATEGORIES.slice(0, 4).map((category) => (
             <Badge
               key={category}
               variant={selectedCategory === category ? "default" : "outline"}
               className="cursor-pointer shrink-0 min-h-[44px] px-4"
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => console.log(`Select ${category}`)}
             >
               {category.split(" & ")[0]}
             </Badge>
