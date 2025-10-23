@@ -8,9 +8,11 @@ import { TemplateList } from "@/components/templates/template-list"
 import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { OrgSwitcher } from "@/components/dashboard/OrgSwitcher"
 
 export default function TemplatesPage() {
   const { isMobile } = useDevice()
+  const [isDashboardSidebarCollapsed, setIsDashboardSidebarCollapsed] = useState(false)
   const [isDashboardSidebarOpen, setIsDashboardSidebarOpen] = useState(false)
   const [isFilterSidebarCollapsed, setIsFilterSidebarCollapsed] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
@@ -21,21 +23,31 @@ export default function TemplatesPage() {
       {isMobile && (
         <Sheet open={isDashboardSidebarOpen} onOpenChange={setIsDashboardSidebarOpen}>
           <SheetContent side="left" className="w-[280px] p-0">
-            <DashboardSidebar />
+            <div className="p-4 border-b">
+              <OrgSwitcher />
+            </div>
+            <DashboardSidebar isCollapsed={false} onToggleCollapse={() => setIsDashboardSidebarOpen(false)} />
           </SheetContent>
         </Sheet>
       )}
 
       {/* Desktop: Always visible Dashboard Sidebar */}
-      {!isMobile && <DashboardSidebar />}
+      {!isMobile && (
+        <DashboardSidebar
+          isCollapsed={isDashboardSidebarCollapsed}
+          onToggleCollapse={() => setIsDashboardSidebarCollapsed(!isDashboardSidebarCollapsed)}
+        />
+      )}
 
       {/* Template Filter Sidebar (Second Level) */}
-      <TemplateFilterSidebar
-        isCollapsed={isFilterSidebarCollapsed}
-        onToggleCollapse={() => setIsFilterSidebarCollapsed(!isFilterSidebarCollapsed)}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-      />
+      {!isMobile && (
+        <TemplateFilterSidebar
+          isCollapsed={isFilterSidebarCollapsed}
+          onToggleCollapse={() => setIsFilterSidebarCollapsed(!isFilterSidebarCollapsed)}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+        />
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -50,6 +62,7 @@ export default function TemplatesPage() {
             >
               <Menu className="h-5 w-5" />
             </Button>
+            <OrgSwitcher />
           </div>
         )}
 

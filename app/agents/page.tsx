@@ -12,8 +12,9 @@ import { OrgSwitcher } from "@/components/dashboard/OrgSwitcher"
 
 export default function AgentsPage() {
   const { isMobile } = useDevice()
+  const [isDashboardSidebarCollapsed, setIsDashboardSidebarCollapsed] = useState(false)
+  const [isAgentFilterSidebarCollapsed, setIsAgentFilterSidebarCollapsed] = useState(false)
   const [isDashboardSidebarOpen, setIsDashboardSidebarOpen] = useState(false)
-  const [isAgentFilterSidebarOpen, setIsAgentFilterSidebarOpen] = useState(false)
   const [selectedFilter, setSelectedFilter] = useState("All")
   const [selectedCategory, setSelectedCategory] = useState("All Categories")
 
@@ -21,15 +22,15 @@ export default function AgentsPage() {
     <div className="flex h-screen bg-background">
       {!isMobile && (
         <DashboardSidebar
-          isCollapsed={isDashboardSidebarOpen}
-          onToggleCollapse={() => setIsDashboardSidebarOpen(!isDashboardSidebarOpen)}
+          isCollapsed={isDashboardSidebarCollapsed}
+          onToggleCollapse={() => setIsDashboardSidebarCollapsed(!isDashboardSidebarCollapsed)}
         />
       )}
 
       {!isMobile && (
         <AgentFilterSidebar
-          isCollapsed={isAgentFilterSidebarOpen}
-          onToggleCollapse={() => setIsAgentFilterSidebarOpen(!isAgentFilterSidebarOpen)}
+          isCollapsed={isAgentFilterSidebarCollapsed}
+          onToggleCollapse={() => setIsAgentFilterSidebarCollapsed(!isAgentFilterSidebarCollapsed)}
           selectedFilter={selectedFilter}
           onFilterChange={setSelectedFilter}
           selectedCategory={selectedCategory}
@@ -67,26 +68,6 @@ export default function AgentsPage() {
               <OrgSwitcher />
             </div>
             <DashboardSidebar isCollapsed={false} onToggleCollapse={() => setIsDashboardSidebarOpen(false)} />
-          </div>
-        </AdaptiveModal>
-      )}
-
-      {isMobile && (
-        <AdaptiveModal
-          isOpen={isAgentFilterSidebarOpen}
-          onClose={() => setIsAgentFilterSidebarOpen(false)}
-          title="Filters"
-          description="Filter and categorize agents"
-        >
-          <div className="flex flex-col h-[70vh]">
-            <AgentFilterSidebar
-              isCollapsed={false}
-              onToggleCollapse={() => setIsAgentFilterSidebarOpen(false)}
-              selectedFilter={selectedFilter}
-              onFilterChange={setSelectedFilter}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-            />
           </div>
         </AdaptiveModal>
       )}

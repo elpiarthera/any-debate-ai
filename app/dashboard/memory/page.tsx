@@ -8,10 +8,12 @@ import { useDevice } from "@/contexts/DeviceProvider"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
+import { OrgSwitcher } from "@/components/dashboard/OrgSwitcher"
 import type { MemoryScope, MemoryCategory } from "@/components/memory/memory-dashboard"
 
 export default function MemoryPage() {
   const { isMobile } = useDevice()
+  const [isDashboardSidebarCollapsed, setIsDashboardSidebarCollapsed] = useState(false)
   const [isFilterSidebarCollapsed, setIsFilterSidebarCollapsed] = useState(false)
   const [isDashboardSidebarOpen, setIsDashboardSidebarOpen] = useState(false)
   const [selectedScope, setSelectedScope] = useState<MemoryScope | "all">("all")
@@ -23,23 +25,33 @@ export default function MemoryPage() {
       {isMobile && (
         <Sheet open={isDashboardSidebarOpen} onOpenChange={setIsDashboardSidebarOpen}>
           <SheetContent side="left" className="w-[280px] p-0">
-            <DashboardSidebar />
+            <div className="p-4 border-b">
+              <OrgSwitcher />
+            </div>
+            <DashboardSidebar isCollapsed={false} onToggleCollapse={() => setIsDashboardSidebarOpen(false)} />
           </SheetContent>
         </Sheet>
       )}
 
       {/* Desktop: Always visible Dashboard Sidebar */}
-      {!isMobile && <DashboardSidebar />}
+      {!isMobile && (
+        <DashboardSidebar
+          isCollapsed={isDashboardSidebarCollapsed}
+          onToggleCollapse={() => setIsDashboardSidebarCollapsed(!isDashboardSidebarCollapsed)}
+        />
+      )}
 
       {/* Second level sidebar - MemoryFilterSidebar */}
-      <MemoryFilterSidebar
-        isCollapsed={isFilterSidebarCollapsed}
-        onToggleCollapse={() => setIsFilterSidebarCollapsed(!isFilterSidebarCollapsed)}
-        selectedScope={selectedScope}
-        onScopeChange={setSelectedScope}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-      />
+      {!isMobile && (
+        <MemoryFilterSidebar
+          isCollapsed={isFilterSidebarCollapsed}
+          onToggleCollapse={() => setIsFilterSidebarCollapsed(!isFilterSidebarCollapsed)}
+          selectedScope={selectedScope}
+          onScopeChange={setSelectedScope}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+        />
+      )}
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -54,6 +66,7 @@ export default function MemoryPage() {
             >
               <Menu className="h-5 w-5" />
             </Button>
+            <OrgSwitcher />
           </div>
         )}
 
