@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Menu } from "lucide-react"
+import { Menu } from "lucide-react"
 import { DashboardSidebar } from "./DashboardSidebar"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { useDevice } from "@/contexts/DeviceProvider"
@@ -62,12 +62,6 @@ export function DashboardLayout({ children, title = "Dashboard", subtitle, bread
                   <Menu className="h-4 w-4" />
                 </Button>
               )}
-
-              <Link href="/">
-                <Button variant="ghost" className="min-h-[44px] min-w-[44px] p-0 shrink-0">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </Link>
 
               {!isMobile && <OrgSwitcher />}
 
