@@ -1,10 +1,6 @@
 "use client"
-
-import { useState } from "react"
-import { Search, Filter } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal"
 import { TemplateCardMobile } from "./template-card-mobile"
 import type { Template } from "../template-list"
 
@@ -18,34 +14,18 @@ interface TemplateListMobileProps {
   onFavoriteToggle: (templateId: string) => void
 }
 
-const categories = ["all", "Business", "Engineering", "Marketing", "Research"]
-
 export function TemplateListMobile({
   templates,
   searchQuery,
   onSearchChange,
-  selectedCategory,
-  onCategoryChange,
   onUseTemplate,
   onFavoriteToggle,
 }: TemplateListMobileProps) {
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
-
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background border-b p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Templates</h1>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsFiltersOpen(true)}
-            className="min-h-[44px] min-w-[44px]"
-          >
-            <Filter className="h-4 w-4" />
-          </Button>
-        </div>
+        <h1 className="text-xl font-semibold">Templates</h1>
 
         {/* Search */}
         <div className="relative">
@@ -77,30 +57,6 @@ export function TemplateListMobile({
           ))
         )}
       </div>
-
-      {/* Filters Modal */}
-      <AdaptiveModal isOpen={isFiltersOpen} onClose={() => setIsFiltersOpen(false)} title="Filter Templates">
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-sm font-medium mb-3">Category</h3>
-            <div className="space-y-2">
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  className="w-full justify-start min-h-[44px]"
-                  onClick={() => {
-                    onCategoryChange(category)
-                    setIsFiltersOpen(false)
-                  }}
-                >
-                  {category === "all" ? "All Categories" : category}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </AdaptiveModal>
     </div>
   )
 }

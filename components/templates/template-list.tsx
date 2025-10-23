@@ -66,13 +66,17 @@ const mockTemplates: Template[] = [
   },
 ]
 
-export function TemplateList() {
+interface TemplateListProps {
+  selectedCategory: string
+  onCategoryChange: (category: string) => void
+}
+
+export function TemplateList({ selectedCategory, onCategoryChange }: TemplateListProps) {
   const { isMobile } = useDevice()
   const router = useRouter()
   const { toast } = useToast()
   const [templates, setTemplates] = useState<Template[]>(mockTemplates)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<string>("all")
 
   const filteredTemplates = templates.filter((template) => {
     const matchesSearch =
@@ -110,7 +114,7 @@ export function TemplateList() {
     searchQuery,
     onSearchChange: setSearchQuery,
     selectedCategory,
-    onCategoryChange: setSelectedCategory,
+    onCategoryChange,
     onUseTemplate: handleUseTemplate,
     onFavoriteToggle: handleFavoriteToggle,
   }
