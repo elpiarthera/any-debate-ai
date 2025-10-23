@@ -70,12 +70,17 @@ const mockMarketplaceItems: MarketplaceItem[] = [
   },
 ]
 
-export function MarketplaceList() {
+interface MarketplaceListProps {
+  selectedCategory: string
+  onCategoryChange: (category: string) => void
+  onOpenFilters?: () => void
+}
+
+export function MarketplaceList({ selectedCategory, onCategoryChange, onOpenFilters }: MarketplaceListProps) {
   const { isMobile } = useDevice()
   const { toast } = useToast()
   const [items, setItems] = useState<MarketplaceItem[]>(mockMarketplaceItems)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<string>("all")
 
   const filteredItems = items.filter((item) => {
     const matchesSearch =
@@ -88,7 +93,6 @@ export function MarketplaceList() {
   const handleInstall = (itemId: string) => {
     const item = items.find((i) => i.id === itemId)
     setItems((prev) => prev.map((i) => (i.id === itemId ? { ...i, isInstalled: true } : i)))
-    console.log("[v0] Installing item:", itemId)
     toast({
       title: "Installation started",
       description: `Installing "${item?.title}"...`,
@@ -98,7 +102,6 @@ export function MarketplaceList() {
   const handleUninstall = (itemId: string) => {
     const item = items.find((i) => i.id === itemId)
     setItems((prev) => prev.map((i) => (i.id === itemId ? { ...i, isInstalled: false } : i)))
-    console.log("[v0] Uninstalling item:", itemId)
     toast({
       title: "Uninstalled",
       description: `"${item?.title}" has been removed.`,
@@ -110,9 +113,10 @@ export function MarketplaceList() {
     searchQuery,
     onSearchChange: setSearchQuery,
     selectedCategory,
-    onCategoryChange: setSelectedCategory,
+    onCategoryChange,
     onInstall: handleInstall,
     onUninstall: handleUninstall,
+    onOpenFilters,
   }
 
   return isMobile ? <MarketplaceListMobile {...sharedProps} /> : <MarketplaceListDesktop {...sharedProps} />
