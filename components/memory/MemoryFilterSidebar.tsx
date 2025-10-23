@@ -1,14 +1,16 @@
 "use client"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { ChevronLeft, ChevronRight, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { cn } from "@/lib/utils"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { MemoryFilters } from "./shared/memory-filters"
 import type { MemoryScope, MemoryCategory } from "./memory-dashboard"
 
 interface MemoryFilterSidebarProps {
-  isOpen: boolean
-  onToggle: () => void
+  isCollapsed: boolean
+  onToggleCollapse: () => void
   selectedScope: MemoryScope | "all"
   onScopeChange: (scope: MemoryScope | "all") => void
   selectedCategory: MemoryCategory | "all"
@@ -16,52 +18,81 @@ interface MemoryFilterSidebarProps {
 }
 
 export function MemoryFilterSidebar({
-  isOpen,
-  onToggle,
+  isCollapsed,
+  onToggleCollapse,
   selectedScope,
   onScopeChange,
   selectedCategory,
   onCategoryChange,
 }: MemoryFilterSidebarProps) {
-  const { isMobile } = useDevice()
+  const { isMobile, isTablet } = useDevice()
 
-  const sidebarContent = (
-    <div className="flex flex-col h-full">
+  const getWidth = () => {
+    if (isMobile) return "100%"
+    if (isTablet) return isCollapsed ? "64px" : "280px"
+    return isCollapsed ? "64px" : "320px"
+  }
+
+  return (
+    <motion.div
+      className={cn("h-full bg-sidebar border-r border-sidebar-border flex flex-col", isMobile && "border-r-0")}
+      animate={{ width: getWidth() }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      style={{ width: isMobile ? "100%" : undefined }}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-lg font-semibold">Filters</h2>
-        {!isMobile && (
-          <Button variant="ghost" size="icon" onClick={onToggle} className="h-8 w-8">
-            {isOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </Button>
-        )}
+      <div className="p-4 border-b border-sidebar-border shrink-0">
+        <div className="flex items-center justify-between">
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="flex items-center gap-2"
+              >
+                <Filter className="h-5 w-5 text-sidebar-foreground" />
+                <h2 className="font-semibold text-sidebar-foreground">Filters</h2>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {!isMobile && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggleCollapse}
+              className="h-8 w-8 p-0 hover:bg-sidebar-accent"
+            >
+              {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Filters */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <MemoryFilters
-          selectedScope={selectedScope}
-          onScopeChange={onScopeChange}
-          selectedCategory={selectedCategory}
-          onCategoryChange={onCategoryChange}
-        />
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="p-4">
+            <AnimatePresence>
+              {!isCollapsed && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <MemoryFilters
+                    selectedScope={selectedScope}
+                    onScopeChange={onScopeChange}
+                    selectedCategory={selectedCategory}
+                    onCategoryChange={onCategoryChange}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </ScrollArea>
       </div>
-    </div>
+    </motion.div>
   )
-
-  if (isMobile) {
-    return (
-      <Sheet open={isOpen} onOpenChange={onToggle}>
-        <SheetContent side="left" className="w-[280px] p-0">
-          {sidebarContent}
-        </SheetContent>
-      </Sheet>
-    )
-  }
-
-  if (!isOpen) {
-    return null
-  }
-
-  return <div className="w-64 border-r bg-background flex-shrink-0">{sidebarContent}</div>
 }

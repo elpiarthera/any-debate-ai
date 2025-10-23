@@ -11,8 +11,8 @@ import { Sheet, SheetContent } from "@/components/ui/sheet"
 
 export default function TemplatesPage() {
   const { isMobile } = useDevice()
-  const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(true)
   const [isDashboardSidebarOpen, setIsDashboardSidebarOpen] = useState(false)
+  const [isFilterSidebarCollapsed, setIsFilterSidebarCollapsed] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
 
   return (
@@ -31,10 +31,10 @@ export default function TemplatesPage() {
 
       {/* Template Filter Sidebar (Second Level) */}
       <TemplateFilterSidebar
+        isCollapsed={isFilterSidebarCollapsed}
+        onToggleCollapse={() => setIsFilterSidebarCollapsed(!isFilterSidebarCollapsed)}
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
-        isOpen={isFilterSidebarOpen}
-        onOpenChange={setIsFilterSidebarOpen}
       />
 
       {/* Main Content */}
@@ -49,9 +49,6 @@ export default function TemplatesPage() {
               className="min-h-[44px] min-w-[44px]"
             >
               <Menu className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setIsFilterSidebarOpen(true)} className="min-h-[44px]">
-              Filters
             </Button>
           </div>
         )}
