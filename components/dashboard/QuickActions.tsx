@@ -9,28 +9,28 @@ import Link from "next/link"
 const quickActions = [
   {
     title: "Quick Start",
-    description: "Browse debate templates",
+    description: "Browse templates",
     icon: Zap,
     href: "/quick-start",
     color: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
   },
   {
     title: "New Debate",
-    description: "Start AI debate session",
+    description: "Start a debate",
     icon: MessageSquare,
     href: "/debates",
     color: "bg-blue-500/10 text-blue-500 border-blue-500/20",
   },
   {
     title: "Create Agent",
-    description: "Configure new AI agent",
+    description: "Configure new agent",
     icon: Plus,
     href: "/agents",
     color: "bg-green-500/10 text-green-500 border-green-500/20",
   },
   {
     title: "View Analytics",
-    description: "Usage insights & metrics",
+    description: "Usage & metrics",
     icon: FileText,
     href: "/analytics",
     color: "bg-purple-500/10 text-purple-500 border-purple-500/20",
@@ -51,7 +51,7 @@ const quickActions = [
   },
   {
     title: "Settings",
-    description: "App preferences",
+    description: "Your preferences",
     icon: Settings,
     href: "/settings",
     color: "bg-gray-500/10 text-gray-500 border-gray-500/20",
