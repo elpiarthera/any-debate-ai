@@ -108,6 +108,17 @@ export function TemplateFilterSidebar({
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-center gap-2"
+              >
+                <RotateCcw className="h-5 w-5 text-sidebar-foreground" />
+              </motion.div>
+            )}
           </div>
         </ScrollArea>
       </div>
