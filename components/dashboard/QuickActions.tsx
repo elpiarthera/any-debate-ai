@@ -78,12 +78,12 @@ export function QuickActions() {
               <Link href={action.href}>
                 <Button
                   variant="outline"
-                  className={`h-auto p-4 flex flex-col items-center gap-2 w-full ${action.color} hover:scale-105 transition-all`}
+                  className={`min-h-[100px] h-full p-4 flex flex-col items-center justify-center gap-2 w-full ${action.color} hover:scale-105 transition-all`}
                 >
-                  <action.icon className="h-6 w-6" />
-                  <div className="text-center">
+                  <action.icon className="h-6 w-6 shrink-0" />
+                  <div className="text-center space-y-0.5">
                     <div className={`font-medium ${isMobile ? "text-xs" : "text-sm"}`}>{action.title}</div>
-                    <div className={`text-muted-foreground ${isMobile ? "text-xs" : "text-xs"}`}>
+                    <div className={`text-muted-foreground ${isMobile ? "text-xs" : "text-xs"} leading-tight`}>
                       {action.description}
                     </div>
                   </div>
