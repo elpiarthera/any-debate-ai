@@ -1,5 +1,6 @@
 "use client"
 
+import { use } from "react"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { OrganizationSettingsMobile } from "@/components/organization/mobile/OrganizationSettingsMobile"
 import { OrganizationSettingsDesktop } from "@/components/organization/desktop/OrganizationSettingsDesktop"
@@ -13,8 +14,8 @@ const mockOrganization = {
   description: "Building the future of AI debates",
 }
 
-export default function OrganizationSettingsPage({ params }: { params: { slug: string } }) {
-  const { slug } = params
+export default function OrganizationSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params)
   const { isMobile } = useDevice()
 
   const sharedProps = {

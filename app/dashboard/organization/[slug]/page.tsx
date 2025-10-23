@@ -1,5 +1,6 @@
 "use client"
 
+import { use } from "react"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { OrganizationOverviewMobile } from "@/components/organization/mobile/OrganizationOverviewMobile"
 import { OrganizationOverviewDesktop } from "@/components/organization/desktop/OrganizationOverviewDesktop"
@@ -30,8 +31,8 @@ const mockMembers = [
   { id: "5", name: "Charlie Davis", role: "member" },
 ]
 
-export default function OrganizationPage({ params }: { params: { slug: string } }) {
-  const { slug } = params
+export default function OrganizationPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params)
   const { isMobile } = useDevice()
 
   const sharedProps = {
