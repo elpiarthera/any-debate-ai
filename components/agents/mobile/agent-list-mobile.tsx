@@ -10,6 +10,9 @@ import { AgentCard } from "../agent-card"
 import type { AgentWithMetadata } from "@/lib/mock-data/agents"
 import { ROLE_CATEGORIES } from "@/lib/agent-config/roles"
 import { useRouter } from "next/navigation"
+import { TokenBalance } from "@/components/dashboard/TokenBalance"
+import { QuickActionsMenu } from "@/components/dashboard/QuickActionsMenu"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 
 interface AgentListMobileProps {
   agents: AgentWithMetadata[]
@@ -40,6 +43,15 @@ export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicat
 
   return (
     <div className="flex flex-col h-full">
+      <div className="border-b p-3 flex items-center justify-between">
+        <h1 className="text-base font-semibold">AI Agents</h1>
+        <div className="flex items-center gap-2">
+          <TokenBalance />
+          <QuickActionsMenu />
+          <ThemeToggle />
+        </div>
+      </div>
+
       <div className="sticky top-0 bg-background z-10 border-b p-4 space-y-3">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
@@ -48,13 +60,13 @@ export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicat
               placeholder="Search agents..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pl-9 min-h-[44px]"
             />
           </div>
 
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" className="min-h-[44px] min-w-[44px] bg-transparent">
                 <SlidersHorizontal className="h-4 w-4" />
               </Button>
             </SheetTrigger>
@@ -68,14 +80,14 @@ export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicat
                   <div className="flex flex-wrap gap-2">
                     <Badge
                       variant={showFavoritesOnly ? "default" : "outline"}
-                      className="cursor-pointer"
+                      className="cursor-pointer min-h-[44px] px-4"
                       onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
                     >
                       Favorites
                     </Badge>
                     <Badge
                       variant={showTemplatesOnly ? "default" : "outline"}
-                      className="cursor-pointer"
+                      className="cursor-pointer min-h-[44px] px-4"
                       onClick={() => setShowTemplatesOnly(!showTemplatesOnly)}
                     >
                       Templates
@@ -88,7 +100,7 @@ export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicat
                   <div className="flex flex-wrap gap-2">
                     <Badge
                       variant={selectedCategory === null ? "default" : "outline"}
-                      className="cursor-pointer"
+                      className="cursor-pointer min-h-[44px] px-4"
                       onClick={() => setSelectedCategory(null)}
                     >
                       All
@@ -97,7 +109,7 @@ export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicat
                       <Badge
                         key={category}
                         variant={selectedCategory === category ? "default" : "outline"}
-                        className="cursor-pointer"
+                        className="cursor-pointer min-h-[44px] px-4"
                         onClick={() => setSelectedCategory(category)}
                       >
                         {category}
@@ -109,7 +121,7 @@ export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicat
             </SheetContent>
           </Sheet>
 
-          <Button size="icon" onClick={() => router.push("/agents/new")}>
+          <Button size="icon" onClick={() => router.push("/agents/new")} className="min-h-[44px] min-w-[44px]">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
@@ -117,7 +129,7 @@ export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicat
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           <Badge
             variant={selectedCategory === null ? "default" : "outline"}
-            className="cursor-pointer shrink-0"
+            className="cursor-pointer shrink-0 min-h-[44px] px-4"
             onClick={() => setSelectedCategory(null)}
           >
             All
@@ -126,7 +138,7 @@ export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicat
             <Badge
               key={category}
               variant={selectedCategory === category ? "default" : "outline"}
-              className="cursor-pointer shrink-0"
+              className="cursor-pointer shrink-0 min-h-[44px] px-4"
               onClick={() => setSelectedCategory(category)}
             >
               {category.split(" & ")[0]}
@@ -141,7 +153,7 @@ export function AgentListMobile({ agents, onFavoriteToggle, onDelete, onDuplicat
             <Filter className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="font-semibold mb-2">No agents found</h3>
             <p className="text-sm text-muted-foreground mb-4">Try adjusting your filters or search query</p>
-            <Button onClick={() => router.push("/agents/new")}>
+            <Button onClick={() => router.push("/agents/new")} className="min-h-[48px]">
               <Plus className="h-4 w-4 mr-2" />
               Create Agent
             </Button>
