@@ -74,14 +74,15 @@ export function QuickActions() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
+              className="h-full"
             >
-              <Link href={action.href}>
+              <Link href={action.href} className="h-full block">
                 <Button
                   variant="outline"
-                  className={`min-h-[100px] h-full p-4 flex flex-col items-center justify-center gap-2 w-full ${action.color} hover:scale-105 transition-all`}
+                  className={`h-full min-h-[120px] p-4 flex flex-col items-center justify-center gap-2 w-full ${action.color} hover:scale-105 transition-all`}
                 >
                   <action.icon className="h-6 w-6 shrink-0" />
-                  <div className="text-center space-y-0.5">
+                  <div className="text-center space-y-0.5 w-full">
                     <div className={`font-medium ${isMobile ? "text-xs" : "text-sm"}`}>{action.title}</div>
                     <div className={`text-muted-foreground ${isMobile ? "text-xs" : "text-xs"} leading-tight`}>
                       {action.description}
