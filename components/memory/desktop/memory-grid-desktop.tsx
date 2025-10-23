@@ -1,6 +1,6 @@
 "use client"
 
-import { Plus, Upload, LinkIcon } from "lucide-react"
+import { Plus, Upload, LinkIcon, ChevronRight } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { MemoryCardDesktop } from "./memory-card-desktop"
@@ -24,6 +24,8 @@ interface MemoryGridDesktopProps {
   onAddMemory?: (memoryData: any) => void
   onMemoriesFromDocument?: (memories: any[]) => void
   onMemoriesFromUrl?: (memories: any[]) => void
+  isFilterSidebarOpen: boolean
+  onToggleFilterSidebar: () => void
 }
 
 export function MemoryGridDesktop({
@@ -39,6 +41,8 @@ export function MemoryGridDesktop({
   onAddMemory,
   onMemoriesFromDocument,
   onMemoriesFromUrl,
+  isFilterSidebarOpen,
+  onToggleFilterSidebar,
 }: MemoryGridDesktopProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null)
@@ -58,26 +62,34 @@ export function MemoryGridDesktop({
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-col h-full">
       {/* Filters sidebar - second level */}
-      <div className="w-64 border-r p-6 space-y-6 bg-background overflow-y-auto">
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Filters</h2>
-          <MemoryFilters
-            selectedScope={selectedScope}
-            onScopeChange={onScopeChange}
-            selectedCategory={selectedCategory}
-            onCategoryChange={onCategoryChange}
-          />
+      {isFilterSidebarOpen && (
+        <div className="w-64 border-r p-6 space-y-6 bg-background overflow-y-auto">
+          <div>
+            <h2 className="text-lg font-semibold mb-4">Filters</h2>
+            <MemoryFilters
+              selectedScope={selectedScope}
+              onScopeChange={onScopeChange}
+              selectedCategory={selectedCategory}
+              onCategoryChange={onCategoryChange}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
         <div className="border-b p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold">Memory Dashboard</h1>
+            <div className="flex items-center gap-2">
+              {!isFilterSidebarOpen && (
+                <Button variant="ghost" size="icon" onClick={onToggleFilterSidebar} className="h-8 w-8">
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              )}
+              <h1 className="text-2xl font-semibold">Memory Dashboard</h1>
+            </div>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"

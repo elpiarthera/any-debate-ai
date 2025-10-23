@@ -79,15 +79,28 @@ const mockMemories: Memory[] = [
   },
 ]
 
-export function MemoryDashboard() {
+interface MemoryDashboardProps {
+  isFilterSidebarOpen: boolean
+  onToggleFilterSidebar: () => void
+  selectedScope: MemoryScope | "all"
+  onScopeChange: (scope: MemoryScope | "all") => void
+  selectedCategory: MemoryCategory | "all"
+  onCategoryChange: (category: MemoryCategory | "all") => void
+}
+
+export function MemoryDashboard({
+  isFilterSidebarOpen,
+  onToggleFilterSidebar,
+  selectedScope,
+  onScopeChange,
+  selectedCategory,
+  onCategoryChange,
+}: MemoryDashboardProps) {
   const { isMobile } = useDevice()
   const { toast } = useToast()
   const [memories, setMemories] = useState<Memory[]>(mockMemories)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedScope, setSelectedScope] = useState<MemoryScope | "all">("all")
-  const [selectedCategory, setSelectedCategory] = useState<MemoryCategory | "all">("all")
 
-  // Filter memories based on search and filters
   const filteredMemories = memories.filter((memory) => {
     const matchesSearch =
       memory.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -188,14 +201,16 @@ export function MemoryDashboard() {
     searchQuery,
     onSearchChange: setSearchQuery,
     selectedScope,
-    onScopeChange: setSelectedScope,
+    onScopeChange,
     selectedCategory,
-    onCategoryChange: setSelectedCategory,
+    onCategoryChange,
     onEditMemory: handleEditMemory,
     onDeleteMemory: handleDeleteMemory,
     onAddMemory: handleAddMemory,
     onMemoriesFromDocument: handleMemoriesFromDocument,
     onMemoriesFromUrl: handleMemoriesFromUrl,
+    isFilterSidebarOpen,
+    onToggleFilterSidebar,
   }
 
   return isMobile ? <MemoryListMobile {...sharedProps} /> : <MemoryGridDesktop {...sharedProps} />

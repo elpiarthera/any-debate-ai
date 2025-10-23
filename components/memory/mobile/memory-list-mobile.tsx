@@ -1,12 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Filter, Upload, LinkIcon } from "lucide-react"
+import { Plus, Upload, LinkIcon, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal"
 import { MemoryCardMobile } from "./memory-card-mobile"
 import { MemorySearch } from "../shared/memory-search"
-import { MemoryFilters } from "../shared/memory-filters"
 import { EditMemoryDialog } from "../edit-memory-dialog"
 import { AddMemoryForm } from "../add-memory-form"
 import { DocumentUpload } from "../document-upload"
@@ -25,23 +24,21 @@ interface MemoryListMobileProps {
   onAddMemory?: (memoryData: any) => void
   onMemoriesFromDocument?: (memories: any[]) => void
   onMemoriesFromUrl?: (memories: any[]) => void
+  isFilterSidebarOpen: boolean
+  onToggleFilterSidebar: () => void
 }
 
 export function MemoryListMobile({
   memories,
   searchQuery,
   onSearchChange,
-  selectedScope,
-  onScopeChange,
-  selectedCategory,
-  onCategoryChange,
   onEditMemory,
   onDeleteMemory,
   onAddMemory,
   onMemoriesFromDocument,
   onMemoriesFromUrl,
+  onToggleFilterSidebar,
 }: MemoryListMobileProps) {
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null)
   const [isAddMemoryOpen, setIsAddMemoryOpen] = useState(false)
@@ -63,15 +60,12 @@ export function MemoryListMobile({
     <div className="flex flex-col h-full">
       <div className="sticky top-0 z-10 bg-background border-b p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Memory</h1>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsFiltersOpen(true)}
-            className="min-h-[44px] min-w-[44px]"
-          >
-            <Filter className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={onToggleFilterSidebar} className="min-h-[44px] min-w-[44px]">
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="text-xl font-semibold">Memory</h1>
+          </div>
         </div>
 
         <MemorySearch value={searchQuery} onChange={onSearchChange} />
@@ -111,15 +105,6 @@ export function MemoryListMobile({
           <Plus className="h-6 w-6" />
         </Button>
       </div>
-
-      <AdaptiveModal isOpen={isFiltersOpen} onClose={() => setIsFiltersOpen(false)} title="Filters">
-        <MemoryFilters
-          selectedScope={selectedScope}
-          onScopeChange={onScopeChange}
-          selectedCategory={selectedCategory}
-          onCategoryChange={onCategoryChange}
-        />
-      </AdaptiveModal>
 
       <EditMemoryDialog
         isOpen={isEditDialogOpen}
