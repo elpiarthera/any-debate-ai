@@ -1,9 +1,10 @@
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout"
 import { ExportCenter } from "@/components/export/export-center"
 
 export default function ExportPage() {
   return (
-    <div className="h-screen flex flex-col">
+    <DashboardLayout title="Export Center" subtitle="Download and export your debate data in various formats">
       <ExportCenter />
-    </div>
+    </DashboardLayout>
   )
 }

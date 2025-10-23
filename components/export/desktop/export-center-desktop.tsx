@@ -19,40 +19,31 @@ const iconMap = {
 
 export function ExportCenterDesktop({ exportOptions, onExport }: ExportCenterDesktopProps) {
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="border-b p-6">
-        <h1 className="text-2xl font-semibold">Export Center</h1>
-        <p className="text-sm text-muted-foreground mt-1">Download and export your debate data in various formats</p>
-      </div>
-
-      {/* Export Options Grid */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="grid grid-cols-2 gap-4 max-w-4xl">
-          {exportOptions.map((option) => {
-            const Icon = iconMap[option.icon as keyof typeof iconMap] || FileText
-            return (
-              <Card key={option.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className={`p-3 rounded-lg ${option.color}`}>
-                      <Icon className="h-6 w-6" />
-                    </div>
-                    <span className="text-xs font-mono bg-muted px-2 py-1 rounded">{option.format}</span>
+    <div className="flex-1 overflow-y-auto p-6">
+      <div className="grid grid-cols-2 gap-4 max-w-4xl">
+        {exportOptions.map((option) => {
+          const Icon = iconMap[option.icon as keyof typeof iconMap] || FileText
+          return (
+            <Card key={option.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className={`p-3 rounded-lg ${option.color}`}>
+                    <Icon className="h-6 w-6" />
                   </div>
-                  <CardTitle className="mt-4">{option.title}</CardTitle>
-                  <CardDescription>{option.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full min-h-[44px]" onClick={() => onExport(option.id)}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Export
-                  </Button>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
+                  <span className="text-xs font-mono bg-muted px-2 py-1 rounded">{option.format}</span>
+                </div>
+                <CardTitle className="mt-4">{option.title}</CardTitle>
+                <CardDescription>{option.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full min-h-[44px]" onClick={() => onExport(option.id)}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
     </div>
   )
