@@ -69,7 +69,7 @@ export function AgentListMobile({
               placeholder="Search agents..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 min-h-[44px]"
+              className="pl-9 min-h-[48px]"
             />
           </div>
 
@@ -138,7 +138,7 @@ export function AgentListMobile({
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           <Badge
             variant={selectedCategory === "All Categories" ? "default" : "outline"}
-            className="cursor-pointer shrink-0 min-h-[44px] px-4"
+            className="cursor-pointer shrink-0 min-h-[36px] px-4"
             onClick={() => console.log("Select All Categories")}
           >
             All Categories
@@ -147,7 +147,7 @@ export function AgentListMobile({
             <Badge
               key={category}
               variant={selectedCategory === category ? "default" : "outline"}
-              className="cursor-pointer shrink-0 min-h-[44px] px-4"
+              className="cursor-pointer shrink-0 min-h-[36px] px-4"
               onClick={() => console.log(`Select ${category}`)}
             >
               {category.split(" & ")[0]}

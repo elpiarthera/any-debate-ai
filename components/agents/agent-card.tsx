@@ -58,7 +58,7 @@ export function AgentCard({ agent, onFavoriteToggle, onDelete, onDuplicate }: Ag
   }
 
   return (
-    <Card className="group hover:shadow-md transition-shadow">
+    <Card className="group hover:shadow-md transition-shadow min-h-[80px]">
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <Avatar className="h-12 w-12 shrink-0">
@@ -73,13 +73,18 @@ export function AgentCard({ agent, onFavoriteToggle, onDelete, onDuplicate }: Ag
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onFavoriteToggle(agent.id)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="min-h-[44px] min-w-[44px]"
+                  onClick={() => onFavoriteToggle(agent.id)}
+                >
                   <Star className={`h-4 w-4 ${agent.isFavorite ? "fill-yellow-400 text-yellow-400" : ""}`} />
                 </Button>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -106,15 +111,15 @@ export function AgentCard({ agent, onFavoriteToggle, onDelete, onDuplicate }: Ag
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-1 mb-2">
-              <Badge variant="secondary" className="text-xs">
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              <Badge variant="secondary" className="text-xs px-2.5 py-1">
                 {agent.persona.name}
               </Badge>
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs px-2.5 py-1">
                 {agent.framework.name}
               </Badge>
               {agent.isTemplate && (
-                <Badge variant="default" className="text-xs">
+                <Badge variant="default" className="text-xs px-2.5 py-1">
                   Template
                 </Badge>
               )}
