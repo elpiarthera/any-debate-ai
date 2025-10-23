@@ -30,6 +30,7 @@ import {
 interface DashboardSidebarProps {
   isCollapsed: boolean
   onToggleCollapse: () => void
+  onNavigate?: () => void
 }
 
 const navigationItems = [
@@ -76,7 +77,7 @@ const recentActivity = [
   },
 ]
 
-export function DashboardSidebar({ isCollapsed, onToggleCollapse }: DashboardSidebarProps) {
+export function DashboardSidebar({ isCollapsed, onToggleCollapse, onNavigate }: DashboardSidebarProps) {
   const { isMobile, isTablet } = useDevice()
   const pathname = usePathname()
   const router = useRouter()
@@ -90,6 +91,12 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse }: DashboardSid
   const isAdmin = true
 
   const visibleNavigationItems = navigationItems.filter((item) => !item.adminOnly || isAdmin)
+
+  const handleNavigation = () => {
+    if (isMobile && onNavigate) {
+      onNavigate()
+    }
+  }
 
   return (
     <motion.div
@@ -153,6 +160,7 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse }: DashboardSid
                   >
                     <Link
                       href={item.href}
+                      onClick={handleNavigation}
                       className={cn(
                         "group relative rounded-lg p-3 mb-2 cursor-pointer transition-colors flex",
                         "hover:bg-sidebar-accent",
@@ -206,6 +214,7 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse }: DashboardSid
                           onClick={() => {
                             if (action.action === "quick-start") {
                               router.push("/quick-start")
+                              handleNavigation()
                             } else {
                               console.log(`[v0] Quick action: ${action.action}`)
                             }

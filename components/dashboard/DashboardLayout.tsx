@@ -118,7 +118,11 @@ export function DashboardLayout({ children, title = "Dashboard", subtitle, bread
               <OrgSwitcher />
             </div>
             <div className="flex-1 min-h-0">
-              <DashboardSidebar isCollapsed={false} onToggleCollapse={() => setIsSidebarCollapsed(true)} />
+              <DashboardSidebar
+                isCollapsed={false}
+                onToggleCollapse={() => setIsSidebarCollapsed(true)}
+                onNavigate={() => setIsSidebarCollapsed(true)}
+              />
             </div>
           </div>
         </AdaptiveModal>
