@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Sparkles } from "lucide-react"
+import { Plus, Sparkles, ArrowLeft, Save } from "lucide-react"
 import { ModuleCard } from "./ModuleCard"
 import type { ProfessionalRole } from "@/lib/agent-config/roles"
 import type { Persona } from "@/lib/agent-config/personas"
@@ -26,7 +26,9 @@ interface AgentComposerMobileProps {
   onRemovePersona: () => void
   onRemoveFramework: () => void
   onSave: () => void
+  onCancel?: () => void
   canSave: boolean
+  isEditMode?: boolean
 }
 
 export function AgentComposerMobile({
@@ -44,16 +46,25 @@ export function AgentComposerMobile({
   onRemovePersona,
   onRemoveFramework,
   onSave,
+  onCancel,
   canSave,
+  isEditMode = false,
 }: AgentComposerMobileProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-shrink-0 sticky top-0 z-10 bg-background border-b p-4">
         <div className="flex items-center gap-2 mb-2">
+          {isEditMode && onCancel && (
+            <Button variant="ghost" size="sm" onClick={onCancel} className="min-h-[44px] min-w-[44px] p-0">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
           <Sparkles className="h-5 w-5 text-primary" />
-          <h1 className="text-lg font-semibold">Compose Agent</h1>
+          <h1 className="text-lg font-semibold">{isEditMode ? "Edit Agent" : "Compose Agent"}</h1>
         </div>
-        <p className="text-sm text-muted-foreground">Select modules to build your custom agent</p>
+        <p className="text-sm text-muted-foreground">
+          {isEditMode ? "Update your agent configuration" : "Select modules to build your custom agent"}
+        </p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -176,10 +187,22 @@ export function AgentComposerMobile({
       </div>
 
       <div className="flex-shrink-0 sticky bottom-0 z-10 bg-background border-t p-4">
-        <Button onClick={onSave} disabled={!canSave} className="w-full min-h-[48px]">
-          <Sparkles className="h-4 w-4 mr-2" />
-          Create Agent
-        </Button>
+        {isEditMode && onCancel ? (
+          <div className="flex gap-2">
+            <Button onClick={onCancel} variant="outline" className="flex-1 min-h-[48px] bg-transparent">
+              Cancel
+            </Button>
+            <Button onClick={onSave} disabled={!canSave} className="flex-1 min-h-[48px]">
+              <Save className="h-4 w-4 mr-2" />
+              Save Changes
+            </Button>
+          </div>
+        ) : (
+          <Button onClick={onSave} disabled={!canSave} className="w-full min-h-[48px]">
+            <Sparkles className="h-4 w-4 mr-2" />
+            Create Agent
+          </Button>
+        )}
       </div>
     </div>
   )

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Plus, Sparkles, User, Users, Brain } from "lucide-react"
+import { Plus, Sparkles, User, Users, Brain, Save } from "lucide-react"
 import { ModuleCard } from "./ModuleCard"
 import type { ProfessionalRole } from "@/lib/agent-config/roles"
 import type { Persona } from "@/lib/agent-config/personas"
@@ -27,7 +27,9 @@ interface AgentComposerDesktopProps {
   onRemovePersona: () => void
   onRemoveFramework: () => void
   onSave: () => void
+  onCancel?: () => void
   canSave: boolean
+  isEditMode?: boolean
 }
 
 export function AgentComposerDesktop({
@@ -45,7 +47,9 @@ export function AgentComposerDesktop({
   onRemovePersona,
   onRemoveFramework,
   onSave,
+  onCancel,
   canSave,
+  isEditMode = false,
 }: AgentComposerDesktopProps) {
   return (
     <div className="grid grid-cols-2 gap-6 h-full">
@@ -53,9 +57,11 @@ export function AgentComposerDesktop({
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            <h1 className="text-2xl font-semibold">Compose Agent</h1>
+            <h1 className="text-2xl font-semibold">{isEditMode ? "Edit Agent" : "Compose Agent"}</h1>
           </div>
-          <p className="text-sm text-muted-foreground">Select modules to build your custom agent</p>
+          <p className="text-sm text-muted-foreground">
+            {isEditMode ? "Update your agent configuration" : "Select modules to build your custom agent"}
+          </p>
         </div>
 
         <Separator />
@@ -230,10 +236,22 @@ export function AgentComposerDesktop({
           </div>
         )}
 
-        <Button onClick={onSave} disabled={!canSave} className="w-full min-h-[48px]">
-          <Sparkles className="h-4 w-4 mr-2" />
-          Create Agent
-        </Button>
+        {isEditMode && onCancel ? (
+          <div className="flex gap-2">
+            <Button onClick={onCancel} variant="outline" className="flex-1 min-h-[48px] bg-transparent">
+              Cancel
+            </Button>
+            <Button onClick={onSave} disabled={!canSave} className="flex-1 min-h-[48px]">
+              <Save className="h-4 w-4 mr-2" />
+              Save Changes
+            </Button>
+          </div>
+        ) : (
+          <Button onClick={onSave} disabled={!canSave} className="w-full min-h-[48px]">
+            <Sparkles className="h-4 w-4 mr-2" />
+            Create Agent
+          </Button>
+        )}
       </div>
     </div>
   )

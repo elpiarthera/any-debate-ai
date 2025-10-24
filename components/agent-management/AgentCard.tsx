@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Trash2, MoreVertical, Play, Pause, Edit } from "lucide-react"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 interface AIAgent {
   id: string
@@ -34,6 +35,7 @@ const MODEL_COLORS = {
 
 export function AgentCard({ agent, onToggleStatus, onDelete, onEdit }: AgentCardProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
   const handleToggleStatus = async () => {
     setIsLoading(true)
@@ -48,6 +50,10 @@ export function AgentCard({ agent, onToggleStatus, onDelete, onEdit }: AgentCard
   const handleDelete = () => {
     onDelete(agent.id)
     toast.success(`${agent.name} deleted`)
+  }
+
+  const handleEdit = () => {
+    router.push(`/agents/${agent.id}/edit`)
   }
 
   return (
@@ -98,8 +104,8 @@ export function AgentCard({ agent, onToggleStatus, onDelete, onEdit }: AgentCard
                     </>
                   )}
                 </DropdownMenuItem>
-                {agent.type === "Custom" && onEdit && (
-                  <DropdownMenuItem onClick={() => onEdit(agent.id)}>
+                {agent.type === "Custom" && (
+                  <DropdownMenuItem onClick={handleEdit}>
                     <Edit className="h-4 w-4 mr-2" />
                     Edit
                   </DropdownMenuItem>
