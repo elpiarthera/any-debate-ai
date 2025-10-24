@@ -349,10 +349,308 @@ components/agent-composer/
 
 ---
 
-## Total Estimated Time: ~10-15 hours
+### Phase 7: TRUE MODULARITY - In-Flow Module Creation (~2-3 hours)
 
-**Completed:** ~6-7 hours (Phases 1-5 + partial Phase 6)
-**Remaining:** ~1 hour (Phase 6 completion)
+**Goal:** Allow users to create custom roles, personas, and frameworks WITHOUT leaving the agent creation flow.
+
+#### Task 7.1: Enhanced ModuleSelector with Inline Creation
+
+**Current State:**
+- ModuleSelector only shows existing modules
+- No way to create new modules inline
+
+**Required Changes:**
+
+1. **Update ModuleSelector Component:**
+   - Add tabs: "Browse Library" and "Create New"
+   - "Browse Library" tab shows existing modules (current behavior)
+   - "Create New" tab shows the editor form inline
+   - After creating, automatically select the new module and close modal
+
+2. **Component Structure:**
+\`\`\`tsx
+<ModuleSelector type="role">
+  <Tabs>
+    <Tab value="browse">
+      {/* Existing module list */}
+      <ModuleList modules={roles} onSelect={handleSelect} />
+    </Tab>
+    <Tab value="create">
+      {/* Inline editor form */}
+      <RoleEditorForm 
+        onSave={(newRole) => {
+          saveRole(newRole);
+          handleSelect(newRole);
+          closeModal();
+        }}
+      />
+    </Tab>
+  </Tabs>
+</ModuleSelector>
+\`\`\`
+
+3. **Files to Update:**
+   - `components/agent-composer/ModuleSelector.tsx` - Add tabs and inline creation
+   - `components/module-libraries/RoleEditorModal.tsx` - Extract form to reusable component
+   - `components/module-libraries/PersonaEditorModal.tsx` - Extract form to reusable component
+   - `components/module-libraries/FrameworkEditorModal.tsx` - Extract form to reusable component
+
+4. **New Files to Create:**
+   - `components/module-libraries/forms/RoleEditorForm.tsx` - Reusable role form
+   - `components/module-libraries/forms/PersonaEditorForm.tsx` - Reusable persona form
+   - `components/module-libraries/forms/FrameworkEditorForm.tsx` - Reusable framework form
+
+**Mobile UX:**
+\`\`\`
+┌─────────────────────────────────────┐
+│ ← Select Role                    ✕  │
+├─────────────────────────────────────┤
+│ [Browse Library] [Create New]       │ ← Tabs
+├─────────────────────────────────────┤
+│ CREATE NEW TAB:                     │
+│                                     │
+│ Role Name *                         │
+│ [CEO                          ]     │
+│                                     │
+│ Description *                       │
+│ [Strategic business leader... ]     │
+│                                     │
+│ Category                            │
+│ [Business & Strategy ▼]             │
+│                                     │
+│ Expertise Areas                     │
+│ [Strategy] [Leadership] [+ Add]     │
+│                                     │
+│ System Prompt Modifier              │
+│ [You are a strategic...      ]     │
+│                                     │
+├─────────────────────────────────────┤
+│ [Cancel] [Create & Select Role]     │
+└─────────────────────────────────────┘
+\`\`\`
+
+**Desktop UX:**
+\`\`\`
+┌───────────────────────────────────────────────────────┐
+│ Select Role                                         ✕ │
+├───────────────────────────────────────────────────────┤
+│ [Browse Library] [Create New]                         │
+├───────────────────────────────────────────────────────┤
+│ CREATE NEW TAB:                                       │
+│                                                       │
+│ Role Name *              Category                     │
+│ [CEO              ]      [Business & Strategy ▼]      │
+│                                                       │
+│ Description *                                         │
+│ [Strategic business leader focused on high-level...] │
+│                                                       │
+│ Expertise Areas                                       │
+│ [Strategy] [Leadership] [Finance] [+ Add Expertise]   │
+│                                                       │
+│ System Prompt Modifier                                │
+│ [You are a strategic business leader. Focus on...]   │
+│                                                       │
+├───────────────────────────────────────────────────────┤
+│                    [Cancel] [Create & Select Role]    │
+└───────────────────────────────────────────────────────┘
+\`\`\`
+
+---
+
+#### Task 7.2: LLM Model Selection
+
+**Current State:**
+- No model selection in agent composer
+- Users cannot choose which LLM to use
+
+**Required Implementation:**
+
+1. **Add Model Selector to Agent Composer:**
+   - Add model selection section after module selection
+   - Show available models with capabilities and pricing
+   - Support multiple providers (OpenAI, Anthropic, Google, etc.)
+   - Default to a recommended model
+
+2. **Component Structure:**
+\`\`\`tsx
+<ModelSelector
+  selected={selectedModel}
+  onSelect={setSelectedModel}
+  providers={['openai', 'anthropic', 'google']}
+/>
+\`\`\`
+
+3. **Files to Create:**
+   - `components/agent-composer/ModelSelector.tsx` - Model selection component
+   - `lib/models/types.ts` - Model types and provider definitions
+   - `lib/models/available-models.ts` - List of available models with metadata
+
+4. **Model Metadata:**
+\`\`\`typescript
+interface Model {
+  id: string;
+  name: string;
+  provider: 'openai' | 'anthropic' | 'google' | 'xai';
+  capabilities: string[];
+  contextWindow: number;
+  pricing: {
+    input: number;  // per 1M tokens
+    output: number; // per 1M tokens
+  };
+  recommended: boolean;
+}
+\`\`\`
+
+5. **Update Agent Type:**
+\`\`\`typescript
+interface Agent {
+  // ... existing fields ...
+  modelId: string;
+  modelProvider: string;
+}
+\`\`\`
+
+**Mobile UX:**
+\`\`\`
+┌─────────────────────────────────────┐
+│ Select Model                        │
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐│
+│ │ ✓ GPT-4 Turbo          RECOMMENDED││
+│ │ OpenAI                          ││
+│ │ 128K context • $10/$30 per 1M   ││
+│ └─────────────────────────────────┘│
+│ ┌─────────────────────────────────┐│
+│ │   Claude 3.5 Sonnet             ││
+│ │   Anthropic                     ││
+│ │   200K context • $3/$15 per 1M  ││
+│ └─────────────────────────────────┘│
+│ ┌─────────────────────────────────┐│
+│ │   Gemini 1.5 Pro                ││
+│ │   Google                        ││
+│ │   1M context • $1.25/$5 per 1M  ││
+│ └─────────────────────────────────┘│
+└─────────────────────────────────────┘
+\`\`\`
+
+---
+
+#### Task 7.3: Enhanced Module Cards with Quick Edit
+
+**Current State:**
+- Module cards only show basic info
+- No quick edit functionality
+- Users must go back to selector to change modules
+
+**Required Changes:**
+
+1. **Update ModuleCard Component:**
+   - Show more module details (expertise, traits, steps)
+   - Add "Quick Edit" button that opens editor inline
+   - Add "Change" button to swap module
+   - Show badge for custom vs built-in modules
+
+2. **Component Structure:**
+\`\`\`tsx
+<ModuleCard
+  module={selectedRole}
+  type="role"
+  onEdit={() => openQuickEdit(selectedRole)}
+  onChange={() => openModuleSelector('role')}
+  showDetails={true}
+/>
+\`\`\`
+
+**Mobile UX:**
+\`\`\`
+┌─────────────────────────────────────┐
+│ 💼 Role: CEO              [CUSTOM]  │
+│ Strategic business leader           │
+│                                     │
+│ Expertise: Strategy, Leadership,    │
+│ Finance, Operations                 │
+│                                     │
+│ [Quick Edit] [Change Role]          │
+└─────────────────────────────────────┘
+\`\`\`
+
+---
+
+#### Task 7.4: Update Agent Composer Layout
+
+**Required Changes:**
+
+1. **Add Model Selection Section:**
+   - Place after module selection
+   - Before configuration section
+
+2. **Improve Module Selection UX:**
+   - Show "+ Create New" prominently
+   - Make it clear users can create OR select
+
+3. **Updated Mobile Layout:**
+\`\`\`
+┌─────────────────────────────────────┐
+│ ← Create Agent              [Save]  │
+├─────────────────────────────────────┤
+│ 1. Select Modules                   │
+│                                     │
+│ ┌─────────────────────────────────┐│
+│ │ 💼 Role: CEO          [CUSTOM]  ││
+│ │ Strategic business leader       ││
+│ │ [Quick Edit] [Change]           ││
+│ └─────────────────────────────────┘│
+│ [+ Create New Role]                 │
+│                                     │
+│ ┌─────────────────────────────────┐│
+│ │ 🎯 Persona: Analytical          ││
+│ │ Data-driven, logical            ││
+│ │ [Quick Edit] [Change]           ││
+│ └─────────────────────────────────┘│
+│ [+ Create New Persona]              │
+│                                     │
+│ ┌─────────────────────────────────┐│
+│ │ 🧠 Framework: First Principles  ││
+│ │ Break down complex problems     ││
+│ │ [Quick Edit] [Change]           ││
+│ └─────────────────────────────────┘│
+│ [+ Create New Framework]            │
+│                                     │
+├─────────────────────────────────────┤
+│ 2. Select Model                     │
+│                                     │
+│ ┌─────────────────────────────────┐│
+│ │ ✓ GPT-4 Turbo      RECOMMENDED  ││
+│ │ OpenAI • 128K context           ││
+│ │ [Change Model]                  ││
+│ └─────────────────────────────────┘│
+│                                     │
+├─────────────────────────────────────┤
+│ 3. Configuration                    │
+│                                     │
+│ Agent Name *                        │
+│ [Strategic Advisor            ]     │
+│                                     │
+│ Description                         │
+│ [A strategic business advisor...]   │
+│                                     │
+│ Tags                                │
+│ [Business] [Strategy] [+ Add]       │
+│                                     │
+│ Custom Instructions (Optional)      │
+│ [Additional context or rules...]    │
+│                                     │
+├─────────────────────────────────────┤
+│ [Create Agent]                      │
+└─────────────────────────────────────┘
+\`\`\`
+
+---
+
+## Total Estimated Time: ~15-20 hours
+
+**Completed:** ~8-9 hours (Phases 1-5 + partial Phase 6 + Phase 7 tasks 1-2)
+**Remaining:** ~1 hour (Phase 6 completion + Phase 7 tasks 3-4)
 
 ---
 
