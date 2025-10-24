@@ -407,13 +407,18 @@ interface Model {
 
 ### Phase 7: TRUE MODULARITY - In-Flow Module Creation (~2-3 hours)
 
-**Goal:** Allow users to create custom roles, personas, and frameworks WITHOUT leaving the agent creation flow.
+**Goal:** Allow users to create custom roles, personas, and frameworks BOTH independently (in library pages) AND during agent creation flow.
+
+**Key Principle:** Module creation should be available in TWO places:
+1. **Independent Creation:** `/agents/roles`, `/agents/personas`, `/agents/frameworks` pages (✅ Already implemented)
+2. **In-Flow Creation:** During agent creation/editing in ModuleSelector (❌ NOT implemented)
 
 #### Task 7.1: Enhanced ModuleSelector with Inline Creation
 
 **Current State:**
 - ModuleSelector only shows existing modules
-- No way to create new modules inline
+- Users must leave agent creation flow to create new modules
+- No "Create New" option in the selector
 
 **Required Changes:**
 
@@ -422,8 +427,9 @@ interface Model {
    - "Browse Library" tab shows existing modules (current behavior)
    - "Create New" tab shows the editor form inline
    - After creating, automatically select the new module and close modal
+   - New module is saved to library and available for all agents
 
-2. **Component Structure:**
+**Component Structure:**
 \`\`\`tsx
 <ModuleSelector type="role">
   <Tabs>
@@ -445,16 +451,16 @@ interface Model {
 </ModuleSelector>
 \`\`\`
 
-3. **Files to Update:**
-   - `components/agent-composer/ModuleSelector.tsx` - Add tabs and inline creation
-   - `components/module-libraries/RoleEditorModal.tsx` - Extract form to reusable component
-   - `components/module-libraries/PersonaEditorModal.tsx` - Extract form to reusable component
-   - `components/module-libraries/FrameworkEditorModal.tsx` - Extract form to reusable component
+**Files to Update:**
+- `components/agent-composer/ModuleSelector.tsx` - Add tabs and inline creation
+- `components/module-libraries/RoleEditorModal.tsx` - Extract form to reusable component
+- `components/module-libraries/PersonaEditorModal.tsx` - Extract form to reusable component
+- `components/module-libraries/FrameworkEditorModal.tsx` - Extract form to reusable component
 
-4. **New Files to Create:**
-   - `components/module-libraries/forms/RoleEditorForm.tsx` - Reusable role form
-   - `components/module-libraries/forms/PersonaEditorForm.tsx` - Reusable persona form
-   - `components/module-libraries/forms/FrameworkEditorForm.tsx` - Reusable framework form
+**New Files to Create:**
+- `components/module-libraries/forms/RoleEditorForm.tsx` - Reusable role form
+- `components/module-libraries/forms/PersonaEditorForm.tsx` - Reusable persona form
+- `components/module-libraries/forms/FrameworkEditorForm.tsx` - Reusable framework form
 
 **Mobile UX:**
 \`\`\`
@@ -511,8 +517,6 @@ interface Model {
 └───────────────────────────────────────────────────────┘
 \`\`\`
 
----
-
 #### Task 7.2: LLM Model Selection
 
 **Current State:**
@@ -527,7 +531,7 @@ interface Model {
    - Support multiple providers (OpenAI, Anthropic, Google, etc.)
    - Default to a recommended model
 
-2. **Component Structure:**
+**Component Structure:**
 \`\`\`tsx
 <ModelSelector
   selected={selectedModel}
@@ -536,12 +540,12 @@ interface Model {
 />
 \`\`\`
 
-3. **Files to Create:**
-   - `components/agent-composer/ModelSelector.tsx` - Model selection component
-   - `lib/models/types.ts` - Model types and provider definitions
-   - `lib/models/available-models.ts` - List of available models with metadata
+**Files to Create:**
+- `components/agent-composer/ModelSelector.tsx` - Model selection component
+- `lib/models/types.ts` - Model types and provider definitions
+- `lib/models/available-models.ts` - List of available models with metadata
 
-4. **Model Metadata:**
+**Model Metadata:**
 \`\`\`typescript
 interface Model {
   id: string;
@@ -557,7 +561,7 @@ interface Model {
 }
 \`\`\`
 
-5. **Update Agent Type:**
+**Update Agent Type:**
 \`\`\`typescript
 interface Agent {
   // ... existing fields ...
@@ -589,8 +593,6 @@ interface Agent {
 └─────────────────────────────────────┘
 \`\`\`
 
----
-
 #### Task 7.3: Enhanced Module Cards with Quick Edit
 
 **Current State:**
@@ -606,7 +608,7 @@ interface Agent {
    - Add "Change" button to swap module
    - Show badge for custom vs built-in modules
 
-2. **Component Structure:**
+**Component Structure:**
 \`\`\`tsx
 <ModuleCard
   module={selectedRole}
@@ -629,8 +631,6 @@ interface Agent {
 │ [Quick Edit] [Change Role]          │
 └─────────────────────────────────────┘
 \`\`\`
-
----
 
 #### Task 7.4: Update Agent Composer Layout
 
