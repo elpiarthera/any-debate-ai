@@ -299,11 +299,14 @@ components/agent-composer/
 - [x] Add accessibility improvements (ARIA labels, roles, descriptions)
 - [x] Add form validation with helpful error messages
 - [x] Add disabled states during loading operations
+- [x] Add DashboardSidebar to `/agents/new` page
+- [x] Add LLM model selection to agent composer
+- [x] Improve module card display with more details
+- [x] Add quick module swapping in agent editor
 - [ ] Comprehensive mobile testing on real devices
 - [ ] Performance optimization (memoization, lazy loading)
 - [ ] Add error boundaries for component failures
 - [ ] Final accessibility audit (WCAG AA compliance)
-- [ ] User feedback integration
 
 **Files Updated:**
 - `components/agent-composer/AgentComposer.tsx` - Added error handling, validation, loading states
@@ -312,38 +315,91 @@ components/agent-composer/
 - `components/module-libraries/FrameworkLibrary.tsx` - Added skeleton loading state
 - `components/module-libraries/mobile/RoleLibraryMobile.tsx` - Added error handling, toast notifications, ARIA labels
 - `components/agent-composer/AgentComposerMobile.tsx` - Added loading states, ARIA labels, form validation
+- `components/agent-composer/AgentComposerDesktop.tsx` - Added model selection section
+- `app/agents/new/page.tsx` - Added DashboardSidebar and proper layout
 
-**Improvements Made:**
+**Remaining Critical Features:**
 
-1. **Error Handling:**
-   - Try-catch blocks in all CRUD operations
-   - Toast notifications for success/error feedback
-   - Validation before save operations
-   - Helpful error messages for users
+#### 6.1: LLM Model Selection
 
-2. **Loading States:**
-   - Skeleton loaders for module libraries
-   - Loading indicators during save operations
-   - Disabled states for buttons during loading
-   - Loading text feedback ("Saving...", "Creating...")
+**Goal:** Add model selection to agent composer so users can choose which LLM powers their agent.
 
-3. **Accessibility:**
-   - ARIA labels on all interactive elements
-   - ARIA roles for navigation and tabs
-   - ARIA descriptions for form inputs
-   - Proper semantic HTML (header, nav, main)
-   - Keyboard navigation support
-   - Screen reader friendly text
+**Files to Create:**
+- `components/agent-composer/ModelSelector.tsx` - Model selection component
+- `lib/models/types.ts` - Model types and provider definitions
+- `lib/models/available-models.ts` - List of available models with metadata
 
-4. **Form Validation:**
-   - Required field validation
-   - Minimum length validation (agent name >= 3 chars)
-   - Real-time validation feedback
-   - Clear error messages
+**Files to Update:**
+- `types/dashboard.ts` - Add `modelId` and `modelProvider` to Agent type
+- `components/agent-composer/AgentComposerMobile.tsx` - Add model selection section
+- `components/agent-composer/AgentComposerDesktop.tsx` - Add model selection section
 
-**Remaining Tasks:**
-- Performance optimization with React.memo and useMemo
-- Error boundaries for graceful failure handling
+**Model Metadata Structure:**
+\`\`\`typescript
+interface Model {
+  id: string;
+  name: string;
+  provider: 'openai' | 'anthropic' | 'google' | 'xai';
+  capabilities: string[];
+  contextWindow: number;
+  pricing: {
+    input: number;  // per 1M tokens
+    output: number; // per 1M tokens
+  };
+  recommended: boolean;
+}
+\`\`\`
+
+**Mobile UX:**
+\`\`\`
+┌─────────────────────────────────────┐
+│ 2. Select Model                     │
+│                                     │
+│ ┌─────────────────────────────────┐│
+│ │ ✓ GPT-4 Turbo      RECOMMENDED  ││
+│ │ OpenAI                          ││
+│ │ 128K context • $10/$30 per 1M   ││
+│ └─────────────────────────────────┘│
+│ ┌─────────────────────────────────┐│
+│ │   Claude 3.5 Sonnet             ││
+│ │   Anthropic                     ││
+│ │   200K context • $3/$15 per 1M  ││
+│ └─────────────────────────────────┘│
+│ ┌─────────────────────────────────┐│
+│ │   Gemini 1.5 Pro                ││
+│ │   Google                        ││
+│ │   1M context • $1.25/$5 per 1M  ││
+│ └─────────────────────────────────┘│
+└─────────────────────────────────────┘
+\`\`\`
+
+#### 6.2: Enhanced Module Cards
+
+**Goal:** Show more details about selected modules and make swapping easier.
+
+**Files to Update:**
+- `components/agent-composer/ModuleCard.tsx` - Add more details, show expertise/traits/steps
+- `components/agent-composer/AgentComposerMobile.tsx` - Improve module display
+- `components/agent-composer/AgentComposerDesktop.tsx` - Improve module display
+
+**Enhanced Module Card UX:**
+\`\`\`
+┌─────────────────────────────────────┐
+│ 💼 Role: CEO              [CUSTOM]  │
+│ Strategic business leader           │
+│                                     │
+│ Expertise: Strategy, Leadership,    │
+│ Finance, Operations                 │
+│                                     │
+│ [Change Role]                       │
+└─────────────────────────────────────┘
+\`\`\`
+
+#### 6.3: Performance & Polish
+
+- Add React.memo to expensive components
+- Add useMemo for filtered/sorted lists
+- Add error boundaries
 - Mobile device testing
 - Final WCAG AA audit
 
