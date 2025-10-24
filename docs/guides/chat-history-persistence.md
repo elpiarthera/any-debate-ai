@@ -11,9 +11,11 @@ AnyDebateAI implements a comprehensive client-side chat history persistence syst
 3. [Storage Mechanisms](#storage-mechanisms)
 4. [Feature Modules](#feature-modules)
 5. [Data Flow](#data-flow)
-6. [Best Practices](#best-practices)
-7. [Limitations & Considerations](#limitations--considerations)
-8. [Future Enhancements](#future-enhancements)
+6. [API Implementation](#api-implementation)
+7. [State Management](#state-management)
+8. [Best Practices](#best-practices)
+9. [Limitations & Considerations](#limitations--considerations)
+10. [Future Enhancements](#future-enhancements)
 
 ---
 
@@ -21,21 +23,16 @@ AnyDebateAI implements a comprehensive client-side chat history persistence syst
 
 ### Storage Strategy
 
-The application uses **browser localStorage** as the primary persistence layer with the following characteristics:
+The application uses **browser localStorage** for feature-specific persistence with the following characteristics:
 
 - **Client-side only**: All data is stored locally in the user's browser
 - **Synchronous access**: Immediate read/write operations
 - **5-10MB storage limit**: Typical browser localStorage capacity
 - **Domain-scoped**: Data is isolated per domain
 - **No server dependency**: Works offline after initial load
+- **Ephemeral messages**: Chat messages exist only in React state during active sessions
 
-### Key Design Principles
-
-1. **Modular Managers**: Each feature (bookmarks, reactions, threads) has its own manager class
-2. **Namespaced Keys**: All localStorage keys are prefixed with `anydebate_` to avoid conflicts
-3. **JSON Serialization**: All data structures are serialized to JSON for storage
-4. **Type Safety**: Full TypeScript interfaces for all data models
-5. **Graceful Degradation**: SSR-safe with `typeof window` checks
+**Important**: The core chat messages themselves are NOT persisted to localStorage. Messages exist only in React component state (managed by the AI SDK's `useChat` hook) during an active session. Only feature-specific data (bookmarks, reactions, threads, search history, comparisons) is persisted.
 
 ---
 
@@ -74,16 +71,34 @@ interface ChatMessage {
 Session metadata for organizing conversations:
 
 \`\`\`typescript
-interface ChatSession {
-  id: string                    // Unique session identifier
-  title: string                 // User-defined session title
-  timestamp: Date               // Session creation time
-  messageCount: number          // Total messages in session
-  participants: string[]        // List of participant names
+// From lib/mock-data/sessions.ts
+interface SessionMetadata {
+  messageCount: number
+  agentCount: number
+  artifactCount: number
+  lastActivity: number
+  participants: string[]
+}
+
+interface SessionConfig {
+  mode: "compare" | "debate" | "auto-debate"
+  selectedAgents: string[]
+  debateRounds?: number
+}
+
+interface Session {
+  id: string
+  title: string
+  description: string
+  status: "active" | "archived"
+  createdAt: number
+  updatedAt: number
+  metadata: SessionMetadata
+  config: SessionConfig
 }
 \`\`\`
 
-**Storage Location**: Component state in `ChatSidebar.tsx` (currently mock data)
+**Storage Location**: Currently uses mock data from `lib/mock-data/sessions.ts`. Sessions are NOT persisted to localStorage in the current implementation.
 
 **Future Enhancement**: Sessions should be persisted to localStorage with a dedicated `SessionManager` class.
 
@@ -448,76 +463,72 @@ localStorage.setItem('anydebate_comparisons', JSON.stringify([
 ### Message Creation Flow
 
 \`\`\`
-1. User sends message
+1. User sends message via ChatThread
    ↓
-2. ChatThread component receives message
+2. useAIChat hook (wraps AI SDK's useChat) handles submission
    ↓
-3. Message added to local state
+3. Message added to React state (messages array)
    ↓
-4. API call to /api/chat (streaming response)
+4. API call to /api/chat with streaming
    ↓
-5. AI response streamed back
+5. AI response streamed back via Server-Sent Events
    ↓
-6. Response added to local state
+6. Response added to React state in real-time
    ↓
-7. [Future] SessionManager.saveMessage(message)
+7. Messages exist ONLY in component state
    ↓
-8. localStorage updated
+8. [NOT IMPLEMENTED] Session/message persistence to localStorage
 \`\`\`
 
-### Bookmark Creation Flow
+### API Implementation
 
-\`\`\`
-1. User clicks bookmark button
-   ↓
-2. BookmarkButton component calls BookmarkManager
-   ↓
-3. BookmarkManager.createBookmark(messageId, sessionId)
-   ↓
-4. Bookmark object created with metadata
-   ↓
-5. Added to bookmarks array
-   ↓
-6. localStorage.setItem('anydebate_bookmarks', ...)
-   ↓
-7. UI updates with bookmark indicator
+The chat API (`app/api/chat/route.ts`) handles message processing:
+
+\`\`\`typescript
+// Key features:
+- Uses AI SDK's streamText() for streaming responses
+- Supports multiple models via AI Gateway
+- Includes artifact creation tools (documents, tables, checklists, charts)
+- Rate limiting per client IP
+- Agent configuration validation
+- Context-aware system prompts
+- Automatic fallback handling
+- Temperature adjustment based on persona
 \`\`\`
 
-### Reaction Flow
+### State Management
 
-\`\`\`
-1. User clicks reaction emoji
-   ↓
-2. ReactionManager.addReaction(messageId, emoji, userId)
-   ↓
-3. Check if user already reacted
-   ↓
-4. If new: Add user to reaction.users[]
-   ↓
-5. If existing: Increment reaction.count
-   ↓
-6. localStorage.setItem('anydebate_reactions_{messageId}', ...)
-   ↓
-7. UI updates with new count
+Messages are managed using the AI SDK's `useChat` hook:
+
+\`\`\`typescript
+// From hooks/useAIChat.ts
+const {
+  messages,           // Array of ChatMessage objects
+  input,              // Current input text
+  handleInputChange,  // Input change handler
+  handleSubmit,       // Form submission handler
+  isLoading,          // Loading state
+  error,              // Error state
+  setInput,           // Set input programmatically
+  reload,             // Retry last request
+  stop,               // Stop streaming
+} = useChat({
+  api: "/api/chat",
+  body: { model, agentConfig, conversationContext },
+  onFinish: (message) => { /* Handle completion */ },
+  onError: (error) => { /* Handle errors */ },
+  onResponse: (response) => { /* Handle response */ }
+})
 \`\`\`
 
-### Session Load Flow
-
-\`\`\`
-1. User opens ChatSidebar
-   ↓
-2. [Current] Mock sessions loaded from state
-   ↓
-3. [Future] SessionManager.getAllSessions()
-   ↓
-4. Sessions displayed in sidebar
-   ↓
-5. User clicks session
-   ↓
-6. [Future] SessionManager.getSessionMessages(sessionId)
-   ↓
-7. Messages loaded into ChatThread
-\`\`\`
+The `useAIChat` hook enhances the base `useChat` with:
+- Connection status tracking (connected/connecting/disconnected/error)
+- Automatic retry logic with exponential backoff
+- Maximum retry attempts (default: 3)
+- Abort controller for canceling requests
+- Enhanced error handling with user notifications
+- Streaming message tracking
+- Network status monitoring
 
 ---
 
@@ -609,6 +620,14 @@ BookmarkManager.createBookmarks(messages.map(m => m.id), sessionId)
 - **Quota Exceeded**: Handle gracefully with user notification
 - **Data Pruning**: Implement automatic cleanup of old data
 
+### Message Persistence
+
+- **No Message Storage**: Chat messages are NOT saved to localStorage
+- **Session-only**: Messages exist only during active browser session
+- **Lost on Refresh**: Page refresh clears all conversation history
+- **No History**: Users cannot access previous conversations
+- **Export Only**: Messages can only be preserved via export functionality
+
 ### Browser Compatibility
 
 - **Private Browsing**: localStorage may be disabled
@@ -637,9 +656,13 @@ BookmarkManager.createBookmarks(messages.map(m => m.id), sessionId)
 
 ## Future Enhancements
 
-### 1. Session Persistence
+### 1. Session Persistence (CRITICAL PRIORITY)
 
-**Current State**: Sessions are mock data in component state
+**Current State**: 
+- Sessions use mock data from `lib/mock-data/sessions.ts`
+- Messages exist only in React state via `useChat` hook
+- No persistence between page refreshes
+- No conversation history
 
 **Proposed Implementation**:
 
@@ -647,15 +670,25 @@ BookmarkManager.createBookmarks(messages.map(m => m.id), sessionId)
 // lib/chat/sessions.ts
 export class SessionManager {
   private static SESSIONS_KEY = "anydebate_sessions"
-  private static MESSAGES_KEY = "anydebate_messages"
+  private static MESSAGES_KEY_PREFIX = "anydebate_messages"
   
-  static createSession(title: string): ChatSession {
-    const session: ChatSession = {
-      id: `session-${Date.now()}`,
-      title,
-      timestamp: new Date(),
-      messageCount: 0,
-      participants: []
+  // Create new session
+  static createSession(config: SessionConfig): Session {
+    const session: Session = {
+      id: `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      title: `New ${config.mode} Session`,
+      description: '',
+      status: 'active',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      metadata: {
+        messageCount: 0,
+        agentCount: config.selectedAgents.length,
+        artifactCount: 0,
+        lastActivity: Date.now(),
+        participants: []
+      },
+      config
     }
     
     const sessions = this.getAllSessions()
@@ -665,222 +698,161 @@ export class SessionManager {
     return session
   }
   
+  // Save message to session
   static saveMessage(sessionId: string, message: ChatMessage): void {
+    const key = `${this.MESSAGES_KEY_PREFIX}_${sessionId}`
     const messages = this.getSessionMessages(sessionId)
     messages.push(message)
-    localStorage.setItem(
-      `${this.MESSAGES_KEY}_${sessionId}`,
-      JSON.stringify(messages)
-    )
     
-    // Update session message count
-    this.updateSessionMetadata(sessionId, {
-      messageCount: messages.length
-    })
+    try {
+      localStorage.setItem(key, JSON.stringify(messages))
+      
+      // Update session metadata
+      this.updateSessionMetadata(sessionId, {
+        messageCount: messages.length,
+        lastActivity: Date.now()
+      })
+    } catch (error) {
+      console.error('Failed to save message:', error)
+      // Handle quota exceeded
+      this.handleStorageQuotaExceeded(sessionId)
+    }
   }
   
+  // Get all messages for session
   static getSessionMessages(sessionId: string): ChatMessage[] {
-    const stored = localStorage.getItem(`${this.MESSAGES_KEY}_${sessionId}`)
+    if (typeof window === 'undefined') return []
+    
+    const key = `${this.MESSAGES_KEY_PREFIX}_${sessionId}`
+    const stored = localStorage.getItem(key)
+    
+    if (!stored) return []
+    
+    try {
+      return JSON.parse(stored)
+    } catch (error) {
+      console.error('Failed to parse messages:', error)
+      return []
+    }
+  }
+  
+  // Get all sessions
+  static getAllSessions(): Session[] {
+    if (typeof window === 'undefined') return []
+    
+    const stored = localStorage.getItem(this.SESSIONS_KEY)
     return stored ? JSON.parse(stored) : []
   }
   
-  // ... additional methods
-}
-\`\`\`
-
-### 2. IndexedDB Migration
-
-For better performance with large datasets:
-
-\`\`\`typescript
-// lib/storage/indexeddb-adapter.ts
-export class IndexedDBAdapter {
-  private db: IDBDatabase
-  
-  async init() {
-    this.db = await openDB('anydebate', 1, {
-      upgrade(db) {
-        // Create object stores
-        db.createObjectStore('sessions', { keyPath: 'id' })
-        db.createObjectStore('messages', { keyPath: 'id' })
-        db.createObjectStore('bookmarks', { keyPath: 'id' })
-        
-        // Create indexes
-        const messages = db.createObjectStore('messages')
-        messages.createIndex('sessionId', 'sessionId')
-        messages.createIndex('timestamp', 'timestamp')
-      }
-    })
+  // Save sessions array
+  private static saveSessions(sessions: Session[]): void {
+    if (typeof window === 'undefined') return
+    localStorage.setItem(this.SESSIONS_KEY, JSON.stringify(sessions))
   }
   
-  async saveMessage(message: ChatMessage): Promise<void> {
-    const tx = this.db.transaction('messages', 'readwrite')
-    await tx.objectStore('messages').add(message)
-    await tx.done
-  }
-  
-  async getSessionMessages(sessionId: string): Promise<ChatMessage[]> {
-    const tx = this.db.transaction('messages', 'readonly')
-    const index = tx.objectStore('messages').index('sessionId')
-    return await index.getAll(sessionId)
-  }
-}
-\`\`\`
-
-### 3. Cloud Sync (Optional)
-
-For cross-device synchronization:
-
-\`\`\`typescript
-// lib/sync/cloud-sync.ts
-export class CloudSyncManager {
-  static async syncToCloud(userId: string): Promise<void> {
-    const sessions = SessionManager.getAllSessions()
-    const bookmarks = BookmarkManager.getAllBookmarks()
+  // Update session metadata
+  private static updateSessionMetadata(
+    sessionId: string, 
+    updates: Partial<SessionMetadata>
+  ): void {
+    const sessions = this.getAllSessions()
+    const session = sessions.find(s => s.id === sessionId)
     
-    await fetch('/api/sync', {
-      method: 'POST',
-      body: JSON.stringify({
-        userId,
-        sessions,
-        bookmarks,
-        timestamp: new Date()
-      })
-    })
-  }
-  
-  static async syncFromCloud(userId: string): Promise<void> {
-    const response = await fetch(`/api/sync/${userId}`)
-    const data = await response.json()
-    
-    // Merge cloud data with local data
-    this.mergeData(data)
-  }
-  
-  private static mergeData(cloudData: any): void {
-    // Implement conflict resolution logic
-    // Last-write-wins, or more sophisticated merging
-  }
-}
-\`\`\`
-
-### 4. Data Export/Import
-
-Enhanced export functionality:
-
-\`\`\`typescript
-// lib/export/data-exporter.ts
-export class DataExporter {
-  static exportAllData(): Blob {
-    const data = {
-      version: '1.0',
-      exportDate: new Date(),
-      sessions: SessionManager.getAllSessions(),
-      bookmarks: BookmarkManager.getAllBookmarks(),
-      collections: BookmarkManager.getAllCollections(),
-      reactions: ReactionManager.getAllReactions(),
-      threads: ThreadManager.loadThreads(),
-      comparisons: ComparisonManager.getAllComparisons()
+    if (session) {
+      session.metadata = { ...session.metadata, ...updates }
+      session.updatedAt = Date.now()
+      this.saveSessions(sessions)
     }
+  }
+  
+  // Handle storage quota exceeded
+  private static handleStorageQuotaExceeded(sessionId: string): void {
+    // Strategy 1: Archive old sessions
+    const sessions = this.getAllSessions()
+    const oldSessions = sessions
+      .filter(s => s.status === 'active')
+      .sort((a, b) => a.updatedAt - b.updatedAt)
+      .slice(0, Math.floor(sessions.length / 2))
     
-    return new Blob([JSON.stringify(data, null, 2)], {
-      type: 'application/json'
+    oldSessions.forEach(session => {
+      session.status = 'archived'
+      // Optionally delete messages for archived sessions
+      localStorage.removeItem(`${this.MESSAGES_KEY_PREFIX}_${session.id}`)
     })
+    
+    this.saveSessions(sessions)
+    
+    // Strategy 2: Notify user
+    console.warn('Storage quota exceeded. Archived old sessions.')
   }
   
-  static importData(file: File): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      
-      reader.onload = (e) => {
-        try {
-          const data = JSON.parse(e.target.result as string)
-          
-          // Validate version
-          if (data.version !== '1.0') {
-            throw new Error('Incompatible data version')
-          }
-          
-          // Import all data
-          SessionManager.importSessions(data.sessions)
-          BookmarkManager.importBookmarks(data.bookmarks)
-          // ... import other data
-          
-          resolve()
-        } catch (error) {
-          reject(error)
-        }
-      }
-      
-      reader.readAsText(file)
-    })
-  }
-}
-\`\`\`
-
-### 5. Compression
-
-For storage optimization:
-
-\`\`\`typescript
-// lib/storage/compression.ts
-import pako from 'pako'
-
-export class CompressionManager {
-  static compress(data: any): string {
-    const json = JSON.stringify(data)
-    const compressed = pako.deflate(json)
-    return btoa(String.fromCharCode(...compressed))
+  // Delete session and its messages
+  static deleteSession(sessionId: string): void {
+    const sessions = this.getAllSessions()
+    const filtered = sessions.filter(s => s.id !== sessionId)
+    this.saveSessions(filtered)
+    
+    // Delete messages
+    localStorage.removeItem(`${this.MESSAGES_KEY_PREFIX}_${sessionId}`)
   }
   
-  static decompress(compressed: string): any {
-    const binary = atob(compressed)
-    const bytes = new Uint8Array(binary.length)
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i)
+  // Archive session
+  static archiveSession(sessionId: string): void {
+    const sessions = this.getAllSessions()
+    const session = sessions.find(s => s.id === sessionId)
+    
+    if (session) {
+      session.status = 'archived'
+      session.updatedAt = Date.now()
+      this.saveSessions(sessions)
     }
-    const decompressed = pako.inflate(bytes, { to: 'string' })
-    return JSON.parse(decompressed)
+  }
+  
+  // Restore archived session
+  static restoreSession(sessionId: string): void {
+    const sessions = this.getAllSessions()
+    const session = sessions.find(s => s.id === sessionId)
+    
+    if (session) {
+      session.status = 'active'
+      session.updatedAt = Date.now()
+      this.saveSessions(sessions)
+    }
   }
 }
-
-// Usage in managers
-static saveBookmarks(bookmarks: Bookmark[]): void {
-  const compressed = CompressionManager.compress(bookmarks)
-  localStorage.setItem(this.BOOKMARKS_KEY, compressed)
-}
 \`\`\`
+
+**Integration Steps**:
+
+1. **Update ChatSidebar**: Replace mock sessions with `SessionManager.getAllSessions()`
+2. **Update ChatThread**: Load messages with `SessionManager.getSessionMessages(sessionId)`
+3. **Hook into useAIChat**: Save messages on `onFinish` callback
+4. **Add Session UI**: Create/delete/archive session controls
+5. **Handle Page Load**: Restore last active session or create new one
 
 ---
 
 ## Implementation Checklist
 
-### Phase 1: Core Session Persistence (Priority: High)
+### Phase 1: Core Session Persistence (Priority: CRITICAL)
 
-- [ ] Create `SessionManager` class
+- [ ] Create `SessionManager` class in `lib/chat/sessions.ts`
 - [ ] Implement `createSession()` method
-- [ ] Implement `saveMessage()` method
+- [ ] Implement `saveMessage()` method with quota handling
 - [ ] Implement `getSessionMessages()` method
-- [ ] Update `ChatSidebar` to use `SessionManager`
-- [ ] Update `ChatThread` to load messages from storage
-- [ ] Add session deletion functionality
+- [ ] Implement `getAllSessions()` method
+- [ ] Implement `deleteSession()` method
+- [ ] Implement `archiveSession()` / `restoreSession()` methods
+- [ ] Update `ChatSidebar` to use `SessionManager` instead of mock data
+- [ ] Update `ChatThread` to load messages from `SessionManager`
+- [ ] Hook `useAIChat.onFinish` to save messages automatically
+- [ ] Add session creation UI
+- [ ] Add session deletion confirmation dialog
 - [ ] Add session rename functionality
-
-### Phase 2: Performance Optimization (Priority: Medium)
-
-- [ ] Implement message pagination
-- [ ] Add lazy loading for old messages
-- [ ] Optimize search with indexing
-- [ ] Add debouncing to save operations
-- [ ] Implement data pruning for old sessions
-
-### Phase 3: Enhanced Features (Priority: Low)
-
-- [ ] Add data export/import UI
-- [ ] Implement compression for large datasets
-- [ ] Add cloud sync (optional)
-- [ ] Migrate to IndexedDB for better performance
-- [ ] Add data encryption (optional)
+- [ ] Add session archive/restore functionality
+- [ ] Handle storage quota exceeded gracefully
+- [ ] Add loading states for session operations
+- [ ] Test with large message volumes (1000+ messages)
 
 ---
 
