@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { type Persona, PERSONAS } from "@/lib/agent-config/personas"
+import { ModuleAnalyticsManager } from "@/lib/modules/analytics"
+import { ModuleVersionManager } from "@/lib/modules/versioning"
 
 const STORAGE_KEY = "anydebate_custom_personas"
 
@@ -42,6 +44,10 @@ export function usePersonaManager() {
     const updated = [...customPersonas, newPersona]
     setCustomPersonas(updated)
     saveToStorage(updated)
+
+    ModuleAnalyticsManager.trackUsage(newPersona.id, "persona")
+    ModuleVersionManager.saveVersion(newPersona.id, "persona", newPersona, "Initial version")
+
     return newPersona
   }
 
@@ -53,6 +59,9 @@ export function usePersonaManager() {
     updated[index] = { ...updated[index], ...updates }
     setCustomPersonas(updated)
     saveToStorage(updated)
+
+    ModuleVersionManager.saveVersion(id, "persona", updated[index], "Updated persona")
+
     return true
   }
 
@@ -62,6 +71,10 @@ export function usePersonaManager() {
 
     setCustomPersonas(filtered)
     saveToStorage(filtered)
+
+    ModuleAnalyticsManager.deleteModuleAnalytics(id)
+    ModuleVersionManager.deleteVersions(id)
+
     return true
   }
 

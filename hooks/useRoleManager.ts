@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { type ProfessionalRole, PROFESSIONAL_ROLES } from "@/lib/agent-config/roles"
+import { ModuleAnalyticsManager } from "@/lib/modules/analytics"
+import { ModuleVersionManager } from "@/lib/modules/versioning"
 
 const STORAGE_KEY = "anydebate_custom_roles"
 
@@ -46,6 +48,12 @@ export function useRoleManager() {
     const updated = [...customRoles, newRole]
     setCustomRoles(updated)
     saveToStorage(updated)
+
+    // Track creation in analytics
+    ModuleAnalyticsManager.trackUsage(newRole.id, "role")
+    // Save initial version
+    ModuleVersionManager.saveVersion(newRole.id, "role", newRole, "Initial version")
+
     return newRole
   }
 
@@ -55,9 +63,14 @@ export function useRoleManager() {
     if (index === -1) return false
 
     const updated = [...customRoles]
+    const oldRole = updated[index]
     updated[index] = { ...updated[index], ...updates }
     setCustomRoles(updated)
     saveToStorage(updated)
+
+    // Save new version
+    ModuleVersionManager.saveVersion(id, "role", updated[index], "Updated role")
+
     return true
   }
 
@@ -68,6 +81,11 @@ export function useRoleManager() {
 
     setCustomRoles(filtered)
     saveToStorage(filtered)
+
+    // Clean up analytics and versions
+    ModuleAnalyticsManager.deleteModuleAnalytics(id)
+    ModuleVersionManager.deleteVersions(id)
+
     return true
   }
 

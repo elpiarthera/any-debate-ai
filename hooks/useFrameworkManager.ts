@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { type Framework, FRAMEWORKS } from "@/lib/agent-config/frameworks"
+import { ModuleAnalyticsManager } from "@/lib/modules/analytics"
+import { ModuleVersionManager } from "@/lib/modules/versioning"
 
 const STORAGE_KEY = "anydebate_custom_frameworks"
 
@@ -42,6 +44,10 @@ export function useFrameworkManager() {
     const updated = [...customFrameworks, newFramework]
     setCustomFrameworks(updated)
     saveToStorage(updated)
+
+    ModuleAnalyticsManager.trackUsage(newFramework.id, "framework")
+    ModuleVersionManager.saveVersion(newFramework.id, "framework", newFramework, "Initial version")
+
     return newFramework
   }
 
@@ -53,6 +59,9 @@ export function useFrameworkManager() {
     updated[index] = { ...updated[index], ...updates }
     setCustomFrameworks(updated)
     saveToStorage(updated)
+
+    ModuleVersionManager.saveVersion(id, "framework", updated[index], "Updated framework")
+
     return true
   }
 
@@ -62,6 +71,10 @@ export function useFrameworkManager() {
 
     setCustomFrameworks(filtered)
     saveToStorage(filtered)
+
+    ModuleAnalyticsManager.deleteModuleAnalytics(id)
+    ModuleVersionManager.deleteVersions(id)
+
     return true
   }
 
