@@ -520,7 +520,157 @@ export function PersonaLibrary() {
 
 #### C. Framework Library (`/agents/frameworks`)
 
-Similar mobile-first pattern with:
+**Mobile Layout**: Full-screen, vertical scroll. Sticky header with title and [+ New] button. Search bar below. Horizontal scroll for tabs [My Frameworks], [System], [Import]. Scrollable list of framework cards, each 80px min-h. Sticky footer with [Create New Framework] button.
+
+**Desktop Layout**: Grid of framework cards. Sidebar for filters (category, creation date, etc.).
+
+**Mobile-First Implementation**:
+\`\`\`tsx
+// components/module-libraries/FrameworkLibrary.tsx
+"use client"
+
+import { useDevice } from "@/contexts/DeviceProvider"
+import { FrameworkLibraryMobile } from "./mobile/FrameworkLibraryMobile"
+import { FrameworkLibraryDesktop } from "./desktop/FrameworkLibraryDesktop"
+
+export function FrameworkLibrary() {
+  const { isMobile } = useDevice()
+
+  // Shared state
+  const [frameworks, setFrameworks] = useState([])
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const sharedProps = {
+    frameworks,
+    searchQuery,
+    onSearch: setSearchQuery,
+    onEdit: handleEdit,
+    onCreate: handleCreate,
+  }
+
+  return isMobile ? (
+    <FrameworkLibraryMobile {...sharedProps} />
+  ) : (
+    <FrameworkLibraryDesktop {...sharedProps} />
+  )
+}
+\`\`\`
+
+\`\`\`tsx
+// components/module-libraries/mobile/FrameworkLibraryMobile.tsx
+"use client"
+
+import { useDevice } from "@/contexts/DeviceProvider"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card } from "@/components/ui/card"
+
+export function FrameworkLibraryMobile(props: FrameworkLibraryProps) {
+  const { isMobile } = useDevice()
+
+  return (
+    <div className="flex flex-col h-full bg-background">
+      {/* Sticky header - 56px min-h */}
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border min-h-[56px] p-4">
+        <div className="flex items-center justify-between">
+          <h1 className="font-sans text-lg font-semibold text-foreground">Framework Library</h1>
+          <Button size="lg" className="min-h-[44px] min-w-[44px] bg-primary text-primary-foreground">
+            + New
+          </Button>
+        </div>
+      </header>
+
+      {/* Search bar - 48px min-h */}
+      <div className="p-4 border-b border-border">
+        <Input
+          placeholder="Search frameworks..."
+          className="min-h-[48px] text-base bg-input border-border focus:ring-ring"
+        />
+      </div>
+
+      {/* Category chips - horizontal scroll */}
+      <div className="border-b border-border">
+        <div className="flex gap-2 p-4 overflow-x-auto">
+          <Button
+            variant="default"
+            size="lg"
+            className="min-h-[44px] whitespace-nowrap bg-primary text-primary-foreground"
+          >
+            My Frameworks
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            className="min-h-[44px] whitespace-nowrap bg-background border-border"
+          >
+            System
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            className="min-h-[44px] whitespace-nowrap bg-background border-border"
+          >
+            Import
+          </Button>
+        </div>
+      </div>
+
+      {/* Framework cards - scrollable */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <h2 className="text-sm font-medium text-muted-foreground">My Frameworks (5)</h2>
+
+        {/* Placeholder for actual frameworks data */}
+        {[...Array(3)].map((_, i) => (
+          <Card
+            key={i}
+            className="min-h-[80px] p-4 bg-card border-border hover:bg-accent transition-colors"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="font-sans font-medium text-foreground">First Principles</h3>
+                <p className="text-sm text-muted-foreground mt-1">Break down complex problems</p>
+                <p className="text-xs text-muted-foreground mt-2">Used in 2 agents</p>
+              </div>
+              <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
+                ⋮
+              </Button>
+            </div>
+
+            <div className="flex gap-2 mt-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="min-h-[44px] flex-1 bg-background border-border"
+              >
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="min-h-[44px] flex-1 bg-background border-border"
+              >
+                Duplicate
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Sticky footer */}
+      <footer className="sticky bottom-0 z-10 bg-background/95 backdrop-blur-sm border-t border-border p-4">
+        <Button
+          size="lg"
+          className="w-full min-h-[56px] bg-primary text-primary-foreground"
+        >
+          Create New Framework
+        </Button>
+      </footer>
+    </div>
+  )
+}
+\`\`\`
+
+**Features**:
 - ✅ Full-screen on mobile, grid on desktop
 - ✅ AdaptiveModal for framework details
 - ✅ Touch-optimized selection
@@ -1349,26 +1499,33 @@ interface ResolvedAgent extends Agent {
 
 ## Migration Plan
 
-### Phase 1: Module Libraries (12-16 hours) - IN PROGRESS ⏳
+### Phase 1: Module Libraries (~1 hour) - IN PROGRESS ⏳
 
-**Completed ✅:**
+**Completed ✅ (< 1 hour):**
 - [x] Create module data models (Convex schema) - Updated `docs/guides/convex-database-schema.md`
 - [x] Build `RoleLibrary` with mobile/desktop split
   - [x] `components/module-libraries/RoleLibrary.tsx` (orchestrator)
   - [x] `components/module-libraries/mobile/RoleLibraryMobile.tsx`
   - [x] `components/module-libraries/desktop/RoleLibraryDesktop.tsx`
   - [x] `app/agents/roles/page.tsx`
+- [x] Build `PersonaLibrary` with mobile/desktop split
+  - [x] `components/module-libraries/PersonaLibrary.tsx`
+  - [x] `components/module-libraries/mobile/PersonaLibraryMobile.tsx`
+  - [x] `components/module-libraries/desktop/PersonaLibraryDesktop.tsx`
+  - [x] `app/agents/personas/page.tsx`
+- [x] Build `FrameworkLibrary` with mobile/desktop split
+  - [x] `components/module-libraries/FrameworkLibrary.tsx`
+  - [x] `components/module-libraries/mobile/FrameworkLibraryMobile.tsx`
+  - [x] `components/module-libraries/desktop/FrameworkLibraryDesktop.tsx`
+  - [x] `app/agents/frameworks/page.tsx`
 - [x] Add `frameworks` export to `lib/agent-config/frameworks.ts`
 
-**In Progress 🚧:**
-- [ ] Build `PersonaLibrary` with mobile/desktop split (4-5 hours)
-- [ ] Build `FrameworkLibrary` with mobile/desktop split (4-5 hours)
-- [ ] Implement CRUD operations for each module type (3-4 hours)
-- [ ] Add AdaptiveModal for editing (2-3 hours)
-- [ ] ~~Migrate existing roles/personas/frameworks to module system~~ - Using mock data for now
-- [ ] ~~Mobile-first testing on real devices~~ - Will test after all libraries are built
+**Next Tasks 🚧:**
+- [ ] Implement CRUD operations for each module type (using mock data)
+- [ ] Add AdaptiveModal for editing modules
+- [ ] Connect module libraries to actual data (roles, personas, frameworks from lib/)
 
-### Phase 2: Agent Composer (16-20 hours)
+### Phase 2: Agent Composer (~2-3 hours)
 - Build new `/agents/new` page with modular composer (4-5 hours)
 - Implement `AgentComposerMobile` with sticky header/footer (4-5 hours)
 - Implement `AgentComposerDesktop` with side-by-side layout (3-4 hours)
@@ -1378,7 +1535,7 @@ interface ResolvedAgent extends Agent {
 - Implement agent creation with module references (2-3 hours)
 - **Mobile-first testing on real devices** (1-2 hours)
 
-### Phase 3: Agent Editing (8-12 hours)
+### Phase 3: Agent Editing (~1-2 hours)
 - Build `/agents/[id]/edit` page (3-4 hours)
 - Implement module swapping with AdaptiveModal (2-3 hours)
 - Add "duplicate & modify" functionality (2-3 hours)
@@ -1386,7 +1543,7 @@ interface ResolvedAgent extends Agent {
 - Add optimistic UI updates (1-2 hours)
 - **Mobile-first testing on real devices** (1-2 hours)
 
-### Phase 4: Module Editors (12-16 hours)
+### Phase 4: Module Editors (~2-3 hours)
 - Build `RoleEditor` with touch-optimized forms (4-5 hours)
 - Build `PersonaEditor` with trait selector (4-5 hours)
 - Build `FrameworkEditor` with step builder (4-5 hours)
@@ -1394,7 +1551,7 @@ interface ResolvedAgent extends Agent {
 - Add validation and error handling (2-3 hours)
 - **Mobile-first testing on real devices** (1-2 hours)
 
-### Phase 5: Enhancements (12-16 hours)
+### Phase 5: Enhancements (~2-3 hours)
 - Add quick-start templates (3-4 hours)
 - Implement module import/export (3-4 hours)
 - Add module usage tracking (2-3 hours)
@@ -1404,7 +1561,7 @@ interface ResolvedAgent extends Agent {
 - Add pull-to-refresh (mobile) (1-2 hours)
 - Add haptic feedback (mobile) (1-2 hours)
 
-### Phase 6: Polish & Testing (8-12 hours)
+### Phase 6: Polish & Testing (~1-2 hours)
 - Mobile optimization pass (2-3 hours)
 - Accessibility audit (WCAG AA) (2-3 hours)
 - Performance optimization (2-3 hours)
@@ -1412,7 +1569,7 @@ interface ResolvedAgent extends Agent {
 - Bug fixes and refinements (2-3 hours)
 - Documentation (1-2 hours)
 
-**Total Estimated Time: 68-92 hours**
+**Total Estimated Time: 9-14 hours**
 
 ---
 
