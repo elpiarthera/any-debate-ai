@@ -139,36 +139,63 @@ AnyDebate Database (Convex)
 │   │   │   ├── description: string (optional)
 │   │   │   ├── type: "document" | "data-table" | "checklist" | "chart" | "code" | "image" | "pdf" | "export"
 │   │   │   ├── content: string (optional, for text-based artifacts)
-│   │   │   ├── fileStorageId: string (optional) → Convex file storage
+│   │   │   ├── folderId: string (optional, indexed) → folders._id
+│   │   │   ├── tags: string[]
+│   │   │   ├── isFavorite: boolean
+│   │   │   ├── isPinned: boolean
+│   │   │   ├── lastAccessedAt: number
+│   │   │   ├── collaborators: string[] (optional)
+│   │   │   ├── reactions: object
+│   │   │   │   ├── likes: number
+│   │   │   │   └── dislikes: number
+│   │   │   ├── fileId: string (optional) → Convex file storage
 │   │   │   ├── metadata: object
 │   │   │   │   ├── size: number (optional, file size in bytes)
-│   │   │   │   ├── version: string (optional)
-│   │   │   │   ├── exports: string[] (optional, export formats)
+│   │   │   │   ├── version: number (optional)
+│   │   │   │   ├── exports: object[] (optional)
+│   │   │   │   │   ├── format: string
+│   │   │   │   │   ├── url: string
+│   │   │   │   │   └── timestamp: number
 │   │   │   │   ├── author: string (optional)
 │   │   │   │   ├── tags: string[] (optional)
-│   │   │   │   └── mimeType: string (optional)
+│   │   │   │   ├── mimeType: string (optional)
+│   │   │   │   ├── wordCount: number (optional)
+│   │   │   │   ├── rowCount: number (optional)
+│   │   │   │   └── itemCount: number (optional)
 │   │   │   ├── createdAt: number
 │   │   │   └── updatedAt: number
 │   │   │
-│   │   ├──< 🤝 collaborationEvents (1:N)
-│   │   │   ├── _id: Id<"collaborationEvents">
+│   │   ├──< 🗂️ artifactTemplates (1:N)
+│   │   │   ├── _id: Id<"artifactTemplates">
 │   │   │   ├── organizationId: string (indexed) → organizations.clerkOrganizationId
 │   │   │   ├── workspaceId: string (indexed) → workspaces._id
-│   │   │   ├── sessionId: string (indexed) → sessions._id
-│   │   │   ├── artifactId: string (indexed) → artifacts._id
-│   │   │   ├── userId: string (optional, indexed) → users.clerkUserId
-│   │   │   ├── agentId: string (optional, indexed) → agents._id
-│   │   │   ├── eventType: "edit" | "comment" | "cursor" | "view" | "create" | "delete"
+│   │   │   ├── userId: string (indexed) → users.clerkUserId
+│   │   │   ├── name: string
 │   │   │   ├── description: string
-│   │   │   ├── metadata: object
-│   │   │   │   ├── field: string (optional, which field was edited)
-│   │   │   │   ├── oldValue: string (optional)
-│   │   │   │   ├── newValue: string (optional)
-│   │   │   │   ├── position: object (optional, cursor position)
-│   │   │   │   │   ├── x: number
-│   │   │   │   │   └── y: number
-│   │   │   │   └── color: string (optional, cursor color)
+│   │   │   ├── icon: string
+│   │   │   ├── type: "document" | "data-table" | "checklist" | "chart"
+│   │   │   ├── data: string // JSON stringified template data
+│   │   │   ├── category: string
+│   │   │   ├── tags: string[] // Array of tag IDs
+│   │   │   ├── isSystem: boolean // True for built-in templates
+│   │   │   ├── visibility: "private" | "workspace" | "organization"
+│   │   │   ├── usageCount: number
+│   │   │   ├── createdAt: number
+│   │   │   └── updatedAt: number
+│   │   │
+│   │   ├──< 📜 artifactVersions (1:N)
+│   │   │   ├── _id: Id<"artifactVersions">
+│   │   │   ├── organizationId: string (indexed) → organizations.clerkOrganizationId
+│   │   │   ├── workspaceId: string (indexed) → workspaces._id
+│   │   │   ├── artifactId: string (indexed) → artifacts._id
+│   │   │   ├── version: number
 │   │   │   ├── timestamp: number
+│   │   │   ├── author: string // userId
+│   │   │   ├── changeDescription: string
+│   │   │   ├── changeType: "created" | "edited" | "restored" | "auto-saved"
+│   │   │   ├── changedFields: string[] (optional, for diff tracking)
+│   │   │   ├── previousVersionId: string (optional) → artifactVersions._id
+│   │   │   ├── data: string // JSON stringified artifact data snapshot
 │   │   │   └── createdAt: number
 │   │   │
 │   │   ├──< 📋 templates (1:N)
@@ -190,6 +217,8 @@ AnyDebate Database (Convex)
 │   │   │   ├── suggestedQuestions: string[] (optional)
 │   │   │   ├── isCustom: boolean
 │   │   │   ├── popularity: number (optional)
+│   │   │   ├── usageCount: number // Track how many times template has been used
+│   │   │   ├── lastUsed: number (optional) // Timestamp of last usage
 │   │   │   ├── tags: string[]
 │   │   │   ├── author: string (optional)
 │   │   │   ├── visibility: "private" | "workspace" | "organization"
@@ -215,7 +244,7 @@ AnyDebate Database (Convex)
 │   │   │   ├── messageId: string (indexed) → messages._id
 │   │   │   ├── sessionId: string (indexed) → sessions._id
 │   │   │   ├── title: string
-│   │   │   ├── note: string (optional)
+│   │   │   ├── note: string (optional) // Changed from 'notes' to 'note' to match code
 │   │   │   ├── tags: string[]
 │   │   │   ├── collectionId: string (optional) → bookmarkCollections._id
 │   │   │   ├── createdAt: number
@@ -542,7 +571,7 @@ AnyDebate Database (Convex)
 │   ├── changedFields: string[] (optional, for diff tracking)
 │   ├── previousVersionId: string (optional) → artifactVersions._id
 │   ├── data: string // JSON stringified artifact data snapshot
-│   ├── createdAt: number
+│   └── createdAt: number
 │
 ├── 📋 templates
 │   ├── _id: Id<"templates">
@@ -678,16 +707,16 @@ AnyDebate Database (Convex)
 │   ├── createdAt: number
 │   └── updatedAt: number
 │
-├── 🏷️ tags
-│   ├── _id: Id<"tags">
-│   ├── organizationId: string (indexed) → organizations.clerkOrganizationId
-│   ├── workspaceId: string (indexed) → workspaces._id
-│   ├── userId: string (indexed) → users.clerkUserId
-│   ├── name: string
-│   ├── color: string
-│   ├── count: number
-│   ├── createdAt: number
-│   └── updatedAt: number
+└── 🏷️ tags
+    ├── _id: Id<"tags">
+    ├── organizationId: string (indexed) → organizations.clerkOrganizationId
+    ├── workspaceId: string (indexed) → workspaces._id
+    ├── userId: string (indexed) → users.clerkUserId
+    ├── name: string
+    ├── color: string
+    ├── count: number
+    ├── createdAt: number
+    └── updatedAt: number
 \`\`\`
 
 ### Legend
@@ -726,18 +755,6 @@ AnyDebate Database (Convex)
 - `(indexed)` Field has database index
 - `(unique)` Field must be unique
 - `(optional)` Field is not required
-
----
-
-## Table of Contents
-
-1. [Overview](#overview)
-2. [Schema Principles](#schema-principles)
-3. [Table Definitions](#table-definitions)
-4. [Relationships](#relationships)
-5. [Index Strategy](#index-strategy)
-6. [Multi-Tenancy and Workspace Implementation](#multi-tenancy-and-workspace-implementation)
-7. [Migration from Current State](#migration-from-current-state)
 
 ---
 
@@ -2717,6 +2734,342 @@ frameworks: defineTable({
 **Notes**:
 - System frameworks are provided by default.
 - Custom frameworks can be created and associated with organizations or workspaces.
+
+---
+
+## Module System for Agent Builder
+
+The modular agent builder system consists of three core module types that can be independently managed and composed:
+
+### Module Architecture
+
+\`\`\`
+Agent = Role + Persona + Framework + Configuration
+\`\`\`
+
+Each module type (Role, Persona, Framework) can be:
+- **System-defined**: Built-in modules provided by the application
+- **Organization-defined**: Custom modules created at organization level
+- **Workspace-defined**: Custom modules created at workspace level
+- **User-defined**: Personal modules created by individual users
+
+### Module Relationships
+
+\`\`\`
+roles (1:N) ← agents.roleId
+personas (1:N) ← agents.personaId  
+frameworks (1:N) ← agents.frameworkId
+\`\`\`
+
+### Module Queries and Mutations
+
+#### Roles
+
+**Queries:**
+\`\`\`typescript
+// Get all active roles for a workspace
+export const getRoles = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system roles + organization roles + workspace roles
+    // Filtered by category if provided
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single role by ID
+export const getRole = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns role details
+  },
+});
+
+// Search roles
+export const searchRoles = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, expertise
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom role
+export const createRole = mutation({
+  args: {
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom role
+    // Validates uniqueness within scope
+  },
+});
+
+// Update role
+export const updateRole = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    expertise: v.optional(v.array(v.string())),
+    systemPrompt: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates role
+    // Only allows updating custom roles (not system roles)
+  },
+});
+
+// Delete role
+export const deleteRole = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+    // Checks if role is in use by agents
+  },
+});
+
+// Increment usage count
+export const incrementRoleUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount when role is used in agent
+  },
+});
+\`\`\`
+
+#### Personas
+
+**Queries:**
+\`\`\`typescript
+// Get all active personas
+export const getPersonas = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system personas + organization personas + workspace personas
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single persona by ID
+export const getPersona = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns persona details
+  },
+});
+
+// Search personas
+export const searchPersonas = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, traits
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom persona
+export const createPersona = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom persona
+  },
+});
+
+// Update persona
+export const updatePersona = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    traits: v.optional(v.array(v.string())),
+    communicationStyle: v.optional(v.string()),
+    decisionMaking: v.optional(v.string()),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates persona
+  },
+});
+
+// Delete persona
+export const deletePersona = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementPersonaUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+#### Frameworks
+
+**Queries:**
+\`\`\`typescript
+// Get all active frameworks
+export const getFrameworks = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system frameworks + organization frameworks + workspace frameworks
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single framework by ID
+export const getFramework = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns framework details
+  },
+});
+
+// Search frameworks
+export const searchFrameworks = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, methodology
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom framework
+export const createFramework = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    methodology: v.string(),
+    bestFor: v.array(v.string()),
+    steps: v.array(v.string()),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom framework
+  },
+});
+
+// Update framework
+export const updateFramework = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    methodology: v.optional(v.string()),
+    bestFor: v.optional(v.array(v.string())),
+    steps: v.optional(v.array(v.string())),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates framework
+  },
+});
+
+// Delete framework
+export const deleteFramework = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementFrameworkUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+### Agent Composition
+
+When creating an agent, the system:
+1. Fetches the selected role, persona, and framework modules
+2. Combines their system prompts:
+   \`\`\`
+   finalSystemPrompt = role.systemPrompt + "\n\n" + persona.systemPromptModifier + "\n\n" + framework.systemPromptModifier
+   \`\`\`
+3. Stores the composed prompt in `agents.systemPrompt`
+4. Increments usage counts for all three modules
+5. Stores module IDs for future reference and updates
+
+### Module Reusability
+
+Modules can be:
+- **Reused across multiple agents**: Same role/persona/framework in different combinations
+- **Updated globally**: Changes to a module affect all agents using it (if they regenerate their system prompt)
+- **Shared within scope**: System modules available to all, organization modules to all workspaces, workspace modules to all members
+- **Versioned**: Future enhancement to track module versions and agent compatibility
+
+### Mobile-First Considerations
+
+The module system is designed with mobile-first principles:
+- **Quick queries**: Indexed by organization, workspace, category for fast filtering
+- **Minimal data transfer**: Only fetch active modules, paginate results
+- **Offline support**: Cache frequently used modules in localStorage
+- **Touch-optimized**: Module cards designed for 80px minimum height
+- **Search-first**: Full-text search across all module fields for quick discovery
 
 ---
 
