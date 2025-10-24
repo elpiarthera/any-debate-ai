@@ -1349,7 +1349,7 @@ interface ResolvedAgent extends Agent {
 
 ## Migration Plan
 
-### Phase 1: Module Libraries (Week 1-2) - IN PROGRESS ⏳
+### Phase 1: Module Libraries (12-16 hours) - IN PROGRESS ⏳
 
 **Completed ✅:**
 - [x] Create module data models (Convex schema) - Updated `docs/guides/convex-database-schema.md`
@@ -1358,58 +1358,61 @@ interface ResolvedAgent extends Agent {
   - [x] `components/module-libraries/mobile/RoleLibraryMobile.tsx`
   - [x] `components/module-libraries/desktop/RoleLibraryDesktop.tsx`
   - [x] `app/agents/roles/page.tsx`
+- [x] Add `frameworks` export to `lib/agent-config/frameworks.ts`
 
 **In Progress 🚧:**
-- [ ] Build `PersonaLibrary` with mobile/desktop split
-- [ ] Build `FrameworkLibrary` with mobile/desktop split
-- [ ] Implement CRUD operations for each module type
-- [ ] Add AdaptiveModal for editing
+- [ ] Build `PersonaLibrary` with mobile/desktop split (4-5 hours)
+- [ ] Build `FrameworkLibrary` with mobile/desktop split (4-5 hours)
+- [ ] Implement CRUD operations for each module type (3-4 hours)
+- [ ] Add AdaptiveModal for editing (2-3 hours)
 - [ ] ~~Migrate existing roles/personas/frameworks to module system~~ - Using mock data for now
 - [ ] ~~Mobile-first testing on real devices~~ - Will test after all libraries are built
 
-### Phase 2: Agent Composer (Week 3-4)
-- Build new `/agents/new` page with modular composer
-- Implement `AgentComposerMobile` with sticky header/footer
-- Implement `AgentComposerDesktop` with side-by-side layout
-- Build `ModuleSelector` with AdaptiveModal
-- Build live preview component
-- Add module card components (80px min-h)
-- Implement agent creation with module references
-- **Mobile-first testing on real devices**
+### Phase 2: Agent Composer (16-20 hours)
+- Build new `/agents/new` page with modular composer (4-5 hours)
+- Implement `AgentComposerMobile` with sticky header/footer (4-5 hours)
+- Implement `AgentComposerDesktop` with side-by-side layout (3-4 hours)
+- Build `ModuleSelector` with AdaptiveModal (3-4 hours)
+- Build live preview component (2-3 hours)
+- Add module card components (80px min-h) (1-2 hours)
+- Implement agent creation with module references (2-3 hours)
+- **Mobile-first testing on real devices** (1-2 hours)
 
-### Phase 3: Agent Editing (Week 5)
-- Build `/agents/[id]/edit` page
-- Implement module swapping with AdaptiveModal
-- Add "duplicate & modify" functionality
-- Handle module updates across agents
-- Add optimistic UI updates
-- **Mobile-first testing on real devices**
+### Phase 3: Agent Editing (8-12 hours)
+- Build `/agents/[id]/edit` page (3-4 hours)
+- Implement module swapping with AdaptiveModal (2-3 hours)
+- Add "duplicate & modify" functionality (2-3 hours)
+- Handle module updates across agents (2-3 hours)
+- Add optimistic UI updates (1-2 hours)
+- **Mobile-first testing on real devices** (1-2 hours)
 
-### Phase 4: Module Editors (Week 6)
-- Build `RoleEditor` with touch-optimized forms
-- Build `PersonaEditor` with trait selector
-- Build `FrameworkEditor` with step builder
-- Add inline editing in module cards
-- Add validation and error handling
-- **Mobile-first testing on real devices**
+### Phase 4: Module Editors (12-16 hours)
+- Build `RoleEditor` with touch-optimized forms (4-5 hours)
+- Build `PersonaEditor` with trait selector (4-5 hours)
+- Build `FrameworkEditor` with step builder (4-5 hours)
+- Add inline editing in module cards (2-3 hours)
+- Add validation and error handling (2-3 hours)
+- **Mobile-first testing on real devices** (1-2 hours)
 
-### Phase 5: Enhancements (Week 7)
-- Add quick-start templates
-- Implement module import/export
-- Add module usage tracking
-- Build module search/filter
-- Add keyboard shortcuts (desktop)
-- Add swipe gestures (mobile)
-- Add pull-to-refresh (mobile)
-- Add haptic feedback (mobile)
+### Phase 5: Enhancements (12-16 hours)
+- Add quick-start templates (3-4 hours)
+- Implement module import/export (3-4 hours)
+- Add module usage tracking (2-3 hours)
+- Build module search/filter (2-3 hours)
+- Add keyboard shortcuts (desktop) (1-2 hours)
+- Add swipe gestures (mobile) (2-3 hours)
+- Add pull-to-refresh (mobile) (1-2 hours)
+- Add haptic feedback (mobile) (1-2 hours)
 
-### Phase 6: Polish & Testing (Week 8)
-- Mobile optimization pass
-- Accessibility audit (WCAG AA)
-- Performance optimization
-- User testing on real devices
-- Bug fixes and refinements
-- Documentation
+### Phase 6: Polish & Testing (8-12 hours)
+- Mobile optimization pass (2-3 hours)
+- Accessibility audit (WCAG AA) (2-3 hours)
+- Performance optimization (2-3 hours)
+- User testing on real devices (2-3 hours)
+- Bug fixes and refinements (2-3 hours)
+- Documentation (1-2 hours)
+
+**Total Estimated Time: 68-92 hours**
 
 ---
 
