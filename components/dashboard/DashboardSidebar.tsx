@@ -134,7 +134,7 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse, onNavigate }: 
               variant="ghost"
               size="sm"
               onClick={onToggleCollapse}
-              className="h-8 w-8 p-0 hover:bg-sidebar-accent"
+              className="min-h-[44px] min-w-[44px] p-0 hover:bg-sidebar-accent"
             >
               {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </Button>
@@ -162,7 +162,7 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse, onNavigate }: 
                       href={item.href}
                       onClick={handleNavigation}
                       className={cn(
-                        "group relative rounded-lg p-3 mb-2 cursor-pointer transition-colors flex",
+                        "group relative rounded-lg p-3 mb-2 cursor-pointer transition-colors flex min-h-[44px] items-center",
                         "hover:bg-sidebar-accent",
                         isActive && "bg-sidebar-accent",
                       )}
@@ -210,7 +210,7 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse, onNavigate }: 
                         <Button
                           key={action.action}
                           variant="ghost"
-                          className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent"
+                          className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent min-h-[44px]"
                           onClick={() => {
                             if (action.action === "quick-start") {
                               router.push("/quick-start")

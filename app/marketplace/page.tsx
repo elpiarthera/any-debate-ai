@@ -44,7 +44,7 @@ export default function MarketplacePage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 flex-shrink-0"
+                  className="min-h-[44px] min-w-[44px] p-0 flex-shrink-0"
                   onClick={() => setIsDashboardSidebarOpen(!isDashboardSidebarOpen)}
                 >
                   <Menu className="h-4 w-4" />

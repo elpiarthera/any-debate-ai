@@ -124,7 +124,6 @@ export function PreferencesPanel() {
               id="auto-save"
               checked={preferences.autoSave}
               onCheckedChange={(checked) => updatePreference("autoSave", checked)}
-              className="min-h-[44px] min-w-[44px]"
             />
           </div>
 
@@ -139,7 +138,6 @@ export function PreferencesPanel() {
               id="notifications"
               checked={preferences.notifications}
               onCheckedChange={(checked) => updatePreference("notifications", checked)}
-              className="min-h-[44px] min-w-[44px]"
             />
           </div>
 
@@ -154,7 +152,6 @@ export function PreferencesPanel() {
               id="sound"
               checked={preferences.soundEffects}
               onCheckedChange={(checked) => updatePreference("soundEffects", checked)}
-              className="min-h-[44px] min-w-[44px]"
             />
           </div>
         </CardContent>
