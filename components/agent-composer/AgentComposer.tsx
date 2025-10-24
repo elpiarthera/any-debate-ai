@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { toast } from "sonner"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { useRoleManager } from "@/hooks/useRoleManager"
 import { usePersonaManager } from "@/hooks/usePersonaManager"
@@ -17,19 +18,29 @@ interface AgentComposerProps {
     frameworkId: string
     customInstructions?: string
   }) => void
+  editMode?: boolean
+  initialData?: {
+    name: string
+    roleId: string
+    personaId: string
+    frameworkId: string
+    customInstructions?: string
+  }
 }
 
-export function AgentComposer({ onSave }: AgentComposerProps) {
+export function AgentComposer({ onSave, editMode = false, initialData }: AgentComposerProps) {
   const { isMobile } = useDevice()
   const { allRoles, getRole } = useRoleManager()
   const { allPersonas, getPersona } = usePersonaManager()
   const { allFrameworks, getFramework } = useFrameworkManager()
 
-  const [agentName, setAgentName] = useState("")
-  const [selectedRoleId, setSelectedRoleId] = useState<string>()
-  const [selectedPersonaId, setSelectedPersonaId] = useState<string>()
-  const [selectedFrameworkId, setSelectedFrameworkId] = useState<string>()
-  const [customInstructions, setCustomInstructions] = useState("")
+  const [agentName, setAgentName] = useState(initialData?.name || "")
+  const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(initialData?.roleId)
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string | undefined>(initialData?.personaId)
+  const [selectedFrameworkId, setSelectedFrameworkId] = useState<string | undefined>(initialData?.frameworkId)
+  const [customInstructions, setCustomInstructions] = useState(initialData?.customInstructions || "")
+
+  const [isLoading, setIsLoading] = useState(false)
 
   const [showRoleSelector, setShowRoleSelector] = useState(false)
   const [showPersonaSelector, setShowPersonaSelector] = useState(false)
@@ -41,15 +52,33 @@ export function AgentComposer({ onSave }: AgentComposerProps) {
 
   const canSave = Boolean(agentName && selectedRoleId && selectedPersonaId && selectedFrameworkId)
 
-  const handleSave = () => {
-    if (canSave) {
-      onSave({
-        name: agentName,
+  const handleSave = async () => {
+    if (!canSave) {
+      toast.error("Please fill in all required fields")
+      return
+    }
+
+    // Validate agent name
+    if (agentName.trim().length < 3) {
+      toast.error("Agent name must be at least 3 characters")
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      await onSave({
+        name: agentName.trim(),
         roleId: selectedRoleId!,
         personaId: selectedPersonaId!,
         frameworkId: selectedFrameworkId!,
-        customInstructions: customInstructions || undefined,
+        customInstructions: customInstructions.trim() || undefined,
       })
+      toast.success(editMode ? "Agent updated successfully" : "Agent created successfully")
+    } catch (error) {
+      console.error("[v0] Error saving agent:", error)
+      toast.error(editMode ? "Failed to update agent" : "Failed to create agent")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -93,6 +122,8 @@ export function AgentComposer({ onSave }: AgentComposerProps) {
     onRemoveFramework: () => setSelectedFrameworkId(undefined),
     onSave: handleSave,
     canSave,
+    isLoading,
+    editMode,
   }
 
   return (

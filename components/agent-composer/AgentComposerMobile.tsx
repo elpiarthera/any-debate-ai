@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Sparkles, ArrowLeft, Save } from "lucide-react"
+import { Plus, Sparkles, ArrowLeft, Save } from 'lucide-react'
 import { ModuleCard } from "./ModuleCard"
 import type { ProfessionalRole } from "@/lib/agent-config/roles"
 import type { Persona } from "@/lib/agent-config/personas"
@@ -29,6 +29,7 @@ interface AgentComposerMobileProps {
   onCancel?: () => void
   canSave: boolean
   isEditMode?: boolean
+  isLoading?: boolean
 }
 
 export function AgentComposerMobile({
@@ -49,17 +50,25 @@ export function AgentComposerMobile({
   onCancel,
   canSave,
   isEditMode = false,
+  isLoading = false,
 }: AgentComposerMobileProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-shrink-0 sticky top-0 z-10 bg-background border-b p-4">
         <div className="flex items-center gap-2 mb-2">
           {isEditMode && onCancel && (
-            <Button variant="ghost" size="sm" onClick={onCancel} className="min-h-[44px] min-w-[44px] p-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCancel}
+              className="min-h-[44px] min-w-[44px] p-0"
+              disabled={isLoading}
+              aria-label="Go back"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
-          <Sparkles className="h-5 w-5 text-primary" />
+          <Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />
           <h1 className="text-lg font-semibold">{isEditMode ? "Edit Agent" : "Compose Agent"}</h1>
         </div>
         <p className="text-sm text-muted-foreground">
@@ -77,6 +86,9 @@ export function AgentComposerMobile({
             value={agentName}
             onChange={(e) => onAgentNameChange(e.target.value)}
             className="min-h-[48px]"
+            disabled={isLoading}
+            aria-required="true"
+            aria-invalid={!agentName && canSave ? "true" : "false"}
           />
         </div>
 
@@ -103,8 +115,10 @@ export function AgentComposerMobile({
                 onClick={onSelectRole}
                 variant="outline"
                 className="w-full min-h-[80px] border-dashed bg-transparent"
+                disabled={isLoading}
+                aria-label="Select role module"
               >
-                <Plus className="h-5 w-5 mr-2" />
+                <Plus className="h-5 w-5 mr-2" aria-hidden="true" />
                 Select Role
               </Button>
             )}
@@ -134,8 +148,10 @@ export function AgentComposerMobile({
                 onClick={onSelectPersona}
                 variant="outline"
                 className="w-full min-h-[80px] border-dashed bg-transparent"
+                disabled={isLoading}
+                aria-label="Select persona module"
               >
-                <Plus className="h-5 w-5 mr-2" />
+                <Plus className="h-5 w-5 mr-2" aria-hidden="true" />
                 Select Persona
               </Button>
             )}
@@ -165,8 +181,10 @@ export function AgentComposerMobile({
                 onClick={onSelectFramework}
                 variant="outline"
                 className="w-full min-h-[80px] border-dashed bg-transparent"
+                disabled={isLoading}
+                aria-label="Select framework module"
               >
-                <Plus className="h-5 w-5 mr-2" />
+                <Plus className="h-5 w-5 mr-2" aria-hidden="true" />
                 Select Framework
               </Button>
             )}
@@ -182,25 +200,43 @@ export function AgentComposerMobile({
             value={customInstructions}
             onChange={(e) => onCustomInstructionsChange(e.target.value)}
             className="min-h-[120px]"
+            disabled={isLoading}
+            aria-describedby="custom-instructions-help"
           />
+          <p id="custom-instructions-help" className="text-xs text-muted-foreground">
+            Optional: Add specific behaviors or constraints for your agent
+          </p>
         </div>
       </div>
 
       <div className="flex-shrink-0 sticky bottom-0 z-10 bg-background border-t p-4">
         {isEditMode && onCancel ? (
           <div className="flex gap-2">
-            <Button onClick={onCancel} variant="outline" className="flex-1 min-h-[48px] bg-transparent">
+            <Button 
+              onClick={onCancel} 
+              variant="outline" 
+              className="flex-1 min-h-[48px] bg-transparent"
+              disabled={isLoading}
+            >
               Cancel
             </Button>
-            <Button onClick={onSave} disabled={!canSave} className="flex-1 min-h-[48px]">
-              <Save className="h-4 w-4 mr-2" />
-              Save Changes
+            <Button 
+              onClick={onSave} 
+              disabled={!canSave || isLoading} 
+              className="flex-1 min-h-[48px]"
+            >
+              <Save className="h-4 w-4 mr-2" aria-hidden="true" />
+              {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         ) : (
-          <Button onClick={onSave} disabled={!canSave} className="w-full min-h-[48px]">
-            <Sparkles className="h-4 w-4 mr-2" />
-            Create Agent
+          <Button 
+            onClick={onSave} 
+            disabled={!canSave || isLoading} 
+            className="w-full min-h-[48px]"
+          >
+            <Sparkles className="h-4 w-4 mr-2" aria-hidden="true" />
+            {isLoading ? "Creating..." : "Create Agent"}
           </Button>
         )}
       </div>

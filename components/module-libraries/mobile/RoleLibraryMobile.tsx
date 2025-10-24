@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { ROLE_CATEGORIES } from "@/lib/agent-config/roles"
-import { ArrowLeft, Plus, MoreVertical } from "lucide-react"
+import { ArrowLeft, Plus, MoreVertical } from 'lucide-react'
 import { useRoleManager } from "@/hooks/useRoleManager"
 import { RoleEditorModal } from "@/components/module-libraries/RoleEditorModal"
 import type { ProfessionalRole } from "@/lib/agent-config/roles"
@@ -42,17 +43,37 @@ export function RoleLibraryMobile() {
     setEditorOpen(true)
   }
 
+  // <CHANGE> Added error handling and toast notifications
   const handleSaveRole = (roleData: Omit<ProfessionalRole, "id"> | ProfessionalRole) => {
-    if (editorMode === "create") {
-      createRole(roleData as Omit<ProfessionalRole, "id">)
-    } else if ("id" in roleData) {
-      updateRole(roleData.id, roleData)
+    try {
+      if (editorMode === "create") {
+        createRole(roleData as Omit<ProfessionalRole, "id">)
+        toast.success("Role created successfully")
+      } else if ("id" in roleData) {
+        updateRole(roleData.id, roleData)
+        toast.success("Role updated successfully")
+      }
+      setEditorOpen(false)
+    } catch (error) {
+      console.error("[v0] Error saving role:", error)
+      toast.error("Failed to save role")
     }
   }
 
+  // <CHANGE> Added error handling and confirmation
   const handleDeleteRole = (id: string) => {
     if (confirm("Are you sure you want to delete this role?")) {
-      deleteRole(id)
+      try {
+        const success = deleteRole(id)
+        if (success) {
+          toast.success("Role deleted successfully")
+        } else {
+          toast.error("Failed to delete role")
+        }
+      } catch (error) {
+        console.error("[v0] Error deleting role:", error)
+        toast.error("Failed to delete role")
+      }
     }
   }
 
@@ -66,6 +87,7 @@ export function RoleLibraryMobile() {
             size="icon"
             className="min-h-[44px] min-w-[44px] flex-shrink-0"
             onClick={() => router.back()}
+            aria-label="Go back"
           >
             <ArrowLeft className="h-5 w-5 text-foreground" />
           </Button>
@@ -74,6 +96,7 @@ export function RoleLibraryMobile() {
             size="lg"
             className="min-h-[44px] min-w-[44px] flex-shrink-0 bg-primary text-primary-foreground"
             onClick={handleCreateRole}
+            aria-label="Create new role"
           >
             <Plus className="h-5 w-5" />
           </Button>
@@ -87,12 +110,13 @@ export function RoleLibraryMobile() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="min-h-[48px] text-base bg-input border-border focus:ring-ring"
+          aria-label="Search roles"
         />
       </div>
 
       {/* Category chips - horizontal scroll */}
       <div className="border-b border-border bg-background">
-        <div className="flex gap-2 p-4 overflow-x-auto">
+        <div className="flex gap-2 p-4 overflow-x-auto" role="tablist" aria-label="Role categories">
           <Button
             variant={activeCategory === "all" ? "default" : "outline"}
             size="lg"
@@ -100,6 +124,8 @@ export function RoleLibraryMobile() {
               activeCategory === "all" ? "bg-primary text-primary-foreground" : "bg-background border-border"
             }`}
             onClick={() => setActiveCategory("all")}
+            role="tab"
+            aria-selected={activeCategory === "all"}
           >
             All Roles
           </Button>
@@ -112,6 +138,8 @@ export function RoleLibraryMobile() {
                 activeCategory === category ? "bg-primary text-primary-foreground" : "bg-background border-border"
               }`}
               onClick={() => setActiveCategory(category)}
+              role="tab"
+              aria-selected={activeCategory === category}
             >
               {category}
             </Button>
@@ -130,11 +158,14 @@ export function RoleLibraryMobile() {
             key={role.id}
             className="min-h-[80px] p-4 bg-card border-border hover:bg-accent transition-colors cursor-pointer"
             onClick={() => handleEditRole(role)}
+            role="button"
+            tabIndex={0}
+            aria-label={`Edit ${role.name}`}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl flex-shrink-0">{role.icon}</span>
+                  <span className="text-xl flex-shrink-0" aria-hidden="true">{role.icon}</span>
                   <h3 className="font-sans font-medium text-foreground truncate">{role.name}</h3>
                   {isCustomRole(role.id) && (
                     <span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground border border-border">
@@ -168,6 +199,7 @@ export function RoleLibraryMobile() {
                     e.stopPropagation()
                     handleDeleteRole(role.id)
                   }}
+                  aria-label={`Delete ${role.name}`}
                 >
                   <MoreVertical className="h-5 w-5 text-muted-foreground" />
                 </Button>
