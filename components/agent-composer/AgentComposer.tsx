@@ -9,8 +9,6 @@ import { useFrameworkManager } from "@/hooks/useFrameworkManager"
 import { AgentComposerMobile } from "./AgentComposerMobile"
 import { AgentComposerDesktop } from "./AgentComposerDesktop"
 import { ModuleSelector } from "./ModuleSelector"
-import { ModelSelector } from "./ModelSelector"
-import { availableModels } from "@/lib/models/available-models"
 
 interface AgentComposerProps {
   onSave: (config: {
@@ -18,8 +16,6 @@ interface AgentComposerProps {
     roleId: string
     personaId: string
     frameworkId: string
-    modelId: string
-    modelProvider: string
     customInstructions?: string
   }) => void
   editMode?: boolean
@@ -28,8 +24,6 @@ interface AgentComposerProps {
     roleId: string
     personaId: string
     frameworkId: string
-    modelId?: string
-    modelProvider?: string
     customInstructions?: string
   }
 }
@@ -44,7 +38,6 @@ export function AgentComposer({ onSave, editMode = false, initialData }: AgentCo
   const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(initialData?.roleId)
   const [selectedPersonaId, setSelectedPersonaId] = useState<string | undefined>(initialData?.personaId)
   const [selectedFrameworkId, setSelectedFrameworkId] = useState<string | undefined>(initialData?.frameworkId)
-  const [selectedModelId, setSelectedModelId] = useState<string | undefined>(initialData?.modelId)
   const [customInstructions, setCustomInstructions] = useState(initialData?.customInstructions || "")
 
   const [isLoading, setIsLoading] = useState(false)
@@ -52,14 +45,12 @@ export function AgentComposer({ onSave, editMode = false, initialData }: AgentCo
   const [showRoleSelector, setShowRoleSelector] = useState(false)
   const [showPersonaSelector, setShowPersonaSelector] = useState(false)
   const [showFrameworkSelector, setShowFrameworkSelector] = useState(false)
-  const [showModelSelector, setShowModelSelector] = useState(false)
 
   const selectedRole = selectedRoleId ? getRole(selectedRoleId) : undefined
   const selectedPersona = selectedPersonaId ? getPersona(selectedPersonaId) : undefined
   const selectedFramework = selectedFrameworkId ? getFramework(selectedFrameworkId) : undefined
-  const selectedModel = selectedModelId ? availableModels.find((m) => m.id === selectedModelId) : undefined
 
-  const canSave = Boolean(agentName && selectedRoleId && selectedPersonaId && selectedFrameworkId && selectedModelId)
+  const canSave = Boolean(agentName && selectedRoleId && selectedPersonaId && selectedFrameworkId)
 
   const handleSave = async () => {
     if (!canSave) {
@@ -67,6 +58,7 @@ export function AgentComposer({ onSave, editMode = false, initialData }: AgentCo
       return
     }
 
+    // Validate agent name
     if (agentName.trim().length < 3) {
       toast.error("Agent name must be at least 3 characters")
       return
@@ -79,8 +71,6 @@ export function AgentComposer({ onSave, editMode = false, initialData }: AgentCo
         roleId: selectedRoleId!,
         personaId: selectedPersonaId!,
         frameworkId: selectedFrameworkId!,
-        modelId: selectedModelId!,
-        modelProvider: selectedModel!.provider,
         customInstructions: customInstructions.trim() || undefined,
       })
       toast.success(editMode ? "Agent updated successfully" : "Agent created successfully")
@@ -124,15 +114,12 @@ export function AgentComposer({ onSave, editMode = false, initialData }: AgentCo
     selectedRole,
     selectedPersona,
     selectedFramework,
-    selectedModel,
     onSelectRole: () => setShowRoleSelector(true),
     onSelectPersona: () => setShowPersonaSelector(true),
     onSelectFramework: () => setShowFrameworkSelector(true),
-    onSelectModel: () => setShowModelSelector(true),
     onRemoveRole: () => setSelectedRoleId(undefined),
     onRemovePersona: () => setSelectedPersonaId(undefined),
     onRemoveFramework: () => setSelectedFrameworkId(undefined),
-    onRemoveModel: () => setSelectedModelId(undefined),
     onSave: handleSave,
     canSave,
     isLoading,
@@ -171,13 +158,6 @@ export function AgentComposer({ onSave, editMode = false, initialData }: AgentCo
         modules={frameworkModules}
         selectedId={selectedFrameworkId}
         onSelect={setSelectedFrameworkId}
-      />
-
-      <ModelSelector
-        isOpen={showModelSelector}
-        onClose={() => setShowModelSelector(false)}
-        selectedId={selectedModelId}
-        onSelect={setSelectedModelId}
       />
     </>
   )

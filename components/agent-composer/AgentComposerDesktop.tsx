@@ -22,14 +22,13 @@ interface AgentComposerDesktopProps {
   selectedPersona?: Persona
   selectedFramework?: Framework
   selectedModel?: Model
+  onSelectModel: () => void
   onSelectRole: () => void
   onSelectPersona: () => void
   onSelectFramework: () => void
-  onSelectModel: () => void
   onRemoveRole: () => void
   onRemovePersona: () => void
   onRemoveFramework: () => void
-  onRemoveModel: () => void
   onSave: () => void
   onCancel?: () => void
   canSave: boolean
@@ -45,14 +44,13 @@ export function AgentComposerDesktop({
   selectedPersona,
   selectedFramework,
   selectedModel,
+  onSelectModel,
   onSelectRole,
   onSelectPersona,
   onSelectFramework,
-  onSelectModel,
   onRemoveRole,
   onRemovePersona,
   onRemoveFramework,
-  onRemoveModel,
   onSave,
   onCancel,
   canSave,
@@ -85,56 +83,6 @@ export function AgentComposerDesktop({
           />
         </div>
 
-        {/* Model Selection */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <Cpu className="h-4 w-4 text-primary" />
-              <CardTitle className="text-base">Model</CardTitle>
-            </div>
-            <CardDescription className="text-xs">LLM that powers your agent</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {selectedModel ? (
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-card min-h-[80px]">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-medium text-sm">{selectedModel.name}</h4>
-                    {selectedModel.recommended && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                        RECOMMENDED
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground capitalize">{selectedModel.provider}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {selectedModel.contextWindow.toLocaleString()} context • ${selectedModel.pricing.input}/$
-                    {selectedModel.pricing.output} per 1M tokens
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onRemoveModel}
-                  className="min-h-[44px] min-w-[44px]"
-                  aria-label="Remove model"
-                >
-                  ×
-                </Button>
-              </div>
-            ) : (
-              <Button
-                onClick={onSelectModel}
-                variant="outline"
-                className="w-full min-h-[80px] border-dashed bg-transparent"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Select Model
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Role Module */}
         <Card>
           <CardHeader className="pb-3">
@@ -146,14 +94,7 @@ export function AgentComposerDesktop({
           </CardHeader>
           <CardContent>
             {selectedRole ? (
-              <ModuleCard
-                type="role"
-                icon={selectedRole.icon}
-                name={selectedRole.name}
-                description={selectedRole.description}
-                badge={selectedRole.category}
-                onRemove={onRemoveRole}
-              />
+              <ModuleCard module={selectedRole} type="role" onEdit={onSelectRole} />
             ) : (
               <Button
                 onClick={onSelectRole}
@@ -178,14 +119,7 @@ export function AgentComposerDesktop({
           </CardHeader>
           <CardContent>
             {selectedPersona ? (
-              <ModuleCard
-                type="persona"
-                icon={selectedPersona.icon}
-                name={selectedPersona.name}
-                description={selectedPersona.description}
-                badge={selectedPersona.decisionMaking}
-                onRemove={onRemovePersona}
-              />
+              <ModuleCard module={selectedPersona} type="persona" onEdit={onSelectPersona} />
             ) : (
               <Button
                 onClick={onSelectPersona}
@@ -210,14 +144,7 @@ export function AgentComposerDesktop({
           </CardHeader>
           <CardContent>
             {selectedFramework ? (
-              <ModuleCard
-                type="framework"
-                icon={selectedFramework.icon}
-                name={selectedFramework.name}
-                description={selectedFramework.description}
-                badge={selectedFramework.bestFor[0]}
-                onRemove={onRemoveFramework}
-              />
+              <ModuleCard module={selectedFramework} type="framework" onEdit={onSelectFramework} />
             ) : (
               <Button
                 onClick={onSelectFramework}
@@ -226,6 +153,57 @@ export function AgentComposerDesktop({
               >
                 <Plus className="h-5 w-5 mr-2" />
                 Select Framework
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Model Selection */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Cpu className="h-4 w-4 text-primary" />
+              <CardTitle className="text-base">Model</CardTitle>
+            </div>
+            <CardDescription className="text-xs">AI model that powers your agent</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {selectedModel ? (
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-3 p-3 rounded-lg border bg-card min-h-[80px]">
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-sm">{selectedModel.name}</h4>
+                      {selectedModel.recommended && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                          RECOMMENDED
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground capitalize">{selectedModel.provider}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedModel.contextWindow.toLocaleString()} context • ${selectedModel.pricing.input}/$
+                      {selectedModel.pricing.output} per 1M tokens
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={onSelectModel}
+                  variant="outline"
+                  size="sm"
+                  className="w-full min-h-[44px] bg-transparent"
+                >
+                  Change Model
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={onSelectModel}
+                variant="outline"
+                className="w-full min-h-[80px] border-dashed bg-transparent"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Select Model
               </Button>
             )}
           </CardContent>
@@ -276,8 +254,8 @@ export function AgentComposerDesktop({
               <Separator />
               <div>
                 <h4 className="text-sm font-medium mb-2">Model: {selectedModel.name}</h4>
-                <p className="text-xs text-muted-foreground capitalize">{selectedModel.provider}</p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground">{selectedModel.provider}</p>
+                <p className="text-xs text-muted-foreground">
                   {selectedModel.contextWindow.toLocaleString()} context • ${selectedModel.pricing.input}/$
                   {selectedModel.pricing.output} per 1M tokens
                 </p>

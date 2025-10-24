@@ -454,26 +454,89 @@ interface Model {
 **Features Implemented:**
 - Shows expertise for roles, traits for personas, and step count for frameworks
 - Displays CUSTOM badge for user-created modules
-- Improved visual hierarchy with proper spacing and touch targets
-- Accepts full module object instead of individual props
+- Improved visual hierarchy with proper spacing
+- Touch-optimized with 80px minimum height
 - Proper ARIA labels for accessibility
 
 #### Task 7.4: Updated Agent Composer Layout - COMPLETED ✅
 
-**Files Updated:**
-- `components/agent-composer/AgentComposerMobile.tsx` - Updated layout for better usability
-- `components/agent-composer/AgentComposerDesktop.tsx` - Updated layout for better usability
+**Goal:** Integrate model selection and enhanced module cards into the agent composer with improved UX.
 
-**Features Implemented:**
-- Improved module selection and preview layout
-- Enhanced touch targets and visual hierarchy
-- Proper ARIA labels for accessibility
-- Mobile-first design with proper touch targets and semantic tokens
+**Files to Update:**
+- `components/agent-composer/AgentComposerMobile.tsx` - Add model selection section
+- `components/agent-composer/AgentComposerDesktop.tsx` - Add model selection section
+- `types/dashboard.ts` - Ensure Agent type has model fields
 
----
+**Mobile Layout with Model Selection:**
+\`\`\`
+┌─────────────────────────────────────┐
+│ ← Create Agent              [Save]  │
+├─────────────────────────────────────┤
+│ Agent Name                          │
+│ [Enter agent name...]               │
+├─────────────────────────────────────┤
+│ 1. Select Role                      │
+│ ┌─────────────────────────────────┐│
+│ │ 💼 CEO              [CUSTOM]    ││
+│ │ Strategic business leader       ││
+│ │ Expertise: Strategy, Finance... ││
+│ │ [Change Role]                   ││
+│ └─────────────────────────────────┘│
+├─────────────────────────────────────┤
+│ 2. Select Persona                   │
+│ ┌─────────────────────────────────┐│
+│ │ 🎯 Analytical                   ││
+│ │ Data-driven, logical            ││
+│ │ Traits: Precise, Methodical...  ││
+│ │ [Change Persona]                ││
+│ └─────────────────────────────────┘│
+├─────────────────────────────────────┤
+│ 3. Select Framework                 │
+│ ┌─────────────────────────────────┐│
+│ │ 🧠 First Principles             ││
+│ │ Break down complex problems     ││
+│ │ 5 steps                         ││
+│ │ [Change Framework]              ││
+│ └─────────────────────────────────┘│
+├─────────────────────────────────────┤
+│ 4. Select Model                     │
+│ ┌─────────────────────────────────┐│
+│ │ ✓ GPT-4 Turbo    RECOMMENDED   ││
+│ │ OpenAI                          ││
+│ │ 128K • $10/$30 per 1M           ││
+│ │ [Change Model]                  ││
+│ └─────────────────────────────────┘│
+├─────────────────────────────────────┤
+│ Custom Instructions (Optional)      │
+│ [Add specific instructions...]      │
+├─────────────────────────────────────┤
+│ [Create Agent]                      │
+└─────────────────────────────────────┘
+\`\`\`
 
-### Final Notes
-
-- Ensure consistent use of semantic design tokens throughout the application.
-- Comprehensive testing on various devices and screen sizes.
-- Regular updates and improvements based on user feedback and new requirements.
+**Desktop Layout with Model Selection:**
+\`\`\`
+┌─────────────────────────────────────────────────────────┐
+│ Create Agent                                      [Save]│
+├──────────────────────┬──────────────────────────┬───────┐
+│ Select Role          │ Select Persona           │ Select Framework│
+│ ┌──────────────────┐│ ┌──────────────────────┐ │ ┌──────────────────────┐ │
+│ │ 💼 CEO              [CUSTOM]    ││ │ 🎯 Analytical                   ││ │ 🧠 First Principles             ││
+│ │ Strategic business leader       ││ │ Data-driven, logical            ││ │ Break down complex problems     ││
+│ │ Expertise: Strategy, Finance... ││ │ Traits: Precise, Methodical...  ││ │ 5 steps                         ││
+│ │ [Change Role]                   ││ │ [Change Persona]                ││ │ [Change Framework]              ││
+│ └──────────────────┘│ └──────────────────────┘ │ └──────────────────────┘ │
+├──────────────────────┼──────────────────────────┼───────┤
+│ Select Model         │                          │                          │
+│ ┌──────────────────┐│                          │                          │
+│ │ ✓ GPT-4 Turbo    RECOMMENDED   ││                          │                          │
+│ │ OpenAI                          ││                          │                          │
+│ │ 128K • $10/$30 per 1M           ││                          │                          │
+│ │ [Change Model]                  ││                          │                          │
+│ └──────────────────┘│                          │                          │
+├──────────────────────┼──────────────────────────┼───────┤
+│ Custom Instructions  │                          │                          │
+│ [Add specific instructions...]      │                          │                          │
+├──────────────────────┼──────────────────────────┼───────┤
+│ [Create Agent]       │                          │                          │
+└──────────────────────┴──────────────────────────┴───────┘

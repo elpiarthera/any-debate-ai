@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Sparkles, ArrowLeft, Save } from "lucide-react"
+import { Plus, Sparkles, ArrowLeft, Save, Cpu } from "lucide-react"
 import { ModuleCard } from "./ModuleCard"
 import type { ProfessionalRole } from "@/lib/agent-config/roles"
 import type { Persona } from "@/lib/agent-config/personas"
@@ -21,14 +21,13 @@ interface AgentComposerMobileProps {
   selectedPersona?: Persona
   selectedFramework?: Framework
   selectedModel?: Model
+  onSelectModel: () => void
   onSelectRole: () => void
   onSelectPersona: () => void
   onSelectFramework: () => void
-  onSelectModel: () => void
   onRemoveRole: () => void
   onRemovePersona: () => void
   onRemoveFramework: () => void
-  onRemoveModel: () => void
   onSave: () => void
   onCancel?: () => void
   canSave: boolean
@@ -45,14 +44,13 @@ export function AgentComposerMobile({
   selectedPersona,
   selectedFramework,
   selectedModel,
+  onSelectModel,
   onSelectRole,
   onSelectPersona,
   onSelectFramework,
-  onSelectModel,
   onRemoveRole,
   onRemovePersona,
   onRemoveFramework,
-  onRemoveModel,
   onSave,
   onCancel,
   canSave,
@@ -99,75 +97,17 @@ export function AgentComposerMobile({
           />
         </div>
 
-        {/* Model Module */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center justify-between">
-              <span>Model</span>
-              <span className="text-xs text-muted-foreground font-normal">Required</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {selectedModel ? (
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-card min-h-[80px]">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-medium text-sm">{selectedModel.name}</h4>
-                    {selectedModel.recommended && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                        RECOMMENDED
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground capitalize">{selectedModel.provider}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {selectedModel.contextWindow.toLocaleString()} context
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onRemoveModel}
-                  className="min-h-[44px] min-w-[44px]"
-                  disabled={isLoading}
-                  aria-label="Remove model"
-                >
-                  ×
-                </Button>
-              </div>
-            ) : (
-              <Button
-                onClick={onSelectModel}
-                variant="outline"
-                className="w-full min-h-[80px] border-dashed bg-transparent"
-                disabled={isLoading}
-                aria-label="Select model"
-              >
-                <Plus className="h-5 w-5 mr-2" aria-hidden="true" />
-                Select Model
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Role Module */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center justify-between">
-              <span>Role</span>
+              <span>1. Role</span>
               <span className="text-xs text-muted-foreground font-normal">Required</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {selectedRole ? (
-              <ModuleCard
-                type="role"
-                icon={selectedRole.icon}
-                name={selectedRole.name}
-                description={selectedRole.description}
-                badge={selectedRole.category}
-                onRemove={onRemoveRole}
-              />
+              <ModuleCard module={selectedRole} type="role" onEdit={onSelectRole} />
             ) : (
               <Button
                 onClick={onSelectRole}
@@ -187,20 +127,13 @@ export function AgentComposerMobile({
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center justify-between">
-              <span>Persona</span>
+              <span>2. Persona</span>
               <span className="text-xs text-muted-foreground font-normal">Required</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {selectedPersona ? (
-              <ModuleCard
-                type="persona"
-                icon={selectedPersona.icon}
-                name={selectedPersona.name}
-                description={selectedPersona.description}
-                badge={selectedPersona.decisionMaking}
-                onRemove={onRemovePersona}
-              />
+              <ModuleCard module={selectedPersona} type="persona" onEdit={onSelectPersona} />
             ) : (
               <Button
                 onClick={onSelectPersona}
@@ -220,20 +153,13 @@ export function AgentComposerMobile({
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center justify-between">
-              <span>Framework</span>
+              <span>3. Framework</span>
               <span className="text-xs text-muted-foreground font-normal">Required</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {selectedFramework ? (
-              <ModuleCard
-                type="framework"
-                icon={selectedFramework.icon}
-                name={selectedFramework.name}
-                description={selectedFramework.description}
-                badge={selectedFramework.bestFor[0]}
-                onRemove={onRemoveFramework}
-              />
+              <ModuleCard module={selectedFramework} type="framework" onEdit={onSelectFramework} />
             ) : (
               <Button
                 onClick={onSelectFramework}
@@ -244,6 +170,60 @@ export function AgentComposerMobile({
               >
                 <Plus className="h-5 w-5 mr-2" aria-hidden="true" />
                 Select Framework
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Model Selection Section */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center justify-between">
+              <span>4. Model</span>
+              <span className="text-xs text-muted-foreground font-normal">Required</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {selectedModel ? (
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-3 p-3 rounded-lg border bg-card min-h-[80px]">
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Cpu className="h-4 w-4 text-primary" aria-hidden="true" />
+                      <h4 className="font-medium text-sm">{selectedModel.name}</h4>
+                      {selectedModel.recommended && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                          RECOMMENDED
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground capitalize">{selectedModel.provider}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedModel.contextWindow.toLocaleString()} context • ${selectedModel.pricing.input}/$
+                      {selectedModel.pricing.output} per 1M
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={onSelectModel}
+                  variant="outline"
+                  size="sm"
+                  className="w-full min-h-[44px] bg-transparent"
+                  disabled={isLoading}
+                >
+                  Change Model
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={onSelectModel}
+                variant="outline"
+                className="w-full min-h-[80px] border-dashed bg-transparent"
+                disabled={isLoading}
+                aria-label="Select model"
+              >
+                <Plus className="h-5 w-5 mr-2" aria-hidden="true" />
+                Select Model
               </Button>
             )}
           </CardContent>
