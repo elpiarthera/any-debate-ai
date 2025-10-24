@@ -51,31 +51,31 @@ export function AgentListMobile({
   })
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="border-b p-3 flex items-center justify-between">
-        <h1 className="text-base font-semibold">AI Agents</h1>
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col h-full w-full overflow-x-hidden">
+      <div className="border-b p-3 flex items-center justify-between gap-2 min-w-0">
+        <h1 className="text-base font-semibold truncate flex-shrink-0">AI Agents</h1>
+        <div className="flex items-center gap-1 flex-shrink-0">
           <TokenBalance />
           <QuickActionsMenu />
           <ThemeToggle />
         </div>
       </div>
 
-      <div className="sticky top-0 bg-background z-10 border-b p-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
+      <div className="sticky top-0 bg-background z-10 border-b p-4 space-y-3 w-full">
+        <div className="flex items-center gap-2 w-full">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search agents..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 min-h-[48px]"
+              className="pl-9 min-h-[48px] w-full"
             />
           </div>
 
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="min-h-[44px] min-w-[44px] bg-transparent">
+              <Button variant="outline" size="icon" className="min-h-[44px] min-w-[44px] flex-shrink-0 bg-transparent">
                 <SlidersHorizontal className="h-4 w-4" />
               </Button>
             </SheetTrigger>
@@ -130,12 +130,16 @@ export function AgentListMobile({
             </SheetContent>
           </Sheet>
 
-          <Button size="icon" onClick={() => router.push("/agents/new")} className="min-h-[44px] min-w-[44px]">
+          <Button
+            size="icon"
+            onClick={() => router.push("/agents/new")}
+            className="min-h-[44px] min-w-[44px] flex-shrink-0"
+          >
             <Plus className="h-4 w-4" />
           </Button>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4">
           <Badge
             variant={selectedCategory === "All Categories" ? "default" : "outline"}
             className="cursor-pointer shrink-0 min-h-[36px] px-4"
@@ -156,7 +160,7 @@ export function AgentListMobile({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 w-full">
         {filteredAgents.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
             <Filter className="h-12 w-12 text-muted-foreground mb-4" />
@@ -168,7 +172,7 @@ export function AgentListMobile({
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 w-full">
             {filteredAgents.map((agent) => (
               <AgentCard
                 key={agent.id}

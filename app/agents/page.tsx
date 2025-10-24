@@ -19,7 +19,7 @@ export default function AgentsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories")
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       {!isMobile && (
         <DashboardSidebar
           isCollapsed={isDashboardSidebarCollapsed}
@@ -38,9 +38,9 @@ export default function AgentsPage() {
         />
       )}
 
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
         {isMobile && (
-          <div className="border-b p-3 flex items-center gap-2">
+          <div className="border-b p-3 flex items-center gap-2 min-w-0">
             <Button
               variant="ghost"
               size="sm"
@@ -49,7 +49,9 @@ export default function AgentsPage() {
             >
               <Menu className="h-4 w-4" />
             </Button>
-            <OrgSwitcher />
+            <div className="flex-1 min-w-0">
+              <OrgSwitcher />
+            </div>
           </div>
         )}
 
