@@ -6,11 +6,12 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Plus, Sparkles, User, Users, Brain, Save } from "lucide-react"
+import { Plus, Sparkles, User, Users, Brain, Save, Cpu } from "lucide-react"
 import { ModuleCard } from "./ModuleCard"
 import type { ProfessionalRole } from "@/lib/agent-config/roles"
 import type { Persona } from "@/lib/agent-config/personas"
 import type { Framework } from "@/lib/agent-config/frameworks"
+import type { Model } from "@/lib/models/types"
 
 interface AgentComposerDesktopProps {
   agentName: string
@@ -20,12 +21,15 @@ interface AgentComposerDesktopProps {
   selectedRole?: ProfessionalRole
   selectedPersona?: Persona
   selectedFramework?: Framework
+  selectedModel?: Model
   onSelectRole: () => void
   onSelectPersona: () => void
   onSelectFramework: () => void
+  onSelectModel: () => void
   onRemoveRole: () => void
   onRemovePersona: () => void
   onRemoveFramework: () => void
+  onRemoveModel: () => void
   onSave: () => void
   onCancel?: () => void
   canSave: boolean
@@ -40,12 +44,15 @@ export function AgentComposerDesktop({
   selectedRole,
   selectedPersona,
   selectedFramework,
+  selectedModel,
   onSelectRole,
   onSelectPersona,
   onSelectFramework,
+  onSelectModel,
   onRemoveRole,
   onRemovePersona,
   onRemoveFramework,
+  onRemoveModel,
   onSave,
   onCancel,
   canSave,
@@ -77,6 +84,56 @@ export function AgentComposerDesktop({
             className="min-h-[48px]"
           />
         </div>
+
+        {/* Model Selection */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Cpu className="h-4 w-4 text-primary" />
+              <CardTitle className="text-base">Model</CardTitle>
+            </div>
+            <CardDescription className="text-xs">LLM that powers your agent</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {selectedModel ? (
+              <div className="flex items-center justify-between p-3 border rounded-lg bg-card min-h-[80px]">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-medium text-sm">{selectedModel.name}</h4>
+                    {selectedModel.recommended && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                        RECOMMENDED
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground capitalize">{selectedModel.provider}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {selectedModel.contextWindow.toLocaleString()} context • ${selectedModel.pricing.input}/$
+                    {selectedModel.pricing.output} per 1M tokens
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onRemoveModel}
+                  className="min-h-[44px] min-w-[44px]"
+                  aria-label="Remove model"
+                >
+                  ×
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={onSelectModel}
+                variant="outline"
+                className="w-full min-h-[80px] border-dashed bg-transparent"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Select Model
+              </Button>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Role Module */}
         <Card>
@@ -195,7 +252,7 @@ export function AgentComposerDesktop({
 
         <Separator />
 
-        {selectedRole && selectedPersona && selectedFramework ? (
+        {selectedRole && selectedPersona && selectedFramework && selectedModel ? (
           <Card className="bg-muted/50">
             <CardHeader>
               <CardTitle>{agentName || "Unnamed Agent"}</CardTitle>
@@ -215,6 +272,15 @@ export function AgentComposerDesktop({
               <div>
                 <h4 className="text-sm font-medium mb-2">Framework: {selectedFramework.name}</h4>
                 <p className="text-xs text-muted-foreground">{selectedFramework.description}</p>
+              </div>
+              <Separator />
+              <div>
+                <h4 className="text-sm font-medium mb-2">Model: {selectedModel.name}</h4>
+                <p className="text-xs text-muted-foreground capitalize">{selectedModel.provider}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {selectedModel.contextWindow.toLocaleString()} context • ${selectedModel.pricing.input}/$
+                  {selectedModel.pricing.output} per 1M tokens
+                </p>
               </div>
               {customInstructions && (
                 <>

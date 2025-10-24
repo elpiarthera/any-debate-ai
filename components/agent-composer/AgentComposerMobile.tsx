@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Sparkles, ArrowLeft, Save } from 'lucide-react'
+import { Plus, Sparkles, ArrowLeft, Save } from "lucide-react"
 import { ModuleCard } from "./ModuleCard"
 import type { ProfessionalRole } from "@/lib/agent-config/roles"
 import type { Persona } from "@/lib/agent-config/personas"
 import type { Framework } from "@/lib/agent-config/frameworks"
+import type { Model } from "@/lib/models/types"
 
 interface AgentComposerMobileProps {
   agentName: string
@@ -19,12 +20,15 @@ interface AgentComposerMobileProps {
   selectedRole?: ProfessionalRole
   selectedPersona?: Persona
   selectedFramework?: Framework
+  selectedModel?: Model
   onSelectRole: () => void
   onSelectPersona: () => void
   onSelectFramework: () => void
+  onSelectModel: () => void
   onRemoveRole: () => void
   onRemovePersona: () => void
   onRemoveFramework: () => void
+  onRemoveModel: () => void
   onSave: () => void
   onCancel?: () => void
   canSave: boolean
@@ -40,12 +44,15 @@ export function AgentComposerMobile({
   selectedRole,
   selectedPersona,
   selectedFramework,
+  selectedModel,
   onSelectRole,
   onSelectPersona,
   onSelectFramework,
+  onSelectModel,
   onRemoveRole,
   onRemovePersona,
   onRemoveFramework,
+  onRemoveModel,
   onSave,
   onCancel,
   canSave,
@@ -91,6 +98,57 @@ export function AgentComposerMobile({
             aria-invalid={!agentName && canSave ? "true" : "false"}
           />
         </div>
+
+        {/* Model Module */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center justify-between">
+              <span>Model</span>
+              <span className="text-xs text-muted-foreground font-normal">Required</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {selectedModel ? (
+              <div className="flex items-center justify-between p-3 border rounded-lg bg-card min-h-[80px]">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-medium text-sm">{selectedModel.name}</h4>
+                    {selectedModel.recommended && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                        RECOMMENDED
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground capitalize">{selectedModel.provider}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {selectedModel.contextWindow.toLocaleString()} context
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onRemoveModel}
+                  className="min-h-[44px] min-w-[44px]"
+                  disabled={isLoading}
+                  aria-label="Remove model"
+                >
+                  ×
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={onSelectModel}
+                variant="outline"
+                className="w-full min-h-[80px] border-dashed bg-transparent"
+                disabled={isLoading}
+                aria-label="Select model"
+              >
+                <Plus className="h-5 w-5 mr-2" aria-hidden="true" />
+                Select Model
+              </Button>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Role Module */}
         <Card>
@@ -212,29 +270,21 @@ export function AgentComposerMobile({
       <div className="flex-shrink-0 sticky bottom-0 z-10 bg-background border-t p-4">
         {isEditMode && onCancel ? (
           <div className="flex gap-2">
-            <Button 
-              onClick={onCancel} 
-              variant="outline" 
+            <Button
+              onClick={onCancel}
+              variant="outline"
               className="flex-1 min-h-[48px] bg-transparent"
               disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button 
-              onClick={onSave} 
-              disabled={!canSave || isLoading} 
-              className="flex-1 min-h-[48px]"
-            >
+            <Button onClick={onSave} disabled={!canSave || isLoading} className="flex-1 min-h-[48px]">
               <Save className="h-4 w-4 mr-2" aria-hidden="true" />
               {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         ) : (
-          <Button 
-            onClick={onSave} 
-            disabled={!canSave || isLoading} 
-            className="w-full min-h-[48px]"
-          >
+          <Button onClick={onSave} disabled={!canSave || isLoading} className="w-full min-h-[48px]">
             <Sparkles className="h-4 w-4 mr-2" aria-hidden="true" />
             {isLoading ? "Creating..." : "Create Agent"}
           </Button>
