@@ -2,24 +2,67 @@
 
 ## Overview
 
-AnyDebateAI implements a comprehensive client-side chat history persistence system using browser localStorage. This architecture enables users to maintain conversation continuity, bookmark important messages, track reactions, organize threads, and compare sessions—all without requiring server-side database infrastructure.
+AnyDebateAI's chat history persistence is designed around **Convex**, a real-time backend platform that keeps the app in sync. Currently, the application uses **browser localStorage as a temporary solution** until Convex integration is complete. This document covers both the current temporary implementation and the planned production architecture.
+
+**Current State**: localStorage (temporary)  
+**Production Target**: Convex (planned)  
+**Migration Status**: In planning phase
 
 ## Table of Contents
 
 1. [Architecture Overview](#architecture-overview)
-2. [Core Data Models](#core-data-models)
-3. [Storage Mechanisms](#storage-mechanisms)
-4. [Feature Modules](#feature-modules)
-5. [Data Flow](#data-flow)
-6. [API Implementation](#api-implementation)
-7. [State Management](#state-management)
-8. [Best Practices](#best-practices)
-9. [Limitations & Considerations](#limitations--considerations)
-10. [Future Enhancements](#future-enhancements)
+2. [Current Implementation (localStorage - Temporary)](#current-implementation-localstorage---temporary)
+3. [Production Architecture (Convex - Planned)](#production-architecture-convex---planned)
+4. [Core Data Models](#core-data-models)
+5. [Feature Modules](#feature-modules)
+6. [Migration Strategy](#migration-strategy)
+7. [Best Practices](#best-practices)
+8. [Implementation Roadmap](#implementation-roadmap)
 
 ---
 
 ## Architecture Overview
+
+### Production Architecture: Convex
+
+**Convex** is the chosen backend platform for AnyDebateAI, providing:
+
+- **Real-time Sync**: Automatic UI updates when data changes
+- **TypeScript-First**: Full type safety from database to UI
+- **Reactive Queries**: React hooks (`useQuery`, `useMutation`) that auto-update
+- **WebSocket Management**: Automatic connection handling
+- **Offline Support**: Built-in optimistic updates and conflict resolution
+- **Scalability**: Cloud-hosted, serverless architecture
+- **Multi-device Sync**: Seamless data sync across devices
+- **Authentication**: Built-in user authentication system
+
+### Why Convex?
+
+1. **Perfect for React**: Designed specifically for reactive UI frameworks
+2. **Real-time by Default**: No polling, no manual refresh logic
+3. **Type Safety**: End-to-end TypeScript with automatic code generation
+4. **Developer Experience**: Simple API, minimal boilerplate
+5. **Production Ready**: Handles scaling, caching, and optimization automatically
+
+### Temporary Solution: localStorage
+
+Until Convex integration is complete, the application uses browser localStorage for:
+- Bookmarks and collections
+- Message reactions
+- Thread organization
+- Search history
+- Session comparisons
+
+**Limitations of localStorage**:
+- No cross-device sync
+- 5-10MB storage limit
+- No real-time collaboration
+- Data lost if browser cache cleared
+- No server-side backup
+
+---
+
+## Current Implementation (localStorage - Temporary)
 
 ### Storage Strategy
 
@@ -33,6 +76,380 @@ The application uses **browser localStorage** for feature-specific persistence w
 - **Ephemeral messages**: Chat messages exist only in React state during active sessions
 
 **Important**: The core chat messages themselves are NOT persisted to localStorage. Messages exist only in React component state (managed by the AI SDK's `useChat` hook) during an active session. Only feature-specific data (bookmarks, reactions, threads, search history, comparisons) is persisted.
+
+### localStorage Keys
+
+All data is stored under namespaced keys:
+
+| Feature | Key Pattern | Example |
+|---------|-------------|---------|
+| Bookmarks | `anydebate_bookmarks` | Single key for all bookmarks |
+| Collections | `anydebate_bookmark_collections` | Single key for all collections |
+| Reactions | `anydebate_reactions_{messageId}` | One key per message |
+| Comparisons | `anydebate_comparisons` | Single key for all comparisons |
+| Threads | `anydebate_threads` | Single key for all threads |
+| Search History | `anydebate_search_history` | Single key for search queries |
+
+**Note**: These localStorage keys are temporary and will be replaced by Convex tables.
+
+### Data Serialization
+
+All managers follow this pattern:
+
+\`\`\`typescript
+// Save data
+private static saveData(data: DataType[]): void {
+  if (typeof window === "undefined") return  // SSR safety
+  localStorage.setItem(KEY, JSON.stringify(data))
+}
+
+// Load data
+static getData(): DataType[] {
+  if (typeof window === "undefined") return []
+  const stored = localStorage.getItem(KEY)
+  return stored ? JSON.parse(stored) : []
+}
+\`\`\`
+
+---
+
+## Production Architecture (Convex - Planned)
+
+### Convex Schema Design
+
+Convex uses TypeScript schema definitions in `convex/schema.ts`:
+
+\`\`\`typescript
+import { defineSchema, defineTable } from "convex/server"
+import { v } from "convex/values"
+
+export default defineSchema({
+  // Sessions table
+  sessions: defineTable({
+    title: v.string(),
+    description: v.optional(v.string()),
+    status: v.union(v.literal("active"), v.literal("archived")),
+    mode: v.union(
+      v.literal("compare"),
+      v.literal("debate"),
+      v.literal("auto-debate")
+    ),
+    selectedAgents: v.array(v.string()),
+    debateRounds: v.optional(v.number()),
+    userId: v.string(),
+    messageCount: v.number(),
+    agentCount: v.number(),
+    artifactCount: v.number(),
+    lastActivity: v.number(),
+    participants: v.array(v.string()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_status", ["status"])
+    .index("by_last_activity", ["lastActivity"]),
+
+  // Messages table
+  messages: defineTable({
+    sessionId: v.id("sessions"),
+    content: v.string(),
+    senderId: v.string(),
+    senderName: v.string(),
+    senderType: v.union(v.literal("user"), v.literal("ai")),
+    senderAvatar: v.optional(v.string()),
+    isStreaming: v.optional(v.boolean()),
+    threadId: v.optional(v.string()),
+    parentMessageId: v.optional(v.id("messages")),
+    replyCount: v.number(),
+  })
+    .index("by_session", ["sessionId"])
+    .index("by_thread", ["threadId"])
+    .index("by_parent", ["parentMessageId"]),
+
+  // Bookmarks table
+  bookmarks: defineTable({
+    messageId: v.id("messages"),
+    sessionId: v.id("sessions"),
+    userId: v.string(),
+    collectionId: v.optional(v.id("bookmark_collections")),
+    note: v.optional(v.string()),
+    tags: v.array(v.string()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_message", ["messageId"])
+    .index("by_collection", ["collectionId"])
+    .index("by_session", ["sessionId"]),
+
+  // Bookmark Collections table
+  bookmark_collections: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    color: v.string(),
+    icon: v.string(),
+    userId: v.string(),
+  }).index("by_user", ["userId"]),
+
+  // Reactions table
+  reactions: defineTable({
+    messageId: v.id("messages"),
+    userId: v.string(),
+    emoji: v.string(),
+    label: v.string(),
+  })
+    .index("by_message", ["messageId"])
+    .index("by_user", ["userId"])
+    .index("by_message_and_user", ["messageId", "userId"]),
+
+  // Threads table
+  threads: defineTable({
+    parentMessageId: v.id("messages"),
+    sessionId: v.id("sessions"),
+    participants: v.array(v.string()),
+    lastReplyAt: v.number(),
+  })
+    .index("by_parent", ["parentMessageId"])
+    .index("by_session", ["sessionId"]),
+
+  // Search History table
+  search_history: defineTable({
+    userId: v.string(),
+    query: v.string(),
+    timestamp: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_timestamp", ["timestamp"]),
+
+  // Comparisons table
+  comparisons: defineTable({
+    name: v.optional(v.string()),
+    sessionIds: v.array(v.id("sessions")),
+    userId: v.string(),
+  }).index("by_user", ["userId"]),
+})
+\`\`\`
+
+### Convex Queries
+
+Queries are reactive and automatically update the UI:
+
+\`\`\`typescript
+// convex/sessions.ts
+import { query } from "./_generated/server"
+import { v } from "convex/values"
+
+// Get all sessions for a user
+export const getUserSessions = query({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("sessions")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .order("desc")
+      .collect()
+  },
+})
+
+// Get session messages
+export const getSessionMessages = query({
+  args: { sessionId: v.id("sessions") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("messages")
+      .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId))
+      .order("asc")
+      .collect()
+  },
+})
+
+// Get message with reactions
+export const getMessageWithReactions = query({
+  args: { messageId: v.id("messages") },
+  handler: async (ctx, args) => {
+    const message = await ctx.db.get(args.messageId)
+    const reactions = await ctx.db
+      .query("reactions")
+      .withIndex("by_message", (q) => q.eq("messageId", args.messageId))
+      .collect()
+
+    // Group reactions by emoji
+    const groupedReactions = reactions.reduce((acc, reaction) => {
+      if (!acc[reaction.emoji]) {
+        acc[reaction.emoji] = {
+          emoji: reaction.emoji,
+          label: reaction.label,
+          count: 0,
+          users: [],
+        }
+      }
+      acc[reaction.emoji].count++
+      acc[reaction.emoji].users.push(reaction.userId)
+      return acc
+    }, {} as Record<string, any>)
+
+    return {
+      ...message,
+      reactions: Object.values(groupedReactions),
+    }
+  },
+})
+\`\`\`
+
+### Convex Mutations
+
+Mutations modify data and trigger reactive updates:
+
+\`\`\`typescript
+// convex/sessions.ts
+import { mutation } from "./_generated/server"
+import { v } from "convex/values"
+
+// Create new session
+export const createSession = mutation({
+  args: {
+    title: v.string(),
+    mode: v.union(
+      v.literal("compare"),
+      v.literal("debate"),
+      v.literal("auto-debate")
+    ),
+    selectedAgents: v.array(v.string()),
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const sessionId = await ctx.db.insert("sessions", {
+      title: args.title,
+      description: "",
+      status: "active",
+      mode: args.mode,
+      selectedAgents: args.selectedAgents,
+      userId: args.userId,
+      messageCount: 0,
+      agentCount: args.selectedAgents.length,
+      artifactCount: 0,
+      lastActivity: Date.now(),
+      participants: [],
+    })
+    return sessionId
+  },
+})
+
+// Add message to session
+export const addMessage = mutation({
+  args: {
+    sessionId: v.id("sessions"),
+    content: v.string(),
+    senderId: v.string(),
+    senderName: v.string(),
+    senderType: v.union(v.literal("user"), v.literal("ai")),
+  },
+  handler: async (ctx, args) => {
+    const messageId = await ctx.db.insert("messages", {
+      sessionId: args.sessionId,
+      content: args.content,
+      senderId: args.senderId,
+      senderName: args.senderName,
+      senderType: args.senderType,
+      replyCount: 0,
+    })
+
+    // Update session metadata
+    const session = await ctx.db.get(args.sessionId)
+    if (session) {
+      await ctx.db.patch(args.sessionId, {
+        messageCount: session.messageCount + 1,
+        lastActivity: Date.now(),
+      })
+    }
+
+    return messageId
+  },
+})
+
+// Add reaction to message
+export const addReaction = mutation({
+  args: {
+    messageId: v.id("messages"),
+    userId: v.string(),
+    emoji: v.string(),
+    label: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Check if user already reacted with this emoji
+    const existing = await ctx.db
+      .query("reactions")
+      .withIndex("by_message_and_user", (q) =>
+        q.eq("messageId", args.messageId).eq("userId", args.userId)
+      )
+      .filter((q) => q.eq(q.field("emoji"), args.emoji))
+      .first()
+
+    if (existing) {
+      // Remove reaction if already exists (toggle)
+      await ctx.db.delete(existing._id)
+      return null
+    } else {
+      // Add new reaction
+      const reactionId = await ctx.db.insert("reactions", {
+        messageId: args.messageId,
+        userId: args.userId,
+        emoji: args.emoji,
+        label: args.label,
+      })
+      return reactionId
+    }
+  },
+})
+\`\`\`
+
+### React Integration
+
+Using Convex in React components:
+
+\`\`\`typescript
+// components/chat/ChatThread.tsx
+import { useQuery, useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
+
+export function ChatThread({ sessionId }: { sessionId: string }) {
+  // Reactive query - auto-updates when messages change
+  const messages = useQuery(api.sessions.getSessionMessages, { sessionId })
+  
+  // Mutation for adding messages
+  const addMessage = useMutation(api.sessions.addMessage)
+  
+  const handleSendMessage = async (content: string) => {
+    await addMessage({
+      sessionId,
+      content,
+      senderId: currentUser.id,
+      senderName: currentUser.name,
+      senderType: "user",
+    })
+  }
+  
+  if (messages === undefined) {
+    return <div>Loading messages...</div>
+  }
+  
+  return (
+    <div>
+      {messages.map((message) => (
+        <MessageCard key={message._id} message={message} />
+      ))}
+    </div>
+  )
+}
+\`\`\`
+
+### Real-time Collaboration
+
+Convex enables real-time collaboration automatically:
+
+\`\`\`typescript
+// Multiple users see updates instantly
+const messages = useQuery(api.sessions.getSessionMessages, { sessionId })
+
+// When User A adds a message, User B's UI updates automatically
+// No polling, no manual refresh, no WebSocket management needed
+\`\`\`
 
 ---
 
@@ -104,42 +521,6 @@ interface Session {
 
 ---
 
-## Storage Mechanisms
-
-### localStorage Keys
-
-All data is stored under namespaced keys:
-
-| Feature | Key Pattern | Example |
-|---------|-------------|---------|
-| Bookmarks | `anydebate_bookmarks` | Single key for all bookmarks |
-| Collections | `anydebate_bookmark_collections` | Single key for all collections |
-| Reactions | `anydebate_reactions_{messageId}` | One key per message |
-| Comparisons | `anydebate_comparisons` | Single key for all comparisons |
-| Threads | `anydebate_threads` | Single key for all threads |
-| Search History | `anydebate_search_history` | Single key for search queries |
-
-### Data Serialization
-
-All managers follow this pattern:
-
-\`\`\`typescript
-// Save data
-private static saveData(data: DataType[]): void {
-  if (typeof window === "undefined") return  // SSR safety
-  localStorage.setItem(KEY, JSON.stringify(data))
-}
-
-// Load data
-static getData(): DataType[] {
-  if (typeof window === "undefined") return []
-  const stored = localStorage.getItem(KEY)
-  return stored ? JSON.parse(stored) : []
-}
-\`\`\`
-
----
-
 ## Feature Modules
 
 ### 1. Bookmarks (`lib/chat/bookmarks.ts`)
@@ -205,8 +586,6 @@ localStorage.setItem('anydebate_bookmark_collections', JSON.stringify([
   { id: 'collection-2', name: 'Research', ... }
 ]))
 \`\`\`
-
----
 
 ### 2. Reactions (`lib/chat/reactions.ts`)
 
@@ -277,8 +656,6 @@ localStorage.setItem('anydebate_reactions_msg-1', JSON.stringify({
 }))
 \`\`\`
 
----
-
 ### 3. Threading (`lib/chat/threading.ts`)
 
 **Purpose**: Organize conversations into hierarchical reply threads.
@@ -337,8 +714,6 @@ localStorage.setItem('anydebate_threads', JSON.stringify([
 ]))
 \`\`\`
 
----
-
 ### 4. Search (`lib/chat/search.ts`)
 
 **Purpose**: Full-text search across messages with filtering and history.
@@ -389,8 +764,6 @@ localStorage.setItem('anydebate_search_history', JSON.stringify([
   ...
 ]))
 \`\`\`
-
----
 
 ### 5. Comparison (`lib/chat/comparison.ts`)
 
@@ -458,83 +831,164 @@ localStorage.setItem('anydebate_comparisons', JSON.stringify([
 
 ---
 
-## Data Flow
+## Migration Strategy
 
-### Message Creation Flow
+### Phase 1: Convex Setup (Week 1)
 
-\`\`\`
-1. User sends message via ChatThread
-   ↓
-2. useAIChat hook (wraps AI SDK's useChat) handles submission
-   ↓
-3. Message added to React state (messages array)
-   ↓
-4. API call to /api/chat with streaming
-   ↓
-5. AI response streamed back via Server-Sent Events
-   ↓
-6. Response added to React state in real-time
-   ↓
-7. Messages exist ONLY in component state
-   ↓
-8. [NOT IMPLEMENTED] Session/message persistence to localStorage
-\`\`\`
+**Tasks**:
+1. Install Convex: `npm install convex`
+2. Initialize Convex: `npx convex dev`
+3. Create schema in `convex/schema.ts`
+4. Set up authentication with Convex Auth
+5. Deploy Convex backend: `npx convex deploy`
 
-### API Implementation
+**Deliverables**:
+- Convex project configured
+- Schema defined and deployed
+- Authentication working
 
-The chat API (`app/api/chat/route.ts`) handles message processing:
+### Phase 2: Parallel Implementation (Week 2-3)
+
+**Strategy**: Run localStorage and Convex side-by-side
 
 \`\`\`typescript
-// Key features:
-- Uses AI SDK's streamText() for streaming responses
-- Supports multiple models via AI Gateway
-- Includes artifact creation tools (documents, tables, checklists, charts)
-- Rate limiting per client IP
-- Agent configuration validation
-- Context-aware system prompts
-- Automatic fallback handling
-- Temperature adjustment based on persona
+// lib/chat/storage-adapter.ts
+export interface StorageAdapter {
+  saveMessage(sessionId: string, message: ChatMessage): Promise<void>
+  getMessages(sessionId: string): Promise<ChatMessage[]>
+  // ... other methods
+}
+
+// localStorage implementation (current)
+export class LocalStorageAdapter implements StorageAdapter {
+  async saveMessage(sessionId: string, message: ChatMessage) {
+    // Current localStorage logic
+  }
+}
+
+// Convex implementation (new)
+export class ConvexAdapter implements StorageAdapter {
+  constructor(private convex: ConvexReactClient) {}
+  
+  async saveMessage(sessionId: string, message: ChatMessage) {
+    await this.convex.mutation(api.sessions.addMessage, {
+      sessionId,
+      content: message.content,
+      senderId: message.sender.id,
+      senderName: message.sender.name,
+      senderType: message.sender.type,
+    })
+  }
+}
+
+// Feature flag to switch between adapters
+const USE_CONVEX = process.env.NEXT_PUBLIC_USE_CONVEX === "true"
+export const storage: StorageAdapter = USE_CONVEX
+  ? new ConvexAdapter(convexClient)
+  : new LocalStorageAdapter()
 \`\`\`
 
-### State Management
+**Tasks**:
+1. Create storage adapter interface
+2. Implement Convex adapter
+3. Add feature flag for gradual rollout
+4. Test both implementations in parallel
 
-Messages are managed using the AI SDK's `useChat` hook:
+### Phase 3: Data Migration (Week 4)
+
+**Migration Script**:
 
 \`\`\`typescript
-// From hooks/useAIChat.ts
-const {
-  messages,           // Array of ChatMessage objects
-  input,              // Current input text
-  handleInputChange,  // Input change handler
-  handleSubmit,       // Form submission handler
-  isLoading,          // Loading state
-  error,              // Error state
-  setInput,           // Set input programmatically
-  reload,             // Retry last request
-  stop,               // Stop streaming
-} = useChat({
-  api: "/api/chat",
-  body: { model, agentConfig, conversationContext },
-  onFinish: (message) => { /* Handle completion */ },
-  onError: (error) => { /* Handle errors */ },
-  onResponse: (response) => { /* Handle response */ }
-})
+// scripts/migrate-to-convex.ts
+import { ConvexHttpClient } from "convex/browser"
+import { api } from "@/convex/_generated/api"
+
+async function migrateUserData(userId: string) {
+  const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+  
+  // 1. Migrate bookmarks
+  const bookmarks = JSON.parse(
+    localStorage.getItem("anydebate_bookmarks") || "[]"
+  )
+  for (const bookmark of bookmarks) {
+    await convex.mutation(api.bookmarks.create, {
+      ...bookmark,
+      userId,
+    })
+  }
+  
+  // 2. Migrate collections
+  const collections = JSON.parse(
+    localStorage.getItem("anydebate_bookmark_collections") || "[]"
+  )
+  for (const collection of collections) {
+    await convex.mutation(api.bookmarks.createCollection, {
+      ...collection,
+      userId,
+    })
+  }
+  
+  // 3. Migrate reactions
+  Object.keys(localStorage).forEach(async (key) => {
+    if (key.startsWith("anydebate_reactions_")) {
+      const messageId = key.replace("anydebate_reactions_", "")
+      const reactions = JSON.parse(localStorage.getItem(key)!)
+      
+      for (const reaction of reactions.reactions) {
+        for (const user of reaction.users) {
+          await convex.mutation(api.reactions.add, {
+            messageId,
+            userId: user,
+            emoji: reaction.emoji,
+            label: reaction.label,
+          })
+        }
+      }
+    }
+  })
+  
+  // 4. Clear localStorage after successful migration
+  localStorage.removeItem("anydebate_bookmarks")
+  localStorage.removeItem("anydebate_bookmark_collections")
+  // ... clear other keys
+  
+  console.log("Migration complete!")
+}
 \`\`\`
 
-The `useAIChat` hook enhances the base `useChat` with:
-- Connection status tracking (connected/connecting/disconnected/error)
-- Automatic retry logic with exponential backoff
-- Maximum retry attempts (default: 3)
-- Abort controller for canceling requests
-- Enhanced error handling with user notifications
-- Streaming message tracking
-- Network status monitoring
+**Tasks**:
+1. Create migration script
+2. Add migration UI in settings
+3. Test migration with sample data
+4. Add rollback capability
+5. Monitor migration success rate
+
+### Phase 4: Cutover (Week 5)
+
+**Tasks**:
+1. Enable Convex for all users
+2. Remove localStorage code
+3. Update documentation
+4. Monitor performance and errors
+5. Provide user support for migration issues
+
+### Rollback Plan
+
+If issues arise during migration:
+
+\`\`\`typescript
+// Emergency rollback to localStorage
+if (CONVEX_ERROR_RATE > 5%) {
+  process.env.NEXT_PUBLIC_USE_CONVEX = "false"
+  // Automatically fall back to localStorage
+}
+\`\`\`
 
 ---
 
 ## Best Practices
 
-### 1. SSR Safety
+### Current (localStorage)
 
 Always check for browser environment:
 
@@ -544,322 +998,130 @@ if (typeof window === "undefined") return []
 
 This prevents errors during server-side rendering.
 
-### 2. Data Validation
+### Future (Convex)
 
-Validate data before saving:
+#### 1. Use Reactive Queries
 
 \`\`\`typescript
-static createBookmark(messageId: string, sessionId: string) {
-  if (!messageId || !sessionId) {
-    throw new Error('Invalid bookmark data')
+// Good: Reactive query
+const messages = useQuery(api.sessions.getSessionMessages, { sessionId })
+
+// Bad: Manual fetching
+const [messages, setMessages] = useState([])
+useEffect(() => {
+  fetch('/api/messages').then(/* ... */)
+}, [])
+\`\`\`
+
+#### 2. Optimistic Updates
+
+\`\`\`typescript
+const addReaction = useMutation(api.reactions.add)
+
+// Optimistic UI update
+const handleReaction = async (emoji: string) => {
+  // Update UI immediately
+  setLocalReactions((prev) => [...prev, { emoji, userId }])
+  
+  try {
+    await addReaction({ messageId, userId, emoji, label })
+  } catch (error) {
+    // Rollback on error
+    setLocalReactions((prev) => prev.filter((r) => r.emoji !== emoji))
   }
-  // ... create bookmark
 }
 \`\`\`
 
-### 3. Error Handling
-
-Wrap localStorage operations in try-catch:
+#### 3. Pagination for Large Datasets
 
 \`\`\`typescript
-try {
-  localStorage.setItem(key, JSON.stringify(data))
-} catch (error) {
-  console.error('Failed to save data:', error)
-  // Handle quota exceeded, etc.
-}
-\`\`\`
-
-### 4. Data Migration
-
-When updating data structures, implement migration logic:
-
-\`\`\`typescript
-static getAllBookmarks(): Bookmark[] {
-  const stored = localStorage.getItem(this.BOOKMARKS_KEY)
-  if (!stored) return []
-  
-  const data = JSON.parse(stored)
-  
-  // Migrate old format to new format
-  if (data[0] && !data[0].updatedAt) {
-    return data.map(bookmark => ({
-      ...bookmark,
-      updatedAt: bookmark.createdAt
-    }))
-  }
-  
-  return data
-}
-\`\`\`
-
-### 5. Performance Optimization
-
-- **Batch Updates**: Group multiple operations
-- **Debounce Saves**: Avoid excessive writes
-- **Lazy Loading**: Load data only when needed
-- **Indexing**: Use Maps for O(1) lookups
-
-\`\`\`typescript
-// Bad: Multiple localStorage writes
-messages.forEach(msg => {
-  BookmarkManager.createBookmark(msg.id, sessionId)
+export const getSessionMessages = query({
+  args: {
+    sessionId: v.id("sessions"),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("messages")
+      .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId))
+      .order("asc")
+      .paginate(args.paginationOpts)
+  },
 })
-
-// Good: Batch operation
-BookmarkManager.createBookmarks(messages.map(m => m.id), sessionId)
 \`\`\`
 
----
-
-## Limitations & Considerations
-
-### Storage Limits
-
-- **Capacity**: 5-10MB typical localStorage limit
-- **Quota Exceeded**: Handle gracefully with user notification
-- **Data Pruning**: Implement automatic cleanup of old data
-
-### Message Persistence
-
-- **No Message Storage**: Chat messages are NOT saved to localStorage
-- **Session-only**: Messages exist only during active browser session
-- **Lost on Refresh**: Page refresh clears all conversation history
-- **No History**: Users cannot access previous conversations
-- **Export Only**: Messages can only be preserved via export functionality
-
-### Browser Compatibility
-
-- **Private Browsing**: localStorage may be disabled
-- **Incognito Mode**: Data cleared on session end
-- **Cross-browser**: Different storage implementations
-
-### Data Persistence
-
-- **No Cloud Sync**: Data is device-specific
-- **No Backup**: User responsible for data export
-- **Browser Clear**: Data lost if user clears browser data
-
-### Security
-
-- **No Encryption**: Data stored in plain text
-- **XSS Vulnerability**: Sanitize all user input
-- **No Authentication**: Anyone with device access can read data
-
-### Scalability
-
-- **Large Datasets**: Performance degrades with 1000+ messages
-- **Search Performance**: Linear search becomes slow
-- **Memory Usage**: All data loaded into memory
-
----
-
-## Future Enhancements
-
-### 1. Session Persistence (CRITICAL PRIORITY)
-
-**Current State**: 
-- Sessions use mock data from `lib/mock-data/sessions.ts`
-- Messages exist only in React state via `useChat` hook
-- No persistence between page refreshes
-- No conversation history
-
-**Proposed Implementation**:
+#### 4. Error Handling
 
 \`\`\`typescript
-// lib/chat/sessions.ts
-export class SessionManager {
-  private static SESSIONS_KEY = "anydebate_sessions"
-  private static MESSAGES_KEY_PREFIX = "anydebate_messages"
-  
-  // Create new session
-  static createSession(config: SessionConfig): Session {
-    const session: Session = {
-      id: `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      title: `New ${config.mode} Session`,
-      description: '',
-      status: 'active',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      metadata: {
-        messageCount: 0,
-        agentCount: config.selectedAgents.length,
-        artifactCount: 0,
-        lastActivity: Date.now(),
-        participants: []
-      },
-      config
-    }
-    
-    const sessions = this.getAllSessions()
-    sessions.push(session)
-    this.saveSessions(sessions)
-    
-    return session
-  }
-  
-  // Save message to session
-  static saveMessage(sessionId: string, message: ChatMessage): void {
-    const key = `${this.MESSAGES_KEY_PREFIX}_${sessionId}`
-    const messages = this.getSessionMessages(sessionId)
-    messages.push(message)
-    
-    try {
-      localStorage.setItem(key, JSON.stringify(messages))
-      
-      // Update session metadata
-      this.updateSessionMetadata(sessionId, {
-        messageCount: messages.length,
-        lastActivity: Date.now()
-      })
-    } catch (error) {
-      console.error('Failed to save message:', error)
-      // Handle quota exceeded
-      this.handleStorageQuotaExceeded(sessionId)
-    }
-  }
-  
-  // Get all messages for session
-  static getSessionMessages(sessionId: string): ChatMessage[] {
-    if (typeof window === 'undefined') return []
-    
-    const key = `${this.MESSAGES_KEY_PREFIX}_${sessionId}`
-    const stored = localStorage.getItem(key)
-    
-    if (!stored) return []
-    
-    try {
-      return JSON.parse(stored)
-    } catch (error) {
-      console.error('Failed to parse messages:', error)
-      return []
-    }
-  }
-  
-  // Get all sessions
-  static getAllSessions(): Session[] {
-    if (typeof window === 'undefined') return []
-    
-    const stored = localStorage.getItem(this.SESSIONS_KEY)
-    return stored ? JSON.parse(stored) : []
-  }
-  
-  // Save sessions array
-  private static saveSessions(sessions: Session[]): void {
-    if (typeof window === 'undefined') return
-    localStorage.setItem(this.SESSIONS_KEY, JSON.stringify(sessions))
-  }
-  
-  // Update session metadata
-  private static updateSessionMetadata(
-    sessionId: string, 
-    updates: Partial<SessionMetadata>
-  ): void {
-    const sessions = this.getAllSessions()
-    const session = sessions.find(s => s.id === sessionId)
-    
-    if (session) {
-      session.metadata = { ...session.metadata, ...updates }
-      session.updatedAt = Date.now()
-      this.saveSessions(sessions)
-    }
-  }
-  
-  // Handle storage quota exceeded
-  private static handleStorageQuotaExceeded(sessionId: string): void {
-    // Strategy 1: Archive old sessions
-    const sessions = this.getAllSessions()
-    const oldSessions = sessions
-      .filter(s => s.status === 'active')
-      .sort((a, b) => a.updatedAt - b.updatedAt)
-      .slice(0, Math.floor(sessions.length / 2))
-    
-    oldSessions.forEach(session => {
-      session.status = 'archived'
-      // Optionally delete messages for archived sessions
-      localStorage.removeItem(`${this.MESSAGES_KEY_PREFIX}_${session.id}`)
-    })
-    
-    this.saveSessions(sessions)
-    
-    // Strategy 2: Notify user
-    console.warn('Storage quota exceeded. Archived old sessions.')
-  }
-  
-  // Delete session and its messages
-  static deleteSession(sessionId: string): void {
-    const sessions = this.getAllSessions()
-    const filtered = sessions.filter(s => s.id !== sessionId)
-    this.saveSessions(filtered)
-    
-    // Delete messages
-    localStorage.removeItem(`${this.MESSAGES_KEY_PREFIX}_${sessionId}`)
-  }
-  
-  // Archive session
-  static archiveSession(sessionId: string): void {
-    const sessions = this.getAllSessions()
-    const session = sessions.find(s => s.id === sessionId)
-    
-    if (session) {
-      session.status = 'archived'
-      session.updatedAt = Date.now()
-      this.saveSessions(sessions)
-    }
-  }
-  
-  // Restore archived session
-  static restoreSession(sessionId: string): void {
-    const sessions = this.getAllSessions()
-    const session = sessions.find(s => s.id === sessionId)
-    
-    if (session) {
-      session.status = 'active'
-      session.updatedAt = Date.now()
-      this.saveSessions(sessions)
-    }
+const addMessage = useMutation(api.sessions.addMessage)
+
+try {
+  await addMessage({ sessionId, content, ... })
+} catch (error) {
+  if (error.message.includes("rate limit")) {
+    toast.error("Too many messages. Please slow down.")
+  } else {
+    toast.error("Failed to send message. Please try again.")
   }
 }
 \`\`\`
 
-**Integration Steps**:
-
-1. **Update ChatSidebar**: Replace mock sessions with `SessionManager.getAllSessions()`
-2. **Update ChatThread**: Load messages with `SessionManager.getSessionMessages(sessionId)`
-3. **Hook into useAIChat**: Save messages on `onFinish` callback
-4. **Add Session UI**: Create/delete/archive session controls
-5. **Handle Page Load**: Restore last active session or create new one
-
 ---
 
-## Implementation Checklist
+## Implementation Roadmap
 
-### Phase 1: Core Session Persistence (Priority: CRITICAL)
+### Immediate (Current Sprint)
 
-- [ ] Create `SessionManager` class in `lib/chat/sessions.ts`
-- [ ] Implement `createSession()` method
-- [ ] Implement `saveMessage()` method with quota handling
-- [ ] Implement `getSessionMessages()` method
-- [ ] Implement `getAllSessions()` method
-- [ ] Implement `deleteSession()` method
-- [ ] Implement `archiveSession()` / `restoreSession()` methods
-- [ ] Update `ChatSidebar` to use `SessionManager` instead of mock data
-- [ ] Update `ChatThread` to load messages from `SessionManager`
-- [ ] Hook `useAIChat.onFinish` to save messages automatically
-- [ ] Add session creation UI
-- [ ] Add session deletion confirmation dialog
-- [ ] Add session rename functionality
-- [ ] Add session archive/restore functionality
-- [ ] Handle storage quota exceeded gracefully
-- [ ] Add loading states for session operations
-- [ ] Test with large message volumes (1000+ messages)
+- [x] Document current localStorage implementation
+- [x] Research Convex architecture
+- [ ] Set up Convex project
+- [ ] Define Convex schema
+- [ ] Implement authentication with Convex
+
+### Short-term (Next 2 Sprints)
+
+- [ ] Create storage adapter interface
+- [ ] Implement Convex adapter
+- [ ] Add feature flag for gradual rollout
+- [ ] Migrate sessions and messages
+- [ ] Migrate bookmarks and collections
+- [ ] Migrate reactions and threads
+- [ ] Create migration UI
+- [ ] Test migration with sample data
+
+### Medium-term (Next Quarter)
+
+- [ ] Enable Convex for all users
+- [ ] Remove localStorage code
+- [ ] Implement real-time collaboration features
+- [ ] Add presence indicators (who's online)
+- [ ] Implement typing indicators
+- [ ] Add collaborative editing for artifacts
+- [ ] Optimize query performance
+- [ ] Add analytics and monitoring
+
+### Long-term (Future)
+
+- [ ] Multi-device sync
+- [ ] Offline-first architecture with sync
+- [ ] Advanced search with full-text indexing
+- [ ] AI-powered conversation insights
+- [ ] Export to multiple formats
+- [ ] Integration with external tools (Slack, Discord, etc.)
 
 ---
 
 ## Conclusion
 
-The AnyDebateAI chat history persistence system provides a robust, client-side solution for maintaining conversation continuity and enhancing user experience. The modular architecture allows for easy extension and maintenance, while the localStorage-based approach ensures simplicity and offline capability.
+AnyDebateAI's chat history persistence is transitioning from a temporary localStorage solution to a production-ready Convex backend. Convex provides real-time sync, type safety, scalability, and an excellent developer experience—making it the ideal choice for a collaborative AI debate platform.
 
-The current implementation handles bookmarks, reactions, threading, search, and comparisons effectively. The primary gap is full session persistence, which should be prioritized in the next development phase.
+The migration strategy ensures a smooth transition with minimal user disruption, while the storage adapter pattern allows for gradual rollout and easy rollback if needed. Once complete, users will benefit from seamless cross-device sync, real-time collaboration, and a more robust, scalable persistence layer.
 
-By following the best practices outlined in this guide and implementing the proposed enhancements, the system can scale to handle larger datasets and provide a more seamless user experience across devices.
+**Next Steps**:
+1. Set up Convex project and schema
+2. Implement storage adapter pattern
+3. Begin parallel implementation
+4. Create migration tooling
+5. Execute phased rollout
+
+For questions or contributions, refer to the main project documentation or contact the development team.
