@@ -29,6 +29,115 @@ Each module is:
 
 ---
 
+## Design System Compliance
+
+### Color System (From `app/globals.css`)
+
+**CRITICAL: Use ONLY semantic design tokens - NO hardcoded colors!**
+
+#### Available Design Tokens:
+\`\`\`css
+/* Semantic tokens - ALWAYS use these */
+--background      /* Main background */
+--foreground      /* Main text color */
+--card            /* Card backgrounds */
+--card-foreground /* Card text */
+--primary         /* Primary brand color (blue in dark mode) */
+--primary-foreground /* Text on primary */
+--secondary       /* Secondary backgrounds */
+--muted           /* Muted backgrounds */
+--muted-foreground /* Muted text */
+--accent          /* Accent backgrounds */
+--border          /* Border colors */
+--input           /* Input backgrounds */
+--ring            /* Focus ring color */
+--destructive     /* Error/danger color */
+\`\`\`
+
+#### Correct Usage Examples:
+\`\`\`tsx
+// ✅ CORRECT - Using design tokens
+<div className="bg-background text-foreground">
+<Button className="bg-primary text-primary-foreground">
+<Card className="bg-card border-border">
+<Input className="bg-input border-border focus:ring-ring">
+<Badge className="bg-primary/10 text-primary border-primary/20">
+
+// ❌ WRONG - Hardcoded colors
+<div className="bg-blue-500 text-white">
+<Button className="bg-indigo-600">
+<Card className="bg-gray-900">
+\`\`\`
+
+### Typography System
+
+**Font Configuration (From `app/layout.tsx`):**
+- Primary font: Inter (via `--font-sans`)
+- Monospace font: Geist Mono (via `--font-mono`)
+
+**Usage:**
+\`\`\`tsx
+// ✅ CORRECT - Using font classes
+<h1 className="font-sans text-2xl">Title</h1>
+<code className="font-mono text-sm">Code</code>
+
+// ❌ WRONG - No font class (will use default)
+<h1 className="text-2xl">Title</h1>
+\`\`\`
+
+**Typography Scale:**
+\`\`\`tsx
+// Mobile-first typography
+<h1 className="text-lg md:text-xl lg:text-2xl font-semibold">
+<p className="text-sm md:text-base leading-relaxed">
+<span className="text-xs text-muted-foreground">
+\`\`\`
+
+### Effects & Patterns (From `app/globals.css`)
+
+**Available Effects:**
+\`\`\`tsx
+// Glass effect (backdrop blur)
+<div className="glass-effect">
+  /* background: oklch(from var(--card) l c h / 0.6) */
+  /* backdrop-filter: blur(12px) */
+</div>
+
+// Grid pattern background
+<div className="grid-pattern">
+  /* Subtle grid overlay */
+</div>
+
+// Dashboard grid
+<div className="dashboard-grid">
+  /* Fine grid for dashboards */
+</div>
+
+// Metric card effect
+<div className="metric-card">
+  /* Gradient background with blur */
+</div>
+\`\`\`
+
+### Border Radius System
+
+**Available Radius Tokens:**
+\`\`\`css
+--radius-sm: calc(var(--radius) - 4px)  /* Small radius */
+--radius-md: calc(var(--radius) - 2px)  /* Medium radius */
+--radius-lg: var(--radius)              /* Large radius (0.75rem) */
+--radius-xl: calc(var(--radius) + 4px)  /* Extra large radius */
+\`\`\`
+
+**Usage:**
+\`\`\`tsx
+<Card className="rounded-lg">  /* Uses --radius-lg */
+<Button className="rounded-md"> /* Uses --radius-md */
+<Badge className="rounded-full"> /* Fully rounded */
+\`\`\`
+
+---
+
 ## Mobile-First Architecture
 
 ### Core Principles
@@ -169,6 +278,120 @@ export function RoleLibrary() {
 }
 \`\`\`
 
+\`\`\`tsx
+// components/module-libraries/mobile/RoleLibraryMobile.tsx
+"use client"
+
+import { useDevice } from "@/contexts/DeviceProvider"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card } from "@/components/ui/card"
+
+export function RoleLibraryMobile(props: RoleLibraryProps) {
+  const { isMobile } = useDevice()
+  
+  return (
+    <div className="flex flex-col h-full bg-background">
+      {/* Sticky header - 56px min-h */}
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border min-h-[56px] p-4">
+        <div className="flex items-center justify-between">
+          <h1 className="font-sans text-lg font-semibold text-foreground">Role Library</h1>
+          <Button size="lg" className="min-h-[44px] min-w-[44px] bg-primary text-primary-foreground">
+            + New
+          </Button>
+        </div>
+      </header>
+      
+      {/* Search bar - 48px min-h */}
+      <div className="p-4 border-b border-border">
+        <Input
+          placeholder="Search roles..."
+          className="min-h-[48px] text-base bg-input border-border focus:ring-ring"
+        />
+      </div>
+      
+      {/* Category chips - horizontal scroll */}
+      <div className="border-b border-border">
+        <div className="flex gap-2 p-4 overflow-x-auto">
+          <Button
+            variant="default"
+            size="lg"
+            className="min-h-[44px] whitespace-nowrap bg-primary text-primary-foreground"
+          >
+            My Roles
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            className="min-h-[44px] whitespace-nowrap bg-background border-border"
+          >
+            System
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            className="min-h-[44px] whitespace-nowrap bg-background border-border"
+          >
+            Import
+          </Button>
+        </div>
+      </div>
+      
+      {/* Role cards - scrollable */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <h2 className="text-sm font-medium text-muted-foreground">My Roles (12)</h2>
+        
+        {/* Placeholder for actual roles data */}
+        {[...Array(3)].map((_, i) => (
+          <Card
+            key={i}
+            className="min-h-[80px] p-4 bg-card border-border hover:bg-accent transition-colors"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="font-sans font-medium text-foreground">CEO</h3>
+                <p className="text-sm text-muted-foreground mt-1">Strategic business leader</p>
+                <p className="text-xs text-muted-foreground mt-2">Used in 5 agents</p>
+              </div>
+              <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
+                ⋮
+              </Button>
+            </div>
+            
+            <div className="flex gap-2 mt-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="min-h-[44px] flex-1 bg-background border-border"
+              >
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="min-h-[44px] flex-1 bg-background border-border"
+              >
+                Duplicate
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+      
+      {/* Sticky footer */}
+      <footer className="sticky bottom-0 z-10 bg-background/95 backdrop-blur-sm border-t border-border p-4">
+        <Button
+          size="lg"
+          className="w-full min-h-[56px] bg-primary text-primary-foreground"
+        >
+          Create New Role
+        </Button>
+      </footer>
+    </div>
+  )
+}
+\`\`\`
+
 **Features**:
 - ✅ Touch-optimized cards (80px min-h)
 - ✅ Sticky header/footer on mobile
@@ -235,40 +458,58 @@ export function RoleLibrary() {
 import { useDevice } from "@/contexts/DeviceProvider"
 import { AdaptiveGrid } from "@/components/adaptive/AdaptiveGrid"
 import { PersonaCard } from "./PersonaCard"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card } from "@/components/ui/card"
 
 export function PersonaLibrary() {
   const { isMobile } = useDevice()
   const [personas, setPersonas] = useState([])
   
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-background">
       {/* Sticky header */}
-      <header className="sticky top-0 z-10 bg-background border-b min-h-[56px] p-4">
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border min-h-[56px] p-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg md:text-xl font-semibold">Persona Library</h1>
-          <Button size={isMobile ? "lg" : "default"} className="min-h-[44px]">
+          <h1 className="font-sans text-lg font-semibold text-foreground">Persona Library</h1>
+          <Button size="lg" className="min-h-[44px] min-w-[44px] bg-primary text-primary-foreground">
             + New
           </Button>
         </div>
       </header>
       
       {/* Search bar - 48px min-h */}
-      <div className="p-4">
+      <div className="p-4 border-b border-border">
         <Input
           placeholder="Search personas..."
-          className="min-h-[48px] text-base"
+          className="min-h-[48px] text-base bg-input border-border focus:ring-ring"
         />
       </div>
       
       {/* Persona grid */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 bg-background">
         <AdaptiveGrid mobileColumns={1} tabletColumns={2} desktopColumns={3}>
-          {personas.map(persona => (
-            <PersonaCard
-              key={persona.id}
-              persona={persona}
-              className="min-h-[80px]"
-            />
+          {/* Placeholder for actual personas data */}
+          {[...Array(3)].map((_, i) => (
+            <Card
+              key={i}
+              className="min-h-[80px] p-4 bg-card border-border hover:bg-accent transition-colors"
+            >
+              <div className="flex flex-col justify-between h-full">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🎯</span>
+                    <h3 className="font-sans font-medium text-foreground">Direct & Analytical</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">Formal, data-driven, concise</p>
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">Analytical</span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">Direct</span>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">Used in 3 agents</p>
+              </div>
+            </Card>
           ))}
         </AdaptiveGrid>
       </div>
@@ -430,9 +671,10 @@ export function AgentComposer({ agentId }: { agentId?: string }) {
 import { useState } from "react"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal"
-import { ModuleCard } from "../ModuleCard"
-import { ModuleSelector } from "../ModuleSelector"
-import { AgentPreview } from "../AgentPreview"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+// Assuming these are imported from a shared components directory or @/components/ui
+import { ArrowLeft, Edit, ChevronDown, ChevronUp } from 'lucide-react' 
 
 export function AgentComposerMobile(props: AgentComposerProps) {
   const { isMobile } = useDevice()
@@ -440,40 +682,40 @@ export function AgentComposerMobile(props: AgentComposerProps) {
   const [activeSelector, setActiveSelector] = useState<'role' | 'persona' | 'framework' | null>(null)
   
   return (
-    <div className="flex flex-col h-full">
-      {/* Sticky header */}
-      <header className="sticky top-0 z-10 bg-background border-b min-h-[56px] p-4">
+    <div className="flex flex-col h-full bg-background">
+      {/* Sticky header - 56px min-h */}
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border min-h-[56px] p-4">
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 text-foreground" />
           </Button>
-          <h1 className="text-lg font-semibold">Create Agent</h1>
-          <Button size="lg" className="min-h-[44px]" onClick={props.onSave}>
+          <h1 className="font-sans text-lg font-semibold text-foreground">Create Agent</h1>
+          <Button size="lg" className="min-h-[44px] bg-primary text-primary-foreground" onClick={props.onSave}>
             Save
           </Button>
         </div>
       </header>
       
       {/* Collapsible preview */}
-      <div className="border-b">
+      <div className="border-b border-border bg-card">
         <button
-          className="w-full p-4 flex items-center justify-between min-h-[60px]"
+          className="w-full p-4 flex items-center justify-between min-h-[60px] bg-card hover:bg-accent transition-colors"
           onClick={() => setIsPreviewExpanded(!isPreviewExpanded)}
         >
           <div className="flex items-center gap-3">
             <span className="text-2xl">📋</span>
             <div className="text-left">
-              <p className="font-medium">Preview</p>
+              <p className="font-sans font-medium text-foreground">Preview</p>
               <p className="text-sm text-muted-foreground">
                 {props.selectedRole?.name || 'No role'} + {props.selectedPersona?.name || 'No persona'}
               </p>
             </div>
           </div>
-          {isPreviewExpanded ? <ChevronUp /> : <ChevronDown />}
+          {isPreviewExpanded ? <ChevronUp className="text-muted-foreground" /> : <ChevronDown className="text-muted-foreground" />}
         </button>
         
         {isPreviewExpanded && (
-          <div className="p-4 border-t">
+          <div className="p-4 border-t border-border bg-background">
             <AgentPreview
               role={props.selectedRole}
               persona={props.selectedPersona}
@@ -485,57 +727,121 @@ export function AgentComposerMobile(props: AgentComposerProps) {
       </div>
       
       {/* Module cards - scrollable */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background">
         <h2 className="text-sm font-medium text-muted-foreground">Components</h2>
         
-        {/* Role card */}
-        <ModuleCard
-          type="role"
-          module={props.selectedRole}
-          onEdit={() => {/* Open inline editor */}}
-          onChange={() => setActiveSelector('role')}
-          className="min-h-[80px]"
-        />
+        {/* Role card - 80px min-h */}
+        <Card className="min-h-[80px] p-4 bg-card border-border">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">💼</span>
+                <h3 className="font-sans font-medium text-foreground">Role</h3>
+              </div>
+              {props.selectedRole ? (
+                <>
+                  <p className="font-sans font-semibold text-foreground mt-2">{props.selectedRole.name}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{props.selectedRole.description}</p>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground mt-2">No role selected</p>
+              )}
+            </div>
+            <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
+              <Edit className="h-5 w-5 text-muted-foreground" />
+            </Button>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full mt-3 min-h-[44px] bg-background border-border"
+            onClick={() => setActiveSelector('role')}
+          >
+            Change Role
+          </Button>
+        </Card>
         
-        {/* Persona card */}
-        <ModuleCard
-          type="persona"
-          module={props.selectedPersona}
-          onEdit={() => {/* Open inline editor */}}
-          onChange={() => setActiveSelector('persona')}
-          className="min-h-[80px]"
-        />
+        {/* Persona card - 80px min-h */}
+        <Card className="min-h-[80px] p-4 bg-card border-border">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🎭</span>
+                <h3 className="font-sans font-medium text-foreground">Persona</h3>
+              </div>
+              {props.selectedPersona ? (
+                <>
+                  <p className="font-sans font-semibold text-foreground mt-2">{props.selectedPersona.name}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {props.selectedPersona.traits.join(' • ')}
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground mt-2">No persona selected</p>
+              )}
+            </div>
+            <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
+              <Edit className="h-5 w-5 text-muted-foreground" />
+            </Button>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full mt-3 min-h-[44px] bg-background border-border"
+            onClick={() => setActiveSelector('persona')}
+          >
+            Change Persona
+          </Button>
+        </Card>
         
-        {/* Framework card */}
-        <ModuleCard
-          type="framework"
-          module={props.selectedFramework}
-          onEdit={() => {/* Open inline editor */}}
-          onChange={() => setActiveSelector('framework')}
-          className="min-h-[80px]"
-        />
-        
-        {/* Configuration card */}
-        <ConfigurationCard
-          config={props.config}
-          onChange={props.onConfigChange}
-          className="min-h-[80px]"
-        />
+        {/* Framework card - 80px min-h */}
+        <Card className="min-h-[80px] p-4 bg-card border-border">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🧠</span>
+                <h3 className="font-sans font-medium text-foreground">Framework</h3>
+              </div>
+              {props.selectedFramework ? (
+                <>
+                  <p className="font-sans font-semibold text-foreground mt-2">{props.selectedFramework.name}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{props.selectedFramework.description}</p>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground mt-2">No framework selected</p>
+              )}
+            </div>
+            <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
+              <Edit className="h-5 w-5 text-muted-foreground" />
+            </Button>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full mt-3 min-h-[44px] bg-background border-border"
+            onClick={() => setActiveSelector('framework')}
+          >
+            Change Framework
+          </Button>
+        </Card>
       </div>
       
-      {/* Sticky footer */}
-      <footer className="sticky bottom-0 z-10 bg-background border-t p-4 flex gap-3">
+      {/* Sticky footer - 56px min-h */}
+      <footer className="sticky bottom-0 z-10 bg-background/95 backdrop-blur-sm border-t border-border p-4 flex gap-3">
         <Button
           variant="outline"
           size="lg"
-          className="flex-1 min-h-[44px] bg-transparent"
+          className="flex-1 min-h-[44px] bg-background border-border"
           onClick={props.onSave}
         >
           Save Draft
         </Button>
         <Button
           size="lg"
-          className="flex-1 min-h-[44px]"
+          className="flex-1 min-h-[44px] bg-primary text-primary-foreground"
           onClick={props.onSave}
         >
           Create Agent
@@ -590,31 +896,43 @@ import { useState } from "react"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { AdaptiveGrid } from "@/components/adaptive/AdaptiveGrid"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 
 export function ModuleSelector({ type, onSelect }: ModuleSelectorProps) {
   const { isMobile } = useDevice()
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState<'my' | 'system'>('my')
   
+  // Placeholder for filtered modules logic
+  const filteredModules = [
+    { id: '1', name: 'Developer', description: 'Builds software' },
+    { id: '2', name: 'Designer', description: 'Creates visual interfaces' },
+  ];
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-background">
       {/* Search bar - 48px min-h */}
-      <div className="p-4 border-b">
+      <div className="p-4 border-b border-border">
         <Input
           placeholder={`Search ${type}s...`}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="min-h-[48px] text-base"
+          className="min-h-[48px] text-base bg-input border-border focus:ring-ring"
         />
       </div>
       
       {/* Tabs - horizontal scroll on mobile */}
-      <div className="border-b">
+      <div className="border-b border-border bg-background">
         <div className="flex gap-2 p-2 overflow-x-auto">
           <Button
             variant={activeTab === 'my' ? 'default' : 'outline'}
             size={isMobile ? 'lg' : 'default'}
-            className="min-h-[44px] whitespace-nowrap"
+            className={`min-h-[44px] whitespace-nowrap ${
+              activeTab === 'my' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-background border-border'
+            }`}
             onClick={() => setActiveTab('my')}
           >
             My {type}s
@@ -622,7 +940,11 @@ export function ModuleSelector({ type, onSelect }: ModuleSelectorProps) {
           <Button
             variant={activeTab === 'system' ? 'default' : 'outline'}
             size={isMobile ? 'lg' : 'default'}
-            className="min-h-[44px] whitespace-nowrap"
+            className={`min-h-[44px] whitespace-nowrap ${
+              activeTab === 'system' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-background border-border'
+            }`}
             onClick={() => setActiveTab('system')}
           >
             System Library
@@ -630,7 +952,7 @@ export function ModuleSelector({ type, onSelect }: ModuleSelectorProps) {
           <Button
             variant="outline"
             size={isMobile ? 'lg' : 'default'}
-            className="min-h-[44px] whitespace-nowrap bg-transparent"
+            className="min-h-[44px] whitespace-nowrap bg-background border-border"
           >
             + Create New
           </Button>
@@ -638,15 +960,17 @@ export function ModuleSelector({ type, onSelect }: ModuleSelectorProps) {
       </div>
       
       {/* Module grid - scrollable */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 bg-background">
         <AdaptiveGrid mobileColumns={1} tabletColumns={2} desktopColumns={3}>
           {filteredModules.map(module => (
-            <ModuleCard
+            <Card
               key={module.id}
-              module={module}
               onClick={() => onSelect(module)}
-              className="min-h-[80px] cursor-pointer active:scale-98"
-            />
+              className="min-h-[80px] p-4 cursor-pointer bg-card border-border hover:bg-accent active:scale-98 transition-all"
+            >
+              <h3 className="font-sans font-medium text-foreground">{module.name}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{module.description}</p>
+            </Card>
           ))}
         </AdaptiveGrid>
       </div>
@@ -685,53 +1009,59 @@ import { useDevice } from "@/contexts/DeviceProvider"
 import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { Alert, AlertDescription, AlertTriangle } from "@/components/ui/alert"
+// Assuming these are imported from a shared components directory or @/components/ui
+import { Edit } from 'lucide-react' 
 
 export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
   const { isMobile } = useDevice()
   const [formData, setFormData] = useState(role)
   
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-background">
       {/* Form - scrollable */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Name input - 48px min-h */}
         <div>
-          <label className="text-sm font-medium">Name</label>
+          <label className="text-sm font-medium text-muted-foreground">Name</label>
           <Input
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="min-h-[48px] text-base mt-2"
+            className="min-h-[48px] text-base bg-input border-border focus:ring-ring mt-2"
           />
         </div>
         
         {/* Description textarea - 48px min-h */}
         <div>
-          <label className="text-sm font-medium">Description</label>
+          <label className="text-sm font-medium text-muted-foreground">Description</label>
           <Textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="min-h-[96px] text-base mt-2"
+            className="min-h-[96px] text-base bg-input border-border focus:ring-ring mt-2"
             rows={4}
           />
         </div>
         
         {/* Expertise tags - touch-optimized */}
         <div>
-          <label className="text-sm font-medium">Expertise Tags</label>
+          <label className="text-sm font-medium text-muted-foreground">Expertise Tags</label>
           <div className="flex flex-wrap gap-2 mt-2">
             {formData.expertiseTags.map(tag => (
               <Badge
                 key={tag}
-                className="min-h-[36px] px-4 text-sm"
+                className="min-h-[36px] px-4 text-sm bg-primary/10 text-primary border-primary/20"
               >
                 {tag}
-                <button className="ml-2 min-h-[24px] min-w-[24px]">×</button>
+                <button className="ml-2 min-h-[24px] min-w-[24px] text-primary/70 hover:text-primary">×</button>
               </Badge>
             ))}
             <Button
               variant="outline"
               size="sm"
-              className="min-h-[36px] bg-transparent"
+              className="min-h-[36px] bg-background border-border"
             >
               + Add Tag
             </Button>
@@ -740,10 +1070,10 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
         
         {/* Category selector */}
         <div>
-          <label className="text-sm font-medium">Category</label>
+          <label className="text-sm font-medium text-muted-foreground">Category</label>
           <Select value={formData.category} onValueChange={(val) => setFormData({ ...formData, category: val })}>
-            <SelectTrigger className="min-h-[48px] text-base mt-2">
-              <SelectValue />
+            <SelectTrigger className="min-h-[48px] text-base bg-input border-border focus:ring-ring mt-2">
+              <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="business">Business & Strategy</SelectItem>
@@ -756,7 +1086,7 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
         {/* Warning if editing affects multiple agents */}
         {role.usageCount > 0 && (
           <Alert variant="warning">
-            <AlertTriangle className="h-4 w-4" />
+            <AlertTriangle className="h-4 w-4 text-destructive" />
             <AlertDescription>
               This will update {role.usageCount} agent{role.usageCount > 1 ? 's' : ''} using this role
             </AlertDescription>
@@ -765,18 +1095,18 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
       </div>
       
       {/* Sticky footer with actions */}
-      <footer className="sticky bottom-0 z-10 bg-background border-t p-4 flex gap-3">
+      <footer className="sticky bottom-0 z-10 bg-background/95 backdrop-blur-sm border-t border-border p-4 flex gap-3">
         <Button
           variant="outline"
           size="lg"
-          className="flex-1 min-h-[44px] bg-transparent"
+          className="flex-1 min-h-[44px] bg-background border-border"
           onClick={onCancel}
         >
           Cancel
         </Button>
         <Button
           size="lg"
-          className="flex-1 min-h-[44px]"
+          className="flex-1 min-h-[44px] bg-primary text-primary-foreground"
           onClick={() => onSave(formData)}
         >
           Save Changes
@@ -962,6 +1292,18 @@ interface ResolvedAgent extends Agent {
 
 ## Mobile-First Checklist
 
+### Design System Compliance ✅
+- [x] Use semantic design tokens (`bg-background`, `text-foreground`, etc.)
+- [x] Use `font-sans` for all text
+- [x] Use `font-mono` for code
+- [x] Use `rounded-lg` for consistent border radius
+- [x] Use `border-border` for all borders
+- [x] Use `bg-primary text-primary-foreground` for primary actions
+- [x] Use `bg-card` for card backgrounds
+- [x] Use `text-muted-foreground` for secondary text
+- [x] Use `glass-effect` class for backdrop blur effects
+- [x] NO hardcoded colors (no `bg-blue-500`, `text-white`, etc.)
+
 ### Touch Targets ✅
 - [x] Buttons: `min-h-[44px] min-w-[44px]`
 - [x] Form inputs: `min-h-[48px]`
@@ -995,6 +1337,7 @@ interface ResolvedAgent extends Agent {
 - [x] Screen reader announcements
 - [x] Focus indicators visible
 - [x] Color contrast meets WCAG AA
+- [x] Reduced motion support (from globals.css)
 
 ### Mobile Gestures ✅
 - [x] Swipe left on cards for quick actions
