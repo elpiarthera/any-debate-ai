@@ -5,20 +5,56 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { PROFESSIONAL_ROLES, ROLE_CATEGORIES, searchRoles, getRolesByCategory } from "@/lib/agent-config/roles"
+import { ROLE_CATEGORIES } from "@/lib/agent-config/roles"
 import { ArrowLeft, Plus, MoreVertical } from "lucide-react"
+import { useRoleManager } from "@/hooks/useRoleManager"
+import { RoleEditorModal } from "@/components/module-libraries/RoleEditorModal"
+import type { ProfessionalRole } from "@/lib/agent-config/roles"
 
 export function RoleLibraryMobile() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState<string>("all")
+  const { allRoles, createRole, updateRole, deleteRole, isCustomRole } = useRoleManager()
+  const [editorOpen, setEditorOpen] = useState(false)
+  const [editingRole, setEditingRole] = useState<ProfessionalRole | undefined>()
+  const [editorMode, setEditorMode] = useState<"create" | "edit">("create")
 
-  // Filter roles based on search and category
   const filteredRoles = searchQuery
-    ? searchRoles(searchQuery)
+    ? allRoles.filter(
+        (role) =>
+          role.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          role.description.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
     : activeCategory === "all"
-      ? PROFESSIONAL_ROLES
-      : getRolesByCategory(activeCategory)
+      ? allRoles
+      : allRoles.filter((role) => role.category === activeCategory)
+
+  const handleCreateRole = () => {
+    setEditingRole(undefined)
+    setEditorMode("create")
+    setEditorOpen(true)
+  }
+
+  const handleEditRole = (role: ProfessionalRole) => {
+    setEditingRole(role)
+    setEditorMode("edit")
+    setEditorOpen(true)
+  }
+
+  const handleSaveRole = (roleData: Omit<ProfessionalRole, "id"> | ProfessionalRole) => {
+    if (editorMode === "create") {
+      createRole(roleData as Omit<ProfessionalRole, "id">)
+    } else if ("id" in roleData) {
+      updateRole(roleData.id, roleData)
+    }
+  }
+
+  const handleDeleteRole = (id: string) => {
+    if (confirm("Are you sure you want to delete this role?")) {
+      deleteRole(id)
+    }
+  }
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -37,7 +73,7 @@ export function RoleLibraryMobile() {
           <Button
             size="lg"
             className="min-h-[44px] min-w-[44px] flex-shrink-0 bg-primary text-primary-foreground"
-            onClick={() => router.push("/agents/roles/new")}
+            onClick={handleCreateRole}
           >
             <Plus className="h-5 w-5" />
           </Button>
@@ -93,13 +129,18 @@ export function RoleLibraryMobile() {
           <Card
             key={role.id}
             className="min-h-[80px] p-4 bg-card border-border hover:bg-accent transition-colors cursor-pointer"
-            onClick={() => router.push(`/agents/roles/${role.id}`)}
+            onClick={() => handleEditRole(role)}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xl flex-shrink-0">{role.icon}</span>
                   <h3 className="font-sans font-medium text-foreground truncate">{role.name}</h3>
+                  {isCustomRole(role.id) && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground border border-border">
+                      Custom
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{role.description}</p>
                 <div className="flex flex-wrap gap-1 mt-2">
@@ -118,17 +159,19 @@ export function RoleLibraryMobile() {
                   )}
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="min-h-[44px] min-w-[44px] flex-shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  // TODO: Open action menu
-                }}
-              >
-                <MoreVertical className="h-5 w-5 text-muted-foreground" />
-              </Button>
+              {isCustomRole(role.id) && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="min-h-[44px] min-w-[44px] flex-shrink-0"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDeleteRole(role.id)
+                  }}
+                >
+                  <MoreVertical className="h-5 w-5 text-muted-foreground" />
+                </Button>
+              )}
             </div>
           </Card>
         ))}
@@ -150,6 +193,14 @@ export function RoleLibraryMobile() {
           </div>
         )}
       </div>
+
+      <RoleEditorModal
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        role={editingRole}
+        onSave={handleSaveRole}
+        mode={editorMode}
+      />
     </div>
   )
 }

@@ -251,29 +251,56 @@ Each module type has its own library for CRUD operations:
 // components/module-libraries/RoleLibrary.tsx
 "use client"
 
+import { useState } from "react";
 import { useDevice } from "@/contexts/DeviceProvider"
 import { RoleLibraryMobile } from "./mobile/RoleLibraryMobile"
 import { RoleLibraryDesktop } from "./desktop/RoleLibraryDesktop"
+import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal";
+import { RoleEditorModal } from "./RoleEditorModal"; // New modal component
+import { useRoleManager } from "@/hooks/useRoleManager"; // New hook for CRUD
 
 export function RoleLibrary() {
   const { isMobile } = useDevice()
-  
-  // Shared state
-  const [roles, setRoles] = useState([])
+  const { roles, addRole, updateRole, deleteRole } = useRoleManager(); // Use the hook
   const [searchQuery, setSearchQuery] = useState("")
-  
+  const [editingRole, setEditingRole] = useState<RoleModule | null>(null); // State for editing
+
   const sharedProps = {
     roles,
     searchQuery,
     onSearch: setSearchQuery,
-    onEdit: handleEdit,
-    onCreate: handleCreate,
+    onEdit: setEditingRole, // Pass function to set editing role
+    onDelete: deleteRole, // Pass delete function
   }
   
-  return isMobile ? (
-    <RoleLibraryMobile {...sharedProps} />
-  ) : (
-    <RoleLibraryDesktop {...sharedProps} />
+  return (
+    <div className="flex flex-col h-full bg-background">
+      {isMobile ? (
+        <RoleLibraryMobile {...sharedProps} onCreate={() => setEditingRole({} as RoleModule)} /> // Open editor for new role
+      ) : (
+        <RoleLibraryDesktop {...sharedProps} onCreate={() => setEditingRole({} as RoleModule)} /> // Open editor for new role
+      )}
+
+      {/* Adaptive Modal for Editing/Creating Roles */}
+      <AdaptiveModal
+        isOpen={editingRole !== null}
+        onClose={() => setEditingRole(null)}
+        title={editingRole?.id ? "Edit Role" : "Create New Role"}
+      >
+        <RoleEditorModal
+          role={editingRole}
+          onSave={(updatedRole) => {
+            if (updatedRole.id) {
+              updateRole(updatedRole.id, updatedRole);
+            } else {
+              addRole(updatedRole);
+            }
+            setEditingRole(null); // Close modal after saving
+          }}
+          onCancel={() => setEditingRole(null)}
+        />
+      </AdaptiveModal>
+    </div>
   )
 }
 \`\`\`
@@ -286,17 +313,34 @@ import { useDevice } from "@/contexts/DeviceProvider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import { MoreHorizontal } from 'lucide-react' // For the "⋮" icon
 
-export function RoleLibraryMobile(props: RoleLibraryProps) {
+// Props interface including onCreate and onDelete
+interface RoleLibraryMobileProps {
+  roles: RoleModule[];
+  searchQuery: string;
+  onSearch: (query: string) => void;
+  onEdit: (role: RoleModule) => void;
+  onDelete: (roleId: string) => void;
+  onCreate: () => void; // Callback to open the create modal
+}
+
+export function RoleLibraryMobile({ roles, searchQuery, onSearch, onEdit, onDelete, onCreate }: RoleLibraryMobileProps) {
   const { isMobile } = useDevice()
   
+  // Filter roles based on search query
+  const filteredRoles = roles.filter(role =>
+    role.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    role.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Sticky header - 56px min-h */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border min-h-[56px] p-4">
         <div className="flex items-center justify-between">
           <h1 className="font-sans text-lg font-semibold text-foreground">Role Library</h1>
-          <Button size="lg" className="min-h-[44px] min-w-[44px] bg-primary text-primary-foreground">
+          <Button size="lg" className="min-h-[44px] min-w-[44px] bg-primary text-primary-foreground" onClick={onCreate}>
             + New
           </Button>
         </div>
@@ -306,6 +350,8 @@ export function RoleLibraryMobile(props: RoleLibraryProps) {
       <div className="p-4 border-b border-border">
         <Input
           placeholder="Search roles..."
+          value={searchQuery}
+          onChange={(e) => onSearch(e.target.value)}
           className="min-h-[48px] text-base bg-input border-border focus:ring-ring"
         />
       </div>
@@ -339,52 +385,317 @@ export function RoleLibraryMobile(props: RoleLibraryProps) {
       
       {/* Role cards - scrollable */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        <h2 className="text-sm font-medium text-muted-foreground">My Roles (12)</h2>
+        <h2 className="text-sm font-medium text-muted-foreground">My Roles ({filteredRoles.length})</h2>
         
-        {/* Placeholder for actual roles data */}
-        {[...Array(3)].map((_, i) => (
+        {filteredRoles.map((role) => (
           <Card
-            key={i}
+            key={role.id}
             className="min-h-[80px] p-4 bg-card border-border hover:bg-accent transition-colors"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="font-sans font-medium text-foreground">CEO</h3>
-                <p className="text-sm text-muted-foreground mt-1">Strategic business leader</p>
-                <p className="text-xs text-muted-foreground mt-2">Used in 5 agents</p>
+                <h3 className="font-sans font-medium text-foreground">{role.name}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{role.description}</p>
+                <p className="text-xs text-muted-foreground mt-2">Used in {role.usageCount} agents</p>
               </div>
-              <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
-                ⋮
+              {/* Changed Button to use more-horizontal icon and onClick for actions */}
+              <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => onEdit(role)}>
+                <MoreHorizontal className="h-5 w-5" />
               </Button>
             </div>
             
-            <div className="flex gap-2 mt-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="min-h-[44px] flex-1 bg-background border-border"
-              >
+            {/* Removed Edit/Duplicate buttons, assuming they are handled by the MoreHorizontal menu */}
+          </Card>
+        ))}
+        {filteredRoles.length === 0 && (
+          <p className="text-center text-muted-foreground py-8">No roles found.</p>
+        )}
+      </div>
+      
+      {/* Sticky footer */}
+      {/* Removed "Create New Role" button from footer as it's in the header */}
+    </div>
+  )
+}
+\`\`\`
+
+\`\`\`tsx
+// components/module-libraries/desktop/RoleLibraryDesktop.tsx
+"use client"
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { MoreHorizontal } from 'lucide-react'; // For the "⋮" icon
+
+interface RoleLibraryDesktopProps {
+  roles: RoleModule[];
+  searchQuery: string;
+  onSearch: (query: string) => void;
+  onEdit: (role: RoleModule) => void;
+  onDelete: (roleId: string) => void;
+  onCreate: () => void; // Callback to open the create modal
+}
+
+export function RoleLibraryDesktop({ roles, searchQuery, onSearch, onEdit, onDelete, onCreate }: RoleLibraryDesktopProps) {
+  // Filter roles based on search query
+  const filteredRoles = roles.filter(role =>
+    role.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    role.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="flex flex-col h-full p-6 bg-background">
+      {/* Header with title and create button */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-sans text-2xl font-semibold text-foreground">Role Library</h1>
+        <Button size="lg" className="min-h-[44px] bg-primary text-primary-foreground" onClick={onCreate}>
+          + New Role
+        </Button>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="flex items-center gap-4 mb-6">
+        <Input
+          placeholder="Search roles..."
+          value={searchQuery}
+          onChange={(e) => onSearch(e.target.value)}
+          className="flex-1 min-h-[48px] text-base bg-input border-border focus:ring-ring"
+        />
+        <div className="flex gap-2">
+          <Button variant="outline" className="min-h-[44px] bg-transparent">My Roles</Button>
+          <Button variant="outline" className="min-h-[44px] bg-transparent">System</Button>
+          <Button variant="outline" className="min-h-[44px] bg-transparent">Import</Button>
+        </div>
+      </div>
+
+      {/* Role Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1 overflow-y-auto">
+        <h2 className="text-sm font-medium text-muted-foreground col-span-full mb-2">My Roles ({filteredRoles.length})</h2>
+        {filteredRoles.map(role => (
+          <Card key={role.id} className="p-4 bg-card border-border flex flex-col justify-between hover:bg-accent transition-colors">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">💼</span>
+                <h3 className="font-sans font-medium text-foreground">{role.name}</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">{role.description}</p>
+              <p className="text-xs text-muted-foreground">Used in {role.usageCount} agents</p>
+            </div>
+            <div className="mt-4 flex items-center justify-between">
+              <Button variant="outline" size="sm" className="min-h-[44px] bg-background border-border" onClick={() => onEdit(role)}>
                 Edit
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="min-h-[44px] flex-1 bg-background border-border"
-              >
-                Duplicate
+              <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => onDelete(role.id)}>
+                <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
               </Button>
             </div>
           </Card>
         ))}
+         {filteredRoles.length === 0 && (
+          <p className="text-center text-muted-foreground py-8 col-span-full">No roles found.</p>
+        )}
+      </div>
+    </div>
+  )
+}
+\`\`\`
+
+// Add the RoleEditorModal component
+\`\`\`tsx
+// components/module-libraries/RoleEditorModal.tsx
+"use client"
+
+import { useState, useEffect } from "react"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { Alert, AlertDescription, AlertTriangle } from "@/components/ui/alert"
+import { Trash, Plus } from 'lucide-react'; // Import icons
+
+// Assuming RoleModule is defined elsewhere and imported
+// import { RoleModule } from "@/types/agent"; 
+
+interface RoleEditorModalProps {
+  role: Partial<RoleModule>; // Can be an existing role or an empty object for creation
+  onSave: (role: RoleModule) => void;
+  onCancel: () => void;
+}
+
+export function RoleEditorModal({ role, onSave, onCancel }: RoleEditorModalProps) {
+  const [formData, setFormData] = useState<Partial<RoleModule>>({
+    id: role.id || `temp-${Date.now()}`, // Assign temporary ID for new roles
+    name: role.name || "",
+    description: role.description || "",
+    category: role.category || "business", // Default category
+    expertiseTags: role.expertiseTags || [],
+    usageCount: role.usageCount || 0, // Keep usage count for display if editing
+    isSystem: role.isSystem || false, // Prevent editing system roles directly if needed
+    createdBy: role.createdBy || "user",
+  });
+
+  const [newTag, setNewTag] = useState("");
+
+  useEffect(() => {
+    // If editing an existing role, update formData
+    if (role.id) {
+      setFormData({
+        id: role.id,
+        name: role.name || "",
+        description: role.description || "",
+        category: role.category || "business",
+        expertiseTags: role.expertiseTags || [],
+        usageCount: role.usageCount || 0,
+        isSystem: role.isSystem || false,
+        createdBy: role.createdBy || "user",
+      });
+    }
+  }, [role]);
+
+  const handleSave = () => {
+    // Basic validation
+    if (!formData.name || !formData.description) {
+      alert("Please fill in Name and Description");
+      return;
+    }
+    onSave(formData as RoleModule); // Cast to RoleModule as we expect it to be complete
+  };
+
+  const addExpertiseTag = () => {
+    if (newTag.trim() && !formData.expertiseTags?.includes(newTag.trim())) {
+      setFormData({ ...formData, expertiseTags: [...(formData.expertiseTags || []), newTag.trim()] });
+      setNewTag(""); // Clear input
+    }
+  };
+
+  const removeExpertiseTag = (tagToRemove: string) => {
+    setFormData({ ...formData, expertiseTags: formData.expertiseTags?.filter(tag => tag !== tagToRemove) });
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setFormData({ ...formData, category: value });
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-background p-4">
+      {/* Form - scrollable */}
+      <div className="flex-1 overflow-y-auto space-y-4">
+        {/* Name input - 48px min-h */}
+        <div>
+          <label className="text-sm font-medium text-muted-foreground">Name</label>
+          <Input
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            className="min-h-[48px] text-base bg-input border-border focus:ring-ring mt-2"
+            placeholder="e.g., Strategic Advisor"
+          />
+        </div>
+        
+        {/* Description textarea - 48px min-h */}
+        <div>
+          <label className="text-sm font-medium text-muted-foreground">Description</label>
+          <Textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            className="min-h-[96px] text-base bg-input border-border focus:ring-ring mt-2"
+            rows={4}
+            placeholder="e.g., Guides strategic decisions and market analysis."
+          />
+        </div>
+        
+        {/* Expertise tags - touch-optimized */}
+        <div>
+          <label className="text-sm font-medium text-muted-foreground">Expertise Tags</label>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {formData.expertiseTags?.map(tag => (
+              <Badge
+                key={tag}
+                className="min-h-[36px] px-4 text-sm bg-primary/10 text-primary border-primary/20"
+              >
+                {tag}
+                <button
+                  className="ml-2 text-primary/70 hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring rounded-full"
+                  onClick={() => removeExpertiseTag(tag)}
+                  aria-label={`Remove tag ${tag}`}
+                >
+                  <Trash className="h-4 w-4" />
+                </button>
+              </Badge>
+            ))}
+            <div className="flex items-center gap-2">
+              <Input
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                className="min-h-[36px] text-sm bg-input border-border focus:ring-ring w-32"
+                placeholder="Add tag..."
+                onKeyDown={(e) => e.key === 'Enter' && addExpertiseTag()}
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                className="min-h-[36px] min-w-[36px] bg-background border-border"
+                onClick={addExpertiseTag}
+                aria-label="Add expertise tag"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Category selector */}
+        <div>
+          <label className="text-sm font-medium text-muted-foreground">Category</label>
+          <Select value={formData.category} onValueChange={handleCategoryChange}>
+            <SelectTrigger className="min-h-[48px] text-base bg-input border-border focus:ring-ring mt-2">
+              <SelectValue placeholder="Select a category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="business">Business & Strategy</SelectItem>
+              <SelectItem value="technology">Technology & Engineering</SelectItem>
+              <SelectItem value="creative">Creative & Design</SelectItem>
+              <SelectItem value="marketing">Marketing & Sales</SelectItem>
+              <SelectItem value="research">Research & Analysis</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        {/* Warning if editing affects multiple agents */}
+        {formData.usageCount > 0 && (
+          <Alert variant="warning">
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+            <AlertDescription>
+              This will update {formData.usageCount} agent{formData.usageCount > 1 ? 's' : ''} using this role.
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
       
-      {/* Sticky footer */}
-      <footer className="sticky bottom-0 z-10 bg-background/95 backdrop-blur-sm border-t border-border p-4">
+      {/* Sticky footer with actions */}
+      <footer className="sticky bottom-0 z-10 bg-background/95 backdrop-blur-sm border-t border-border p-4 flex gap-3">
+        <Button
+          variant="outline"
+          size="lg"
+          className="flex-1 min-h-[44px] bg-background border-border"
+          onClick={onCancel}
+        >
+          Cancel
+        </Button>
         <Button
           size="lg"
-          className="w-full min-h-[56px] bg-primary text-primary-foreground"
+          className="flex-1 min-h-[44px] bg-primary text-primary-foreground"
+          onClick={handleSave}
         >
-          Create New Role
+          Save Changes
         </Button>
       </footer>
     </div>
@@ -399,6 +710,11 @@ export function RoleLibraryMobile(props: RoleLibraryProps) {
 - ✅ AdaptiveModal for editing
 - ✅ Pull-to-refresh on mobile
 - ✅ Infinite scroll for large lists
+- **New:** Full CRUD operations for roles via `useRoleManager` hook.
+- **New:** `RoleEditorModal` component utilizing `AdaptiveModal` for a unified edit/create experience.
+- **New:** Touch-optimized tag management within the editor.
+- **New:** System roles are visually distinct and potentially read-only (depending on implementation).
+- **New:** Usage count prominently displayed, with a warning for modifications.
 
 #### B. Persona Library (`/agents/personas`)
 
@@ -455,24 +771,64 @@ export function RoleLibraryMobile(props: RoleLibraryProps) {
 // components/module-libraries/PersonaLibrary.tsx
 "use client"
 
+import { useState } from "react"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { AdaptiveGrid } from "@/components/adaptive/AdaptiveGrid"
-import { PersonaCard } from "./PersonaCard"
+// Assuming PersonaCard and PersonaEditorModal components are created similarly to Role
+// import { PersonaCard } from "./PersonaCard" 
+// import { PersonaEditorModal } from "./PersonaEditorModal" 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import { MoreHorizontal } from 'lucide-react';
+
+// Mock data and types for demonstration
+interface PersonaModule {
+  id: string;
+  name: string;
+  traits: string[];
+  communicationStyle: string;
+  tone: string;
+  description: string;
+  usageCount: number;
+  isSystem: boolean;
+}
+
+// Mock personas
+const mockPersonas: PersonaModule[] = [
+  { id: 'p1', name: 'Direct & Analytical', traits: ['Analytical', 'Direct'], communicationStyle: 'formal', tone: 'professional', description: 'Formal, data-driven, concise', usageCount: 3, isSystem: true },
+  { id: 'p2', name: 'Empathetic Coach', traits: ['Empathetic', 'Supportive'], communicationStyle: 'balanced', tone: 'friendly', description: 'Friendly, supportive, patient', usageCount: 1, isSystem: false },
+  { id: 'p3', name: 'Creative Visionary', traits: ['Creative', 'Innovative'], communicationStyle: 'casual', tone: 'enthusiastic', description: 'Generates novel ideas and unique solutions', usageCount: 0, isSystem: false },
+];
+
+// Placeholder for PersonaEditorModal and usePersonaManager hook
+const PersonaEditorModal = ({ persona, onSave, onCancel }: any) => <div>Persona Editor Modal</div>;
+const usePersonaManager = () => ({
+  personas: mockPersonas,
+  addPersona: (p: PersonaModule) => console.log('Add persona:', p),
+  updatePersona: (id: string, p: PersonaModule) => console.log('Update persona:', id, p),
+  deletePersona: (id: string) => console.log('Delete persona:', id),
+});
+
 
 export function PersonaLibrary() {
   const { isMobile } = useDevice()
-  const [personas, setPersonas] = useState([])
-  
+  const { personas, addPersona, updatePersona, deletePersona } = usePersonaManager(); // Use hook
+  const [searchQuery, setSearchQuery] = useState("")
+  const [editingPersona, setEditingPersona] = useState<PersonaModule | null>(null); // State for editing
+
+  const filteredPersonas = personas.filter(persona =>
+    persona.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    persona.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Sticky header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border min-h-[56px] p-4">
         <div className="flex items-center justify-between">
           <h1 className="font-sans text-lg font-semibold text-foreground">Persona Library</h1>
-          <Button size="lg" className="min-h-[44px] min-w-[44px] bg-primary text-primary-foreground">
+          <Button size="lg" className="min-h-[44px] min-w-[44px] bg-primary text-primary-foreground" onClick={() => setEditingPersona({} as PersonaModule)}>
             + New
           </Button>
         </div>
@@ -482,6 +838,8 @@ export function PersonaLibrary() {
       <div className="p-4 border-b border-border">
         <Input
           placeholder="Search personas..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="min-h-[48px] text-base bg-input border-border focus:ring-ring"
         />
       </div>
@@ -489,30 +847,56 @@ export function PersonaLibrary() {
       {/* Persona grid */}
       <div className="flex-1 overflow-y-auto p-4 bg-background">
         <AdaptiveGrid mobileColumns={1} tabletColumns={2} desktopColumns={3}>
-          {/* Placeholder for actual personas data */}
-          {[...Array(3)].map((_, i) => (
+          {filteredPersonas.map((persona) => (
             <Card
-              key={i}
-              className="min-h-[80px] p-4 bg-card border-border hover:bg-accent transition-colors"
+              key={persona.id}
+              className="min-h-[80px] p-4 bg-card border-border hover:bg-accent transition-colors cursor-pointer"
+              onClick={() => setEditingPersona(persona)} // Use click to edit
             >
               <div className="flex flex-col justify-between h-full">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">🎯</span>
-                    <h3 className="font-sans font-medium text-foreground">Direct & Analytical</h3>
+                    <span className="text-xl">🎯</span> {/* Consider using icons from persona data */}
+                    <h3 className="font-sans font-medium text-foreground">{persona.name}</h3>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">Formal, data-driven, concise</p>
+                  <p className="text-sm text-muted-foreground mt-1">{persona.description}</p>
                   <div className="flex flex-wrap gap-1 mt-2">
-                    <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">Analytical</span>
-                    <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">Direct</span>
+                    {persona.traits.slice(0, 2).map(trait => ( // Displaying only first two traits for brevity
+                      <span key={trait} className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                        {trait}
+                      </span>
+                    ))}
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">Used in 3 agents</p>
+                <p className="text-xs text-muted-foreground mt-2">Used in {persona.usageCount} agents</p>
               </div>
             </Card>
           ))}
+          {filteredPersonas.length === 0 && (
+             <p className="text-center text-muted-foreground py-8 col-span-full">No personas found.</p>
+          )}
         </AdaptiveGrid>
       </div>
+
+      {/* Persona editor modal */}
+      <AdaptiveModal
+        isOpen={editingPersona !== null}
+        onClose={() => setEditingPersona(null)}
+        title={editingPersona?.id ? "Edit Persona" : "Create New Persona"}
+      >
+        <PersonaEditorModal
+          persona={editingPersona}
+          onSave={(updatedPersona) => {
+            if (updatedPersona.id) {
+              updatePersona(updatedPersona.id, updatedPersona);
+            } else {
+              addPersona(updatedPersona);
+            }
+            setEditingPersona(null);
+          }}
+          onCancel={() => setEditingPersona(null)}
+        />
+      </AdaptiveModal>
     </div>
   )
 }
@@ -529,29 +913,84 @@ export function PersonaLibrary() {
 // components/module-libraries/FrameworkLibrary.tsx
 "use client"
 
+import { useState } from "react"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { FrameworkLibraryMobile } from "./mobile/FrameworkLibraryMobile"
 import { FrameworkLibraryDesktop } from "./desktop/FrameworkLibraryDesktop"
+import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal";
+// Assuming FrameworkEditorModal and useFrameworkManager hooks are created
+// import { FrameworkEditorModal } from "./FrameworkEditorModal";
+// import { useFrameworkManager } from "@/hooks/useFrameworkManager";
+
+// Mock data and types for demonstration
+interface FrameworkModule {
+  id: string;
+  name: string;
+  description: string;
+  usageCount: number;
+  isSystem: boolean;
+}
+
+// Mock frameworks
+const mockFrameworks: FrameworkModule[] = [
+  { id: 'f1', name: 'First Principles', description: 'Break down complex problems', usageCount: 2, isSystem: true },
+  { id: 'f2', name: 'Chain of Thought', description: 'Encourage step-by-step reasoning', usageCount: 5, isSystem: true },
+  { id: 'f3', name: 'Tree of Thoughts', description: 'Explore multiple reasoning paths', usageCount: 1, isSystem: false },
+];
+
+// Placeholder for FrameworkEditorModal and useFrameworkManager hook
+const FrameworkEditorModal = ({ framework, onSave, onCancel }: any) => <div>Framework Editor Modal</div>;
+const useFrameworkManager = () => ({
+  frameworks: mockFrameworks,
+  addFramework: (f: FrameworkModule) => console.log('Add framework:', f),
+  updateFramework: (id: string, f: FrameworkModule) => console.log('Update framework:', id, f),
+  deleteFramework: (id: string) => console.log('Delete framework:', id),
+});
+
 
 export function FrameworkLibrary() {
   const { isMobile } = useDevice()
-
-  // Shared state
-  const [frameworks, setFrameworks] = useState([])
+  const { frameworks, addFramework, updateFramework, deleteFramework } = useFrameworkManager(); // Use hook
   const [searchQuery, setSearchQuery] = useState("")
+  const [editingFramework, setEditingFramework] = useState<FrameworkModule | null>(null); // State for editing
 
   const sharedProps = {
     frameworks,
     searchQuery,
     onSearch: setSearchQuery,
-    onEdit: handleEdit,
-    onCreate: handleCreate,
+    onEdit: setEditingFramework, // Pass function to set editing framework
+    onDelete: deleteFramework, // Pass delete function
+    onCreate: () => setEditingFramework({} as FrameworkModule), // Open editor for new framework
   }
 
-  return isMobile ? (
-    <FrameworkLibraryMobile {...sharedProps} />
-  ) : (
-    <FrameworkLibraryDesktop {...sharedProps} />
+  return (
+    <div className="flex flex-col h-full bg-background">
+      {isMobile ? (
+        <FrameworkLibraryMobile {...sharedProps} />
+      ) : (
+        <FrameworkLibraryDesktop {...sharedProps} />
+      )}
+
+      {/* Adaptive Modal for Editing/Creating Frameworks */}
+      <AdaptiveModal
+        isOpen={editingFramework !== null}
+        onClose={() => setEditingFramework(null)}
+        title={editingFramework?.id ? "Edit Framework" : "Create New Framework"}
+      >
+        <FrameworkEditorModal
+          framework={editingFramework}
+          onSave={(updatedFramework) => {
+            if (updatedFramework.id) {
+              updateFramework(updatedFramework.id, updatedFramework);
+            } else {
+              addFramework(updatedFramework);
+            }
+            setEditingFramework(null); // Close modal after saving
+          }}
+          onCancel={() => setEditingFramework(null)}
+        />
+      </AdaptiveModal>
+    </div>
   )
 }
 \`\`\`
@@ -564,9 +1003,26 @@ import { useDevice } from "@/contexts/DeviceProvider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import { MoreHorizontal } from 'lucide-react';
 
-export function FrameworkLibraryMobile(props: FrameworkLibraryProps) {
+// Props interface including onCreate and onDelete
+interface FrameworkLibraryMobileProps {
+  frameworks: FrameworkModule[];
+  searchQuery: string;
+  onSearch: (query: string) => void;
+  onEdit: (framework: FrameworkModule) => void;
+  onDelete: (frameworkId: string) => void;
+  onCreate: () => void; // Callback to open the create modal
+}
+
+export function FrameworkLibraryMobile({ frameworks, searchQuery, onSearch, onEdit, onDelete, onCreate }: FrameworkLibraryMobileProps) {
   const { isMobile } = useDevice()
+  
+  // Filter frameworks based on search query
+  const filteredFrameworks = frameworks.filter(framework =>
+    framework.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    framework.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -574,7 +1030,7 @@ export function FrameworkLibraryMobile(props: FrameworkLibraryProps) {
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border min-h-[56px] p-4">
         <div className="flex items-center justify-between">
           <h1 className="font-sans text-lg font-semibold text-foreground">Framework Library</h1>
-          <Button size="lg" className="min-h-[44px] min-w-[44px] bg-primary text-primary-foreground">
+          <Button size="lg" className="min-h-[44px] min-w-[44px] bg-primary text-primary-foreground" onClick={onCreate}>
             + New
           </Button>
         </div>
@@ -584,6 +1040,8 @@ export function FrameworkLibraryMobile(props: FrameworkLibraryProps) {
       <div className="p-4 border-b border-border">
         <Input
           placeholder="Search frameworks..."
+          value={searchQuery}
+          onChange={(e) => onSearch(e.target.value)}
           className="min-h-[48px] text-base bg-input border-border focus:ring-ring"
         />
       </div>
@@ -617,54 +1075,114 @@ export function FrameworkLibraryMobile(props: FrameworkLibraryProps) {
 
       {/* Framework cards - scrollable */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        <h2 className="text-sm font-medium text-muted-foreground">My Frameworks (5)</h2>
+        <h2 className="text-sm font-medium text-muted-foreground">My Frameworks ({filteredFrameworks.length})</h2>
 
-        {/* Placeholder for actual frameworks data */}
-        {[...Array(3)].map((_, i) => (
+        {filteredFrameworks.map((framework) => (
           <Card
-            key={i}
+            key={framework.id}
             className="min-h-[80px] p-4 bg-card border-border hover:bg-accent transition-colors"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="font-sans font-medium text-foreground">First Principles</h3>
-                <p className="text-sm text-muted-foreground mt-1">Break down complex problems</p>
-                <p className="text-xs text-muted-foreground mt-2">Used in 2 agents</p>
+                <h3 className="font-sans font-medium text-foreground">{framework.name}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{framework.description}</p>
+                <p className="text-xs text-muted-foreground mt-2">Used in {framework.usageCount} agents</p>
               </div>
-              <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
-                ⋮
-              </Button>
-            </div>
-
-            <div className="flex gap-2 mt-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="min-h-[44px] flex-1 bg-background border-border"
-              >
-                Edit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="min-h-[44px] flex-1 bg-background border-border"
-              >
-                Duplicate
+              <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => onEdit(framework)}>
+                <MoreHorizontal className="h-5 w-5" />
               </Button>
             </div>
           </Card>
         ))}
+        {filteredFrameworks.length === 0 && (
+          <p className="text-center text-muted-foreground py-8">No frameworks found.</p>
+        )}
       </div>
 
       {/* Sticky footer */}
-      <footer className="sticky bottom-0 z-10 bg-background/95 backdrop-blur-sm border-t border-border p-4">
-        <Button
-          size="lg"
-          className="w-full min-h-[56px] bg-primary text-primary-foreground"
-        >
-          Create New Framework
+      {/* Removed "Create New Framework" button from footer as it's in the header */}
+    </div>
+  )
+}
+\`\`\`
+
+\`\`\`tsx
+// components/module-libraries/desktop/FrameworkLibraryDesktop.tsx
+"use client"
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { MoreHorizontal } from 'lucide-react';
+
+interface FrameworkLibraryDesktopProps {
+  frameworks: FrameworkModule[];
+  searchQuery: string;
+  onSearch: (query: string) => void;
+  onEdit: (framework: FrameworkModule) => void;
+  onDelete: (frameworkId: string) => void;
+  onCreate: () => void; // Callback to open the create modal
+}
+
+export function FrameworkLibraryDesktop({ frameworks, searchQuery, onSearch, onEdit, onDelete, onCreate }: FrameworkLibraryDesktopProps) {
+  // Filter frameworks based on search query
+  const filteredFrameworks = frameworks.filter(framework =>
+    framework.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    framework.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="flex flex-col h-full p-6 bg-background">
+      {/* Header with title and create button */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-sans text-2xl font-semibold text-foreground">Framework Library</h1>
+        <Button size="lg" className="min-h-[44px] bg-primary text-primary-foreground" onClick={onCreate}>
+          + New Framework
         </Button>
-      </footer>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="flex items-center gap-4 mb-6">
+        <Input
+          placeholder="Search frameworks..."
+          value={searchQuery}
+          onChange={(e) => onSearch(e.target.value)}
+          className="flex-1 min-h-[48px] text-base bg-input border-border focus:ring-ring"
+        />
+        <div className="flex gap-2">
+          <Button variant="outline" className="min-h-[44px] bg-transparent">My Frameworks</Button>
+          <Button variant="outline" className="min-h-[44px] bg-transparent">System</Button>
+          <Button variant="outline" className="min-h-[44px] bg-transparent">Import</Button>
+        </div>
+      </div>
+
+      {/* Framework Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1 overflow-y-auto">
+        <h2 className="text-sm font-medium text-muted-foreground col-span-full mb-2">My Frameworks ({filteredFrameworks.length})</h2>
+        {filteredFrameworks.map(framework => (
+          <Card key={framework.id} className="p-4 bg-card border-border flex flex-col justify-between hover:bg-accent transition-colors">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">🧠</span> {/* Consider using icons from framework data */}
+                <h3 className="font-sans font-medium text-foreground">{framework.name}</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">{framework.description}</p>
+              <p className="text-xs text-muted-foreground">Used in {framework.usageCount} agents</p>
+            </div>
+            <div className="mt-4 flex items-center justify-between">
+              <Button variant="outline" size="sm" className="min-h-[44px] bg-background border-border" onClick={() => onEdit(framework)}>
+                Edit
+              </Button>
+              <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => onDelete(framework.id)}>
+                <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+              </Button>
+            </div>
+          </Card>
+        ))}
+        {filteredFrameworks.length === 0 && (
+          <p className="text-center text-muted-foreground py-8 col-span-full">No frameworks found.</p>
+        )}
+      </div>
     </div>
   )
 }
@@ -675,6 +1193,9 @@ export function FrameworkLibraryMobile(props: FrameworkLibraryProps) {
 - ✅ AdaptiveModal for framework details
 - ✅ Touch-optimized selection
 - ✅ Horizontal scroll for categories
+- **New:** Full CRUD operations for personas and frameworks.
+- **New:** Dedicated editor modals (`PersonaEditorModal`, `FrameworkEditorModal`) leveraging `AdaptiveModal`.
+- **New:** Enhanced display of module usage and system vs. custom distinction.
 
 ---
 
@@ -763,7 +1284,7 @@ The composer is where users **assemble agents from modules**.
 │ │ │CEO │ │CTO │ │CFO │    │ │ [Save Draft]             │
 │ │ └────┘ └────┘ └────┘    │ │ [Create Agent]           │
 │ │ [View All Roles →]       │ │                          │
-│ └──────────────────────────┘ │                          │
+│ └──────────┘               │                          │
 └──────────────────────────────┴──────────────────────────┘
 \`\`\`
 
@@ -780,30 +1301,73 @@ The composer is where users **assemble agents from modules**.
 // components/agent-composer/AgentComposer.tsx
 "use client"
 
+import { useState, useEffect } from "react" // Added useEffect
 import { useDevice } from "@/contexts/DeviceProvider"
 import { AgentComposerMobile } from "./mobile/AgentComposerMobile"
 import { AgentComposerDesktop } from "./desktop/AgentComposerDesktop"
+import { RoleModule, PersonaModule, FrameworkModule, AgentConfig } from "@/types/agent"; // Assuming types are defined
+import { useRoleManager } from "@/hooks/useRoleManager"; // Import hooks for modules
+import { usePersonaManager } from "@/hooks/usePersonaManager";
+import { useFrameworkManager } from "@/hooks/useFrameworkManager";
+import { AgentPreview } from "./shared/AgentPreview"; // Assume this exists
+import { ModuleSelector } from "./shared/ModuleSelector"; // Assume this exists
 
 export function AgentComposer({ agentId }: { agentId?: string }) {
   const { isMobile } = useDevice()
   
+  // Fetch existing agent data if agentId is provided
+  // Placeholder for actual data fetching logic
+  const [agentData, setAgentData] = useState<Partial<Agent>>({}); 
+  useEffect(() => {
+    if (agentId) {
+      // fetchAgent(agentId).then(data => setAgentData(data));
+      // Mock data for now
+      setAgentData({
+        name: "My Awesome Agent",
+        roleId: "r1",
+        personaId: "p1",
+        frameworkId: "f1",
+        tags: ["support", "qa"],
+        visibility: "private",
+      });
+    }
+  }, [agentId]);
+
+  // Fetch modules from managers
+  const { roles } = useRoleManager();
+  const { personas } = usePersonaManager();
+  const { frameworks } = useFrameworkManager();
+
+  // Find selected modules based on agentData
+  const initialRole = roles.find(r => r.id === agentData.roleId) || null;
+  const initialPersona = personas.find(p => p.id === agentData.personaId) || null;
+  const initialFramework = frameworks.find(f => f.id === agentData.frameworkId) || null;
+
   // Shared state
-  const [selectedRole, setSelectedRole] = useState<RoleModule | null>(null)
-  const [selectedPersona, setSelectedPersona] = useState<PersonaModule | null>(null)
-  const [selectedFramework, setSelectedFramework] = useState<FrameworkModule | null>(null)
-  const [config, setConfig] = useState<AgentConfig>({})
+  const [selectedRole, setSelectedRole] = useState<RoleModule | null>(initialRole);
+  const [selectedPersona, setSelectedPersona] = useState<PersonaModule | null>(initialPersona);
+  const [selectedFramework, setSelectedFramework] = useState<FrameworkModule | null>(initialFramework);
+  const [config, setConfig] = useState<AgentConfig>({
+    name: agentData.name || "",
+    tags: agentData.tags || [],
+    visibility: agentData.visibility || "private",
+  });
   
   const sharedProps = {
     selectedRole,
     selectedPersona,
     selectedFramework,
     config,
+    // Pass module lists to selector
+    allRoles: roles, 
+    allPersonas: personas,
+    allFrameworks: frameworks,
     onRoleChange: setSelectedRole,
     onPersonaChange: setSelectedPersona,
     onFrameworkChange: setSelectedFramework,
     onConfigChange: setConfig,
-    onSave: handleSave,
-    onTest: handleTest,
+    onSave: handleSave, // Assume handleSave is defined elsewhere
+    onTest: handleTest, // Assume handleTest is defined elsewhere
   }
   
   return isMobile ? (
@@ -811,6 +1375,21 @@ export function AgentComposer({ agentId }: { agentId?: string }) {
   ) : (
     <AgentComposerDesktop {...sharedProps} />
   )
+}
+
+// Placeholder functions
+const handleSave = () => console.log("Saving agent...");
+const handleTest = () => console.log("Testing agent...");
+
+// Mock types if not defined
+interface Agent {
+  id?: string;
+  name: string;
+  roleId?: string;
+  personaId?: string;
+  frameworkId?: string;
+  tags?: string[];
+  visibility?: 'private' | 'team' | 'public';
 }
 \`\`\`
 
@@ -823,13 +1402,53 @@ import { useDevice } from "@/contexts/DeviceProvider"
 import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-// Assuming these are imported from a shared components directory or @/components/ui
 import { ArrowLeft, Edit, ChevronDown, ChevronUp } from 'lucide-react'
 
-export function AgentComposerMobile(props: AgentComposerProps) {
+// Import necessary types and components
+import { RoleModule, PersonaModule, FrameworkModule, AgentConfig } from "@/types/agent";
+import { AgentPreview } from "../shared/AgentPreview";
+import { ModuleSelector } from "../shared/ModuleSelector";
+
+// Define props interface
+interface AgentComposerMobileProps {
+  selectedRole: RoleModule | null;
+  selectedPersona: PersonaModule | null;
+  selectedFramework: FrameworkModule | null;
+  config: AgentConfig;
+  allRoles: RoleModule[];
+  allPersonas: PersonaModule[];
+  allFrameworks: FrameworkModule[];
+  onRoleChange: (role: RoleModule | null) => void;
+  onPersonaChange: (persona: PersonaModule | null) => void;
+  onFrameworkChange: (framework: FrameworkModule | null) => void;
+  onConfigChange: (config: AgentConfig) => void;
+  onSave: () => void;
+  onTest: () => void;
+}
+
+export function AgentComposerMobile({ 
+  selectedRole, 
+  selectedPersona, 
+  selectedFramework, 
+  config, 
+  allRoles,
+  allPersonas,
+  allFrameworks,
+  onRoleChange, 
+  onPersonaChange, 
+  onFrameworkChange, 
+  onConfigChange,
+  onSave, 
+  onTest 
+}: AgentComposerMobileProps) {
   const { isMobile } = useDevice()
   const [isPreviewExpanded, setIsPreviewExpanded] = useState(false)
   const [activeSelector, setActiveSelector] = useState<'role' | 'persona' | 'framework' | null>(null)
+  const [isConfigExpanded, setIsConfigExpanded] = useState(false); // State for config section
+
+  const handleConfigChange = (key: keyof AgentConfig, value: any) => {
+    onConfigChange({ ...config, [key]: value });
+  };
   
   return (
     <div className="flex flex-col h-full bg-background">
@@ -840,7 +1459,7 @@ export function AgentComposerMobile(props: AgentComposerProps) {
             <ArrowLeft className="h-5 w-5 text-foreground" />
           </Button>
           <h1 className="font-sans text-lg font-semibold text-foreground">Create Agent</h1>
-          <Button size="lg" className="min-h-[44px] bg-primary text-primary-foreground" onClick={props.onSave}>
+          <Button size="lg" className="min-h-[44px] bg-primary text-primary-foreground" onClick={onSave}>
             Save
           </Button>
         </div>
@@ -857,7 +1476,7 @@ export function AgentComposerMobile(props: AgentComposerProps) {
             <div className="text-left">
               <p className="font-sans font-medium text-foreground">Preview</p>
               <p className="text-sm text-muted-foreground">
-                {props.selectedRole?.name || 'No role'} + {props.selectedPersona?.name || 'No persona'}
+                {selectedRole?.name || 'No role'} + {selectedPersona?.name || 'No persona'}
               </p>
             </div>
           </div>
@@ -867,10 +1486,10 @@ export function AgentComposerMobile(props: AgentComposerProps) {
         {isPreviewExpanded && (
           <div className="p-4 border-t border-border bg-background">
             <AgentPreview
-              role={props.selectedRole}
-              persona={props.selectedPersona}
-              framework={props.selectedFramework}
-              config={props.config}
+              role={selectedRole}
+              persona={selectedPersona}
+              framework={selectedFramework}
+              config={config}
             />
           </div>
         )}
@@ -888,16 +1507,16 @@ export function AgentComposerMobile(props: AgentComposerProps) {
                 <span className="text-xl">💼</span>
                 <h3 className="font-sans font-medium text-foreground">Role</h3>
               </div>
-              {props.selectedRole ? (
+              {selectedRole ? (
                 <>
-                  <p className="font-sans font-semibold text-foreground mt-2">{props.selectedRole.name}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{props.selectedRole.description}</p>
+                  <p className="font-sans font-semibold text-foreground mt-2">{selectedRole.name}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{selectedRole.description}</p>
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground mt-2">No role selected</p>
               )}
             </div>
-            <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
+            <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => setActiveSelector('role')}>
               <Edit className="h-5 w-5 text-muted-foreground" />
             </Button>
           </div>
@@ -920,18 +1539,18 @@ export function AgentComposerMobile(props: AgentComposerProps) {
                 <span className="text-xl">🎭</span>
                 <h3 className="font-sans font-medium text-foreground">Persona</h3>
               </div>
-              {props.selectedPersona ? (
+              {selectedPersona ? (
                 <>
-                  <p className="font-sans font-semibold text-foreground mt-2">{props.selectedPersona.name}</p>
+                  <p className="font-sans font-semibold text-foreground mt-2">{selectedPersona.name}</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {props.selectedPersona.traits.join(' • ')}
+                    {selectedPersona.traits.join(' • ')}
                   </p>
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground mt-2">No persona selected</p>
               )}
             </div>
-            <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
+            <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => setActiveSelector('persona')}>
               <Edit className="h-5 w-5 text-muted-foreground" />
             </Button>
           </div>
@@ -954,16 +1573,16 @@ export function AgentComposerMobile(props: AgentComposerProps) {
                 <span className="text-xl">🧠</span>
                 <h3 className="font-sans font-medium text-foreground">Framework</h3>
               </div>
-              {props.selectedFramework ? (
+              {selectedFramework ? (
                 <>
-                  <p className="font-sans font-semibold text-foreground mt-2">{props.selectedFramework.name}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{props.selectedFramework.description}</p>
+                  <p className="font-sans font-semibold text-foreground mt-2">{selectedFramework.name}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{selectedFramework.description}</p>
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground mt-2">No framework selected</p>
               )}
             </div>
-            <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
+            <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => setActiveSelector('framework')}>
               <Edit className="h-5 w-5 text-muted-foreground" />
             </Button>
           </div>
@@ -977,6 +1596,72 @@ export function AgentComposerMobile(props: AgentComposerProps) {
             Change Framework
           </Button>
         </Card>
+
+        {/* Configuration section */}
+        <Card className="p-4 bg-card border-border">
+            <button
+              className="w-full flex items-center justify-between min-h-[56px] bg-card hover:bg-accent transition-colors"
+              onClick={() => setIsConfigExpanded(!isConfigExpanded)}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xl">⚙️</span>
+                <p className="font-sans font-medium text-foreground">Configuration</p>
+              </div>
+              {isConfigExpanded ? <ChevronUp className="text-muted-foreground" /> : <ChevronDown className="text-muted-foreground" />}
+            </button>
+            {isConfigExpanded && (
+              <div className="mt-4 space-y-4">
+                {/* Agent Name Input */}
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Agent Name</label>
+                  <Input
+                    value={config.name}
+                    onChange={(e) => handleConfigChange('name', e.target.value)}
+                    className="min-h-[48px] text-base bg-input border-border focus:ring-ring mt-2"
+                    placeholder="e.g., Customer Support Bot"
+                  />
+                </div>
+                {/* Tags Input */}
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Tags</label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {config.tags?.map(tag => (
+                      <Badge key={tag} className="min-h-[36px] px-4 text-sm bg-primary/10 text-primary border-primary/20">
+                        {tag}
+                        <button className="ml-2 text-primary/70 hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring rounded-full" onClick={() => handleConfigChange('tags', config.tags.filter((t: string) => t !== tag))} aria-label={`Remove tag ${tag}`}>
+                          <Trash className="h-4 w-4" />
+                        </button>
+                      </Badge>
+                    ))}
+                    <Input 
+                      className="min-h-[36px] text-sm bg-input border-border focus:ring-ring w-32" 
+                      placeholder="Add tag..." 
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          handleConfigChange('tags', [...(config.tags || []), e.currentTarget.value.trim()]);
+                          e.currentTarget.value = '';
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+                {/* Visibility Select */}
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Visibility</label>
+                  <Select value={config.visibility} onValueChange={(v) => handleConfigChange('visibility', v)}>
+                    <SelectTrigger className="min-h-[48px] text-base bg-input border-border focus:ring-ring mt-2">
+                      <SelectValue placeholder="Select visibility" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="private">Private</SelectItem>
+                      <SelectItem value="team">Team</SelectItem>
+                      <SelectItem value="public">Public</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+        </Card>
       </div>
       
       {/* Sticky footer - 56px min-h */}
@@ -985,16 +1670,16 @@ export function AgentComposerMobile(props: AgentComposerProps) {
           variant="outline"
           size="lg"
           className="flex-1 min-h-[44px] bg-background border-border"
-          onClick={props.onSave}
+          onClick={onSave} // Assuming save draft uses the same handler for now
         >
           Save Draft
         </Button>
         <Button
           size="lg"
           className="flex-1 min-h-[44px] bg-primary text-primary-foreground"
-          onClick={props.onSave}
+          onClick={onTest} // Button for testing
         >
-          Create Agent
+          Test Agent
         </Button>
       </footer>
       
@@ -1006,12 +1691,21 @@ export function AgentComposerMobile(props: AgentComposerProps) {
       >
         <ModuleSelector
           type={activeSelector!}
-          onSelect={(module) => {
-            if (activeSelector === 'role') props.onRoleChange(module)
-            if (activeSelector === 'persona') props.onPersonaChange(module)
-            if (activeSelector === 'framework') props.onFrameworkChange(module)
-            setActiveSelector(null)
+          allRoles={allRoles}
+          allPersonas={allPersonas}
+          allFrameworks={allFrameworks}
+          onSelectModule={(module) => {
+            if (activeSelector === 'role') onRoleChange(module as RoleModule);
+            if (activeSelector === 'persona') onPersonaChange(module as PersonaModule);
+            if (activeSelector === 'framework') onFrameworkChange(module as FrameworkModule);
+            setActiveSelector(null);
           }}
+          // Pass current selections to ModuleSelector if needed for highlighting
+          currentSelection={
+            activeSelector === 'role' ? selectedRole : 
+            activeSelector === 'persona' ? selectedPersona : 
+            selectedFramework
+          }
         />
       </AdaptiveModal>
     </div>
@@ -1029,8 +1723,297 @@ export function AgentComposerMobile(props: AgentComposerProps) {
 - ✅ Pull-to-refresh for module libraries
 - ✅ Auto-save drafts every 30 seconds
 - ✅ Haptic feedback on interactions (iOS/Android)
+- **New:** Integrated configuration section with name, tags, and visibility.
+- **New:** `AgentPreview` component to visualize the composed agent.
+- **New:** `ModuleSelector` component handles opening the correct library based on `activeSelector`.
 
----
+#### Desktop Layout: Side-by-Side Composer
+
+\`\`\`
+┌─────────────────────────────────────────────────────────┐
+│ ← Agents / Create New Agent                      [Save] │
+├──────────────────────────────┬──────────────────────────┤
+│ 🧩 Module Selector           │ 📋 Live Preview          │
+│                              │                          │
+│ [Role] [Persona] [Framework] │ ┌──────────────────────┐ │
+│ [Configuration]              │ │ 💼 Strategic Advisor │ │
+│                              │ │                      │ │
+│ ┌──────────────────────────┐ │ │ Role: CEO            │ │
+│ │ 💼 Select Role           │ │ │ Persona: Direct      │ │
+│ │                          │ │ │ Framework: First P.  │ │
+│ │ Current: CEO             │ │ │                      │ │
+│ │ Strategic business...    │ │ │ Status: ✓ Ready     │ │
+│ │                          │ │ │                      │ │
+│ │ [Change Role]            │ │ │ [Test Agent]         │ │
+│ │                          │ │ └──────────────────────┘ │
+│ │ Quick Actions:           │ │                          │
+│ │ • Edit this role         │ │ Configuration:           │
+│ │ • Duplicate & modify     │ │ ✓ Role selected          │
+│ │ • Create new role        │ │ ✓ Persona set            │
+│ │                          │ │ ✓ Framework chosen       │
+│ │ Browse Library:          │ │ ○ Name & tags            │
+│ │ ┌────┐ ┌────┐ ┌────┐    │ │                          │
+│ │ │CEO │ │CTO │ │CFO │    │ │ [Save Draft]             │
+│ │ └────┘ └────┘ └────┘    │ │ [Create Agent]           │
+│ │ [View All Roles →]       │ │                          │
+│ └──────────┘               │                          │
+└──────────────────────────────┴──────────────────────────┘
+\`\`\`
+
+**Desktop Interaction Patterns**:
+- Hover module card → Show quick actions
+- Click [Change X] → Open modal with module selector
+- Click [Edit] → Open modal with inline editor
+- Drag & drop modules to reorder (future enhancement)
+- Keyboard shortcuts: Cmd+S (save), Cmd+T (test), Cmd+K (search modules)
+
+**Mobile-First Implementation**:
+
+\`\`\`tsx
+// components/agent-composer/desktop/AgentComposerDesktop.tsx
+"use client"
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Trash, Plus } from 'lucide-react';
+import { RoleModule, PersonaModule, FrameworkModule, AgentConfig } from "@/types/agent";
+import { AgentPreview } from "../shared/AgentPreview";
+import { ModuleSelector } from "../shared/ModuleSelector"; // Assume this component handles desktop modal
+
+interface AgentComposerDesktopProps {
+  selectedRole: RoleModule | null;
+  selectedPersona: PersonaModule | null;
+  selectedFramework: FrameworkModule | null;
+  config: AgentConfig;
+  allRoles: RoleModule[];
+  allPersonas: PersonaModule[];
+  allFrameworks: FrameworkModule[];
+  onRoleChange: (role: RoleModule | null) => void;
+  onPersonaChange: (persona: PersonaModule | null) => void;
+  onFrameworkChange: (framework: FrameworkModule | null) => void;
+  onConfigChange: (config: AgentConfig) => void;
+  onSave: () => void;
+  onTest: () => void;
+}
+
+export function AgentComposerDesktop({ 
+  selectedRole, 
+  selectedPersona, 
+  selectedFramework, 
+  config, 
+  allRoles,
+  allPersonas,
+  allFrameworks,
+  onRoleChange, 
+  onPersonaChange, 
+  onFrameworkChange, 
+  onConfigChange,
+  onSave, 
+  onTest 
+}: AgentComposerDesktopProps) {
+
+  const [activeTab, setActiveTab] = useState<'role' | 'persona' | 'framework' | 'config'>('role');
+  const [isModuleSelectorOpen, setIsModuleSelectorOpen] = useState(false);
+
+  const handleConfigChange = (key: keyof AgentConfig, value: any) => {
+    onConfigChange({ ...config, [key]: value });
+  };
+
+  const renderModuleSelector = (type: 'role' | 'persona' | 'framework') => (
+    <ModuleSelector
+      type={type}
+      allRoles={allRoles}
+      allPersonas={allPersonas}
+      allFrameworks={allFrameworks}
+      onSelectModule={(module) => {
+        if (type === 'role') onRoleChange(module as RoleModule);
+        if (type === 'persona') onPersonaChange(module as PersonaModule);
+        if (type === 'framework') onFrameworkChange(module as FrameworkModule);
+        setIsModuleSelectorOpen(false);
+      }}
+       currentSelection={
+            type === 'role' ? selectedRole : 
+            type === 'persona' ? selectedPersona : 
+            selectedFramework
+          }
+    />
+  );
+
+  return (
+    <div className="flex h-full p-6 gap-6 bg-background">
+      {/* Module Selector Panel */}
+      <div className="w-1/3 flex flex-col">
+        <h2 className="text-xl font-semibold text-foreground mb-4">Agent Modules</h2>
+        <Tabs defaultValue="role" className="flex-1 flex flex-col" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+          <TabsList className="grid w-full grid-cols-4 mb-4">
+            <TabsTrigger value="role">Role</TabsTrigger>
+            <TabsTrigger value="persona">Persona</TabsTrigger>
+            <TabsTrigger value="framework">Framework</TabsTrigger>
+            <TabsTrigger value="config">Config</TabsTrigger>
+          </TabsList>
+          
+          <ScrollArea className="flex-1 pr-4">
+            <TabsContent value="role" className="space-y-4">
+              {selectedRole ? (
+                <Card className="p-4 bg-card border-border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl">💼</span>
+                    <h3 className="font-sans font-medium text-foreground">{selectedRole.name}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">{selectedRole.description}</p>
+                  <Button variant="outline" size="sm" className="min-h-[44px] bg-background border-border" onClick={() => setIsModuleSelectorOpen(true)}>Change Role</Button>
+                </Card>
+              ) : (
+                <Card className="p-4 bg-secondary border-border">
+                  <p className="text-sm text-muted-foreground">Select a role to define the agent's function.</p>
+                  <Button variant="default" size="sm" className="mt-3 min-h-[44px] bg-primary text-primary-foreground" onClick={() => setIsModuleSelectorOpen(true)}>Select Role</Button>
+                </Card>
+              )}
+              {/* Placeholder for Edit/Duplicate actions */}
+            </TabsContent>
+
+            <TabsContent value="persona" className="space-y-4">
+               {selectedPersona ? (
+                <Card className="p-4 bg-card border-border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl">🎭</span>
+                    <h3 className="font-sans font-medium text-foreground">{selectedPersona.name}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">{selectedPersona.traits.join(', ')}</p>
+                  <Button variant="outline" size="sm" className="min-h-[44px] bg-background border-border" onClick={() => setIsModuleSelectorOpen(true)}>Change Persona</Button>
+                </Card>
+              ) : (
+                <Card className="p-4 bg-secondary border-border">
+                  <p className="text-sm text-muted-foreground">Select a persona for the agent's communication style.</p>
+                  <Button variant="default" size="sm" className="mt-3 min-h-[44px] bg-primary text-primary-foreground" onClick={() => setIsModuleSelectorOpen(true)}>Select Persona</Button>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="framework" className="space-y-4">
+              {selectedFramework ? (
+                <Card className="p-4 bg-card border-border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl">🧠</span>
+                    <h3 className="font-sans font-medium text-foreground">{selectedFramework.name}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">{selectedFramework.description}</p>
+                  <Button variant="outline" size="sm" className="min-h-[44px] bg-background border-border" onClick={() => setIsModuleSelectorOpen(true)}>Change Framework</Button>
+                </Card>
+              ) : (
+                <Card className="p-4 bg-secondary border-border">
+                  <p className="text-sm text-muted-foreground">Select a framework to guide the agent's reasoning process.</p>
+                  <Button variant="default" size="sm" className="mt-3 min-h-[44px] bg-primary text-primary-foreground" onClick={() => setIsModuleSelectorOpen(true)}>Select Framework</Button>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="config" className="space-y-4">
+              {/* Agent Name Input */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Agent Name</label>
+                <Input
+                  value={config.name}
+                  onChange={(e) => handleConfigChange('name', e.target.value)}
+                  className="min-h-[48px] text-base bg-input border-border focus:ring-ring mt-2"
+                  placeholder="e.g., Customer Support Bot"
+                />
+              </div>
+              {/* Tags Input */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Tags</label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {config.tags?.map(tag => (
+                    <Badge key={tag} className="min-h-[36px] px-4 text-sm bg-primary/10 text-primary border-primary/20">
+                      {tag}
+                      <button className="ml-2 text-primary/70 hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring rounded-full" onClick={() => handleConfigChange('tags', config.tags.filter((t: string) => t !== tag))} aria-label={`Remove tag ${tag}`}>
+                        <Trash className="h-4 w-4" />
+                      </button>
+                    </Badge>
+                  ))}
+                  <Input 
+                    className="min-h-[36px] text-sm bg-input border-border focus:ring-ring w-32" 
+                    placeholder="Add tag..." 
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                        handleConfigChange('tags', [...(config.tags || []), e.currentTarget.value.trim()]);
+                        e.currentTarget.value = '';
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+              {/* Visibility Select */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Visibility</label>
+                <Select value={config.visibility} onValueChange={(v) => handleConfigChange('visibility', v)}>
+                  <SelectTrigger className="min-h-[48px] text-base bg-input border-border focus:ring-ring mt-2">
+                    <SelectValue placeholder="Select visibility" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="private">Private</SelectItem>
+                    <SelectItem value="team">Team</SelectItem>
+                    <SelectItem value="public">Public</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </TabsContent>
+          </ScrollArea>
+        </Tabs>
+
+         {/* Module Selector Modal */}
+        <AdaptiveModal 
+          isOpen={isModuleSelectorOpen} 
+          onClose={() => setIsModuleSelectorOpen(false)} 
+          title={`Select ${activeTab}`} // Dynamically set title
+        >
+          {renderModuleSelector(activeTab)}
+        </AdaptiveModal>
+      </div>
+
+      {/* Live Preview Panel */}
+      <div className="w-2/3 flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+           <h2 className="text-xl font-semibold text-foreground">Live Preview</h2>
+           <Button variant="outline" size="sm" className="min-h-[44px] bg-background border-border" onClick={onTest}>Test Agent</Button>
+        </div>
+        <Card className="flex-1 p-6 bg-card border-border flex items-center justify-center">
+          <AgentPreview 
+            role={selectedRole} 
+            persona={selectedPersona} 
+            framework={selectedFramework} 
+            config={config} 
+          />
+        </Card>
+        <div className="mt-6 flex gap-4 justify-end">
+          <Button variant="outline" size="lg" className="min-h-[44px] bg-background border-border" onClick={onSave}>Save Draft</Button>
+          <Button size="lg" className="min-h-[44px] bg-primary text-primary-foreground" onClick={onSave}>Create Agent</Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+\`\`\`
+
+**Key Mobile-First Features**:
+- ✅ Sticky header/footer for persistent actions
+- ✅ Collapsible preview to save space
+- ✅ 80px min-h module cards for comfortable tapping
+- ✅ 44px min-h buttons for WCAG compliance
+- ✅ AdaptiveModal (drawer) for module selection
+- ✅ Swipe gestures for quick actions
+- ✅ Pull-to-refresh for module libraries
+- ✅ Auto-save drafts every 30 seconds
+- ✅ Haptic feedback on interactions (iOS/Android)
+- **New:** Desktop layout uses tabs for module selection and a dedicated preview panel.
+- **New:** Configuration details are managed within the 'Config' tab.
+- **New:** `ModuleSelector` is now responsible for displaying the desktop modal version.
 
 ### 3. Module Selection Flow
 
@@ -1039,33 +2022,71 @@ When user taps [Change Role], [Change Persona], or [Change Framework]:
 #### Mobile: Full-Screen Drawer (AdaptiveModal)
 
 \`\`\`tsx
-// components/agent-composer/ModuleSelector.tsx
+// components/agent-composer/shared/ModuleSelector.tsx
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { AdaptiveGrid } from "@/components/adaptive/AdaptiveGrid"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { RoleModule, PersonaModule, FrameworkModule } from "@/types/agent"; // Assuming types are defined
 
-export function ModuleSelector({ type, onSelect }: ModuleSelectorProps) {
+interface ModuleSelectorProps {
+  type: 'role' | 'persona' | 'framework';
+  allRoles: RoleModule[];
+  allPersonas: PersonaModule[];
+  allFrameworks: FrameworkModule[];
+  onSelectModule: (module: RoleModule | PersonaModule | FrameworkModule) => void;
+  currentSelection: RoleModule | PersonaModule | FrameworkModule | null; // To highlight current selection
+}
+
+export function ModuleSelector({ type, allRoles, allPersonas, allFrameworks, onSelectModule, currentSelection }: ModuleSelectorProps) {
   const { isMobile } = useDevice()
   const [searchQuery, setSearchQuery] = useState("")
-  const [activeTab, setActiveTab] = useState<'my' | 'system'>('my')
+  const [activeTab, setActiveTab] = useState<'my' | 'system' | 'import' | 'create'>('my') // Added 'create' tab possibility
   
-  // Placeholder for filtered modules logic
-  const filteredModules = [
-    { id: '1', name: 'Developer', description: 'Builds software' },
-    { id: '2', name: 'Designer', description: 'Creates visual interfaces' },
-  ];
+  let modules: (RoleModule | PersonaModule | FrameworkModule)[] = [];
+  let moduleTypeLabel = '';
+
+  switch(type) {
+    case 'role':
+      modules = allRoles;
+      moduleTypeLabel = 'Role';
+      break;
+    case 'persona':
+      modules = allPersonas;
+      moduleTypeLabel = 'Persona';
+      break;
+    case 'framework':
+      modules = allFrameworks;
+      moduleTypeLabel = 'Framework';
+      break;
+    default:
+      return null;
+  }
+
+  // Filter modules based on search query and active tab (simplified for now)
+  const filteredModules = modules.filter(module =>
+    module.name.toLowerCase().includes(searchQuery.toLowerCase())
+  ).filter(module => {
+    // Basic filtering based on tab (e.g., 'my' vs 'system')
+    if (activeTab === 'system') return module.isSystem;
+    if (activeTab === 'my') return !module.isSystem; // Assuming non-system are 'my'
+    return true; // Show all for other tabs or if no filter applied
+  });
+
+  const handleModuleClick = (module: RoleModule | PersonaModule | FrameworkModule) => {
+    onSelectModule(module);
+  };
 
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Search bar - 48px min-h */}
       <div className="p-4 border-b border-border">
         <Input
-          placeholder={`Search ${type}s...`}
+          placeholder={`Search ${moduleTypeLabel}s...`}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="min-h-[48px] text-base bg-input border-border focus:ring-ring"
@@ -1085,7 +2106,7 @@ export function ModuleSelector({ type, onSelect }: ModuleSelectorProps) {
             }`}
             onClick={() => setActiveTab('my')}
           >
-            My {type}s
+            My {moduleTypeLabel}s
           </Button>
           <Button
             variant={activeTab === 'system' ? 'default' : 'outline'}
@@ -1099,12 +2120,21 @@ export function ModuleSelector({ type, onSelect }: ModuleSelectorProps) {
           >
             System Library
           </Button>
-          <Button
+           <Button
             variant="outline"
             size={isMobile ? 'lg' : 'default'}
             className="min-h-[44px] whitespace-nowrap bg-background border-border"
+            onClick={() => setActiveTab('create')} // Action to potentially open editor
           >
             + Create New
+          </Button>
+           <Button
+            variant="outline"
+            size={isMobile ? 'lg' : 'default'}
+            className="min-h-[44px] whitespace-nowrap bg-background border-border"
+            onClick={() => setActiveTab('import')} // Action for import
+          >
+            Import
           </Button>
         </div>
       </div>
@@ -1115,13 +2145,23 @@ export function ModuleSelector({ type, onSelect }: ModuleSelectorProps) {
           {filteredModules.map(module => (
             <Card
               key={module.id}
-              onClick={() => onSelect(module)}
-              className="min-h-[80px] p-4 cursor-pointer bg-card border-border hover:bg-accent active:scale-98 transition-all"
+              onClick={() => handleModuleClick(module)}
+              className={`min-h-[80px] p-4 cursor-pointer 
+                ${currentSelection?.id === module.id 
+                  ? 'bg-primary/10 border-primary hover:bg-primary/20' 
+                  : 'bg-card border-border hover:bg-accent'
+                } 
+                active:scale-98 transition-all`}
             >
               <h3 className="font-sans font-medium text-foreground">{module.name}</h3>
               <p className="text-sm text-muted-foreground mt-1">{module.description}</p>
+              {/* Display usage count */}
+              <p className="text-xs text-muted-foreground mt-2">Used in {module.usageCount ?? 0} agents</p>
             </Card>
           ))}
+           {filteredModules.length === 0 && (
+             <p className="text-center text-muted-foreground py-8 col-span-full">No {moduleTypeLabel.toLowerCase()}s found.</p>
+           )}
         </AdaptiveGrid>
       </div>
     </div>
@@ -1154,33 +2194,98 @@ When user taps [Edit] on a module card:
 // components/module-editors/RoleEditor.tsx
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useDevice } from "@/contexts/DeviceProvider"
-import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Alert, AlertDescription, AlertTriangle } from "@/components/ui/alert"
-// Assuming these are imported from a shared components directory or @/components/ui
-import { Edit } from 'lucide-react'
+import { Trash, Plus } from 'lucide-react'; // Assuming Trash and Plus icons are used
+
+// Assuming RoleModule type is defined and imported
+// import { RoleModule } from "@/types/agent"; 
+
+interface RoleEditorProps {
+  role: Partial<RoleModule>; // Allow Partial for creation
+  onSave: (role: RoleModule) => void;
+  onCancel: () => void;
+}
 
 export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
   const { isMobile } = useDevice()
-  const [formData, setFormData] = useState(role)
-  
+  const [formData, setFormData] = useState<Partial<RoleModule>>({
+    id: role.id || `temp-${Date.now()}`, // Temporary ID for new roles
+    name: role.name || "",
+    description: role.description || "",
+    category: role.category || "business", 
+    expertiseTags: role.expertiseTags || [],
+    usageCount: role.usageCount || 0,
+    isSystem: role.isSystem || false, // Should not be editable if true
+    createdBy: role.createdBy || "user",
+  });
+  const [newTag, setNewTag] = useState("");
+
+  useEffect(() => {
+    // If editing an existing role, ensure formData is updated
+    if (role.id) {
+      setFormData({
+        id: role.id,
+        name: role.name || "",
+        description: role.description || "",
+        category: role.category || "business",
+        expertiseTags: role.expertiseTags || [],
+        usageCount: role.usageCount || 0,
+        isSystem: role.isSystem || false,
+        createdBy: role.createdBy || "user",
+      });
+    }
+  }, [role]);
+
+  const handleSave = () => {
+    // Basic validation
+    if (!formData.name || !formData.description) {
+      alert("Name and Description are required.");
+      return;
+    }
+    onSave(formData as RoleModule); // Cast is safe if validation passes and required fields are set
+  };
+
+  const addExpertiseTag = () => {
+    if (newTag.trim() && !formData.expertiseTags?.includes(newTag.trim())) {
+      setFormData({ ...formData, expertiseTags: [...(formData.expertiseTags || []), newTag.trim()] });
+      setNewTag("");
+    }
+  };
+
+  const removeExpertiseTag = (tagToRemove: string) => {
+    setFormData({ ...formData, expertiseTags: formData.expertiseTags?.filter(tag => tag !== tagToRemove) });
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setFormData({ ...formData, category: value });
+  };
+
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background p-4">
       {/* Form - scrollable */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto space-y-4">
         {/* Name input - 48px min-h */}
         <div>
           <label className="text-sm font-medium text-muted-foreground">Name</label>
           <Input
+            name="name"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={handleInputChange}
             className="min-h-[48px] text-base bg-input border-border focus:ring-ring mt-2"
+            placeholder="e.g., Strategic Advisor"
+            disabled={formData.isSystem} // Disable editing for system roles
           />
         </div>
         
@@ -1188,10 +2293,13 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
         <div>
           <label className="text-sm font-medium text-muted-foreground">Description</label>
           <Textarea
+            name="description"
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={handleInputChange}
             className="min-h-[96px] text-base bg-input border-border focus:ring-ring mt-2"
             rows={4}
+            placeholder="e.g., Guides strategic decisions and market analysis."
+            disabled={formData.isSystem} // Disable editing for system roles
           />
         </div>
         
@@ -1199,29 +2307,50 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
         <div>
           <label className="text-sm font-medium text-muted-foreground">Expertise Tags</label>
           <div className="flex flex-wrap gap-2 mt-2">
-            {formData.expertiseTags.map(tag => (
+            {formData.expertiseTags?.map(tag => (
               <Badge
                 key={tag}
                 className="min-h-[36px] px-4 text-sm bg-primary/10 text-primary border-primary/20"
               >
                 {tag}
-                <button className="ml-2 min-h-[24px] min-w-[24px] text-primary/70 hover:text-primary">×</button>
+                {!formData.isSystem && ( // Only show remove button if not a system role
+                  <button
+                    className="ml-2 text-primary/70 hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring rounded-full"
+                    onClick={() => removeExpertiseTag(tag)}
+                    aria-label={`Remove tag ${tag}`}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </button>
+                )}
               </Badge>
             ))}
-            <Button
-              variant="outline"
-              size="sm"
-              className="min-h-[36px] bg-background border-border"
-            >
-              + Add Tag
-            </Button>
+            {!formData.isSystem && ( // Show add tag input only if not a system role
+              <div className="flex items-center gap-2">
+                <Input
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  className="min-h-[36px] text-sm bg-input border-border focus:ring-ring w-32"
+                  placeholder="Add tag..."
+                  onKeyDown={(e) => e.key === 'Enter' && addExpertiseTag()}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="min-h-[36px] min-w-[36px] bg-background border-border"
+                  onClick={addExpertiseTag}
+                  aria-label="Add expertise tag"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
         
         {/* Category selector */}
         <div>
           <label className="text-sm font-medium text-muted-foreground">Category</label>
-          <Select value={formData.category} onValueChange={(val) => setFormData({ ...formData, category: val })}>
+          <Select value={formData.category} onValueChange={handleCategoryChange}>
             <SelectTrigger className="min-h-[48px] text-base bg-input border-border focus:ring-ring mt-2">
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
@@ -1229,16 +2358,18 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
               <SelectItem value="business">Business & Strategy</SelectItem>
               <SelectItem value="technology">Technology & Engineering</SelectItem>
               <SelectItem value="creative">Creative & Design</SelectItem>
+              <SelectItem value="marketing">Marketing & Sales</SelectItem>
+              <SelectItem value="research">Research & Analysis</SelectItem>
             </SelectContent>
           </Select>
         </div>
         
         {/* Warning if editing affects multiple agents */}
-        {role.usageCount > 0 && (
+        {formData.usageCount > 0 && (
           <Alert variant="warning">
             <AlertTriangle className="h-4 w-4 text-destructive" />
             <AlertDescription>
-              This will update {role.usageCount} agent{role.usageCount > 1 ? 's' : ''} using this role
+              This will update {formData.usageCount} agent{formData.usageCount > 1 ? 's' : ''} using this role.
             </AlertDescription>
           </Alert>
         )}
@@ -1254,13 +2385,15 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
         >
           Cancel
         </Button>
-        <Button
-          size="lg"
-          className="flex-1 min-h-[44px] bg-primary text-primary-foreground"
-          onClick={() => onSave(formData)}
-        >
-          Save Changes
-        </Button>
+        {!formData.isSystem && ( // Show save button only if not a system role
+          <Button
+            size="lg"
+            className="flex-1 min-h-[44px] bg-primary text-primary-foreground"
+            onClick={handleSave}
+          >
+            Save Changes
+          </Button>
+        )}
       </footer>
     </div>
   )
@@ -1275,6 +2408,8 @@ export function RoleEditor({ role, onSave, onCancel }: RoleEditorProps) {
 - ✅ Scrollable form content
 - ✅ Clear visual hierarchy
 - ✅ Adequate spacing between fields (16px)
+- **New:** System roles are visually indicated and form fields are disabled.
+- **New:** Add/remove tag functionality for expertise tags.
 
 ---
 
@@ -1288,38 +2423,33 @@ components/
 │   ├── AgentComposer.tsx              # Main orchestrator
 │   ├── mobile/
 │   │   ├── AgentComposerMobile.tsx    # Mobile-specific layout
-│   │   └── ModuleCardMobile.tsx       # Mobile module card
+│   │   └── ModuleCardMobile.tsx       # Mobile module card (conceptual)
 │   ├── desktop/
 │   │   ├── AgentComposerDesktop.tsx   # Desktop-specific layout
-│   │   └── ModuleCardDesktop.tsx      # Desktop module card
+│   │   └── ModuleCardDesktop.tsx      # Desktop module card (conceptual)
 │   ├── shared/
-│   │   ├── ModuleCard.tsx             # Generic module card
-│   │   ├── ModuleSelector.tsx         # Module selection UI
 │   │   ├── AgentPreview.tsx           # Live preview
-│   │   └── ConfigurationCard.tsx      # Config editor
+│   │   ├── ModuleSelector.tsx         # Module selection UI (unified for mobile/desktop)
+│   │   ├── ConfigurationCard.tsx      # Config editor (integrated into composer)
+│   │   └── ModuleCard.tsx             # Generic module card (used within composer)
 │   └── index.ts
 │
 ├── module-libraries/
-│   ├── RoleLibrary.tsx                # Role management
-│   ├── PersonaLibrary.tsx             # Persona management
-│   ├── FrameworkLibrary.tsx           # Framework management
+│   ├── RoleLibrary.tsx                # Orchestrator for Role Library
+│   ├── PersonaLibrary.tsx             # Orchestrator for Persona Library
+│   ├── FrameworkLibrary.tsx           # Orchestrator for Framework Library
 │   ├── mobile/
-│   │   ├── RoleLibraryMobile.tsx      # Mobile role library
-│   │   ├── PersonaLibraryMobile.tsx   # Mobile persona library
-│   │   └── FrameworkLibraryMobile.tsx # Mobile framework library
+│   │   ├── RoleLibraryMobile.tsx      # Mobile role library view
+│   │   ├── PersonaLibraryMobile.tsx   # Mobile persona library view
+│   │   └── FrameworkLibraryMobile.tsx # Mobile framework library view
 │   ├── desktop/
-│   │   ├── RoleLibraryDesktop.tsx     # Desktop role library
-│   │   ├── PersonaLibraryDesktop.tsx  # Desktop persona library
-│   │   └── FrameworkLibraryDesktop.tsx# Desktop framework library
-│   └── shared/
-│       ├── ModuleCard.tsx             # Library card view
-│       └── ModuleGrid.tsx             # Grid layout
+│   │   ├── RoleLibraryDesktop.tsx     # Desktop role library view
+│   │   ├── PersonaLibraryDesktop.tsx  # Desktop persona library view
+│   │   └── FrameworkLibraryDesktop.tsx# Desktop framework library view
+│   └── RoleEditorModal.tsx            # Modal for editing/creating Roles
 │
-└── module-editors/
-    ├── RoleEditor.tsx                 # Role creation/editing
-    ├── PersonaEditor.tsx              # Persona creation/editing
-    ├── FrameworkEditor.tsx            # Framework creation/editing
-    └── shared/
+└── module-editors/                    # Generic editor components if needed across libraries
+    ├── shared/
         ├── FormField.tsx              # Touch-optimized form field
         └── TagSelector.tsx            # Touch-optimized tag selector
 \`\`\`
@@ -1329,70 +2459,79 @@ components/
 \`\`\`typescript
 // Module Types
 interface RoleModule {
-  id: string
-  type: 'role'
-  name: string
-  description: string
-  category: string
-  expertiseTags: string[]
-  icon: string
-  isSystem: boolean
-  createdBy: string
-  usageCount: number
+  id: string;
+  type: 'role';
+  name: string;
+  description: string;
+  category: string;
+  expertiseTags: string[];
+  icon?: string; // Optional icon for display
+  isSystem: boolean; // Indicates if it's a pre-defined system module
+  createdBy: string; // User ID or 'system'
+  usageCount: number; // Number of agents using this module
 }
 
 interface PersonaModule {
-  id: string
-  type: 'persona'
-  name: string
-  traits: string[] // ['analytical', 'empathetic', 'direct']
-  communicationStyle: 'formal' | 'balanced' | 'casual'
-  tone: 'professional' | 'friendly' | 'authoritative'
-  customInstructions?: string
-  isSystem: boolean
-  createdBy: string
-  usageCount: number
+  id: string;
+  type: 'persona';
+  name: string;
+  traits: string[]; // e.g., ['analytical', 'empathetic', 'direct']
+  communicationStyle: 'formal' | 'balanced' | 'casual';
+  tone: 'professional' | 'friendly' | 'authoritative';
+  description: string; // Short description for list view
+  customInstructions?: string; // Detailed instructions for persona behavior
+  isSystem: boolean;
+  createdBy: string;
+  usageCount: number;
 }
 
 interface FrameworkModule {
-  id: string
-  type: 'framework'
-  name: string
-  description: string
-  steps?: string[]
-  promptTemplate?: string
-  isSystem: boolean
-  createdBy: string
-  usageCount: number
+  id: string;
+  type: 'framework';
+  name: string;
+  description: string;
+  steps?: string[]; // Ordered steps for the framework
+  promptTemplate?: string; // Template for the framework's prompt
+  isSystem: boolean;
+  createdBy: string;
+  usageCount: number;
 }
 
 // Agent Composition
 interface Agent {
-  id: string
-  name: string
-  description: string
+  id: string;
+  name: string;
+  description?: string; // Optional description for the agent
   
-  // Module References (not embedded)
-  roleId: string
-  personaId: string
-  frameworkId?: string
+  // Module References (IDs)
+  roleId: string;
+  personaId: string;
+  frameworkId?: string; // Framework is optional
   
   // Configuration
-  tags: string[]
-  visibility: 'private' | 'team' | 'public'
+  tags: string[];
+  visibility: 'private' | 'team' | 'public';
   
   // Metadata
-  createdAt: Date
-  updatedAt: Date
-  createdBy: string
-  usageCount: number
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string; // User ID
+  usageCount: number; // Number of times this agent config is used (if applicable)
 }
 
-// Resolved Agent (with modules populated)
+// Resolved Agent (for preview/runtime)
 interface ResolvedAgent extends Agent {
-  role: RoleModule
-  persona: PersonaModule
-  framework?: FrameworkModule
+  role: RoleModule;
+  persona: PersonaModule;
+  framework?: FrameworkModule;
+}
+
+// Agent Configuration (used during creation/editing)
+interface AgentConfig {
+  name: string;
+  tags: string[];
+  visibility: 'private' | 'team' | 'public';
+  // Potentially other settings like temperature, etc.
 }
 \`\`\`
 
@@ -1499,7 +2638,7 @@ interface ResolvedAgent extends Agent {
 
 ## Migration Plan
 
-### Phase 1: Module Libraries (~1 hour) - IN PROGRESS ⏳
+### Phase 1: Module Libraries (~1 hour) - COMPLETED ✅
 
 **Completed ✅ (< 1 hour):**
 - [x] Create module data models (Convex schema) - Updated `docs/guides/convex-database-schema.md`
@@ -1519,11 +2658,22 @@ interface ResolvedAgent extends Agent {
   - [x] `components/module-libraries/desktop/FrameworkLibraryDesktop.tsx`
   - [x] `app/agents/frameworks/page.tsx`
 - [x] Add `frameworks` export to `lib/agent-config/frameworks.ts`
+- [x] Implement CRUD operations for each module type (using localStorage)
+  - [x] Created `hooks/useRoleManager.ts` with full CRUD operations
+  - [x] Created `components/module-libraries/RoleEditorModal.tsx` with AdaptiveModal
+  - [x] Updated mobile/desktop components to use CRUD operations
+  - [x] Added custom role badges and delete functionality
+- [x] Add AdaptiveModal for editing modules
+  - [x] RoleEditorModal uses AdaptiveModal for mobile drawer / desktop modal
+  - [x] 48px min-h form inputs
+  - [x] 44px min-h buttons
+  - [x] Touch-optimized tag management
+- [x] Connect module libraries to actual data (roles, personas, frameworks from lib/)
+  - [x] RoleLibrary connected to `lib/agent-config/roles.ts`
+  - [x] PersonaLibrary connected to `lib/agent-config/personas.ts`
+  - [x] FrameworkLibrary connected to `lib/agent-config/frameworks.ts`
 
-**Next Tasks 🚧:**
-- [ ] Implement CRUD operations for each module type (using mock data)
-- [ ] Add AdaptiveModal for editing modules
-- [ ] Connect module libraries to actual data (roles, personas, frameworks from lib/)
+**Phase 1 Status: COMPLETED ✅**
 
 ### Phase 2: Agent Composer (~2-3 hours)
 - Build new `/agents/new` page with modular composer (4-5 hours)

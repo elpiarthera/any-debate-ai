@@ -6,32 +6,63 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { AdaptiveGrid } from "@/components/adaptive/AdaptiveGrid"
-import { PROFESSIONAL_ROLES, ROLE_CATEGORIES, searchRoles, getRolesByCategory } from "@/lib/agent-config/roles"
+import { ROLE_CATEGORIES } from "@/lib/agent-config/roles"
 import { Plus, MoreVertical } from "lucide-react"
+import { useRoleManager } from "@/hooks/useRoleManager"
+import { RoleEditorModal } from "@/components/module-libraries/RoleEditorModal"
+import type { ProfessionalRole } from "@/lib/agent-config/roles"
 
 export function RoleLibraryDesktop() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState<string>("all")
+  const { allRoles, createRole, updateRole, deleteRole, isCustomRole } = useRoleManager()
+  const [editorOpen, setEditorOpen] = useState(false)
+  const [editingRole, setEditingRole] = useState<ProfessionalRole | undefined>()
+  const [editorMode, setEditorMode] = useState<"create" | "edit">("create")
 
-  // Filter roles based on search and category
   const filteredRoles = searchQuery
-    ? searchRoles(searchQuery)
+    ? allRoles.filter(
+        (role) =>
+          role.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          role.description.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
     : activeCategory === "all"
-      ? PROFESSIONAL_ROLES
-      : getRolesByCategory(activeCategory)
+      ? allRoles
+      : allRoles.filter((role) => role.category === activeCategory)
+
+  const handleCreateRole = () => {
+    setEditingRole(undefined)
+    setEditorMode("create")
+    setEditorOpen(true)
+  }
+
+  const handleEditRole = (role: ProfessionalRole) => {
+    setEditingRole(role)
+    setEditorMode("edit")
+    setEditorOpen(true)
+  }
+
+  const handleSaveRole = (roleData: Omit<ProfessionalRole, "id"> | ProfessionalRole) => {
+    if (editorMode === "create") {
+      createRole(roleData as Omit<ProfessionalRole, "id">)
+    } else if ("id" in roleData) {
+      updateRole(roleData.id, roleData)
+    }
+  }
+
+  const handleDeleteRole = (id: string) => {
+    if (confirm("Are you sure you want to delete this role?")) {
+      deleteRole(id)
+    }
+  }
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Header */}
       <header className="border-b border-border p-6">
         <div className="flex items-center justify-between">
           <h1 className="font-sans text-2xl font-semibold text-foreground">Role Library</h1>
-          <Button
-            size="default"
-            className="bg-primary text-primary-foreground"
-            onClick={() => router.push("/agents/roles/new")}
-          >
+          <Button size="default" className="bg-primary text-primary-foreground" onClick={handleCreateRole}>
             <Plus className="h-4 w-4 mr-2" />
             New Role
           </Button>
@@ -86,23 +117,30 @@ export function RoleLibraryDesktop() {
             <Card
               key={role.id}
               className="p-4 bg-card border-border hover:bg-accent transition-colors cursor-pointer"
-              onClick={() => router.push(`/agents/roles/${role.id}`)}
+              onClick={() => handleEditRole(role)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">{role.icon}</span>
                   <h3 className="font-sans font-medium text-foreground">{role.name}</h3>
+                  {isCustomRole(role.id) && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground border border-border">
+                      Custom
+                    </span>
+                  )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    // TODO: Open action menu
-                  }}
-                >
-                  <MoreVertical className="h-4 w-4 text-muted-foreground" />
-                </Button>
+                {isCustomRole(role.id) && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleDeleteRole(role.id)
+                    }}
+                  >
+                    <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                )}
               </div>
               <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{role.description}</p>
               <div className="flex flex-wrap gap-1 mt-3">
@@ -140,6 +178,14 @@ export function RoleLibraryDesktop() {
           </div>
         )}
       </div>
+
+      <RoleEditorModal
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        role={editingRole}
+        onSave={handleSaveRole}
+        mode={editorMode}
+      />
     </div>
   )
 }
