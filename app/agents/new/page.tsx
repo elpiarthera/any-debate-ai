@@ -1,33 +1,22 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { AgentBuilderModal } from "@/components/agent-config/AgentBuilderModal"
+import { AgentComposer } from "@/components/agent-composer/AgentComposer"
 import { useAgentLibrary } from "@/hooks/dashboard/useAgentLibrary"
-import type { AgentConfigurationDraft } from "@/lib/agent-config/types"
 import type { Agent } from "@/types/dashboard"
 import { toast } from "sonner"
 
 export default function NewAgentPage() {
   const router = useRouter()
   const { addAgent } = useAgentLibrary()
-  const [isOpen, setIsOpen] = useState(false)
 
-  // Open modal on mount
-  useEffect(() => {
-    setIsOpen(true)
-  }, [])
-
-  const handleClose = () => {
-    setIsOpen(false)
-    // Navigate back to agents list after modal closes
-    setTimeout(() => {
-      router.push("/agents")
-    }, 300)
-  }
-
-  const handleSave = (config: AgentConfigurationDraft) => {
-    // Create new agent from configuration
+  const handleSave = (config: {
+    name: string
+    roleId: string
+    personaId: string
+    frameworkId: string
+    customInstructions?: string
+  }) => {
     const newAgent: Agent = {
       id: crypto.randomUUID(),
       name: config.name,
@@ -47,8 +36,10 @@ export default function NewAgentPage() {
   }
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-background">
-      <AgentBuilderModal isOpen={isOpen} onClose={handleClose} onSave={handleSave} />
+    <div className="min-h-screen w-full overflow-x-hidden bg-background p-4 md:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto h-[calc(100vh-2rem)] md:h-[calc(100vh-3rem)] lg:h-[calc(100vh-4rem)]">
+        <AgentComposer onSave={handleSave} />
+      </div>
     </div>
   )
 }
