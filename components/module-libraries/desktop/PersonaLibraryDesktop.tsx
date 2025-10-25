@@ -1,18 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Plus, MoreVertical } from "lucide-react"
+import { Plus, MoreVertical } from "lucide-react"
 import { usePersonaManager } from "@/hooks/usePersonaManager"
 import { PersonaEditorModal } from "@/components/module-libraries/PersonaEditorModal"
 import type { Persona } from "@/lib/agent-config/personas"
 
 export function PersonaLibraryDesktop() {
-  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState<"my" | "system">("my")
   const { allPersonas, createPersona, updatePersona, deletePersona, isCustomPersona } = usePersonaManager()
@@ -27,9 +25,11 @@ export function PersonaLibraryDesktop() {
   )
 
   const handleCreatePersona = () => {
+    console.log("[v0] handleCreatePersona called")
     setEditingPersona(undefined)
     setEditorMode("create")
     setEditorOpen(true)
+    console.log("[v0] Editor should open now, editorOpen:", true)
   }
 
   const handleEditPersona = (persona: Persona) => {
@@ -57,13 +57,16 @@ export function PersonaLibraryDesktop() {
       {/* Header */}
       <header className="border-b border-border p-6">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-              <ArrowLeft className="h-5 w-5 text-foreground" />
-            </Button>
-            <h1 className="font-sans text-2xl font-semibold text-foreground">Persona Library</h1>
-          </div>
-          <Button className="bg-primary text-primary-foreground" onClick={handleCreatePersona}>
+          <h1 className="font-sans text-2xl font-semibold text-foreground">Persona Library</h1>
+          <Button
+            className="bg-primary text-primary-foreground"
+            onClick={(e) => {
+              console.log("[v0] New Persona button clicked")
+              e.preventDefault()
+              e.stopPropagation()
+              handleCreatePersona()
+            }}
+          >
             <Plus className="h-5 w-5 mr-2" />
             New Persona
           </Button>
@@ -199,7 +202,10 @@ export function PersonaLibraryDesktop() {
 
       <PersonaEditorModal
         open={editorOpen}
-        onOpenChange={setEditorOpen}
+        onOpenChange={(open) => {
+          console.log("[v0] PersonaEditorModal onOpenChange:", open)
+          setEditorOpen(open)
+        }}
         persona={editingPersona}
         onSave={handleSavePersona}
         mode={editorMode}

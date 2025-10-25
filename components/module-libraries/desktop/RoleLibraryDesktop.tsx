@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
@@ -13,7 +12,6 @@ import { RoleEditorModal } from "@/components/module-libraries/RoleEditorModal"
 import type { ProfessionalRole } from "@/lib/agent-config/roles"
 
 export function RoleLibraryDesktop() {
-  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState<string>("all")
   const { allRoles, createRole, updateRole, deleteRole, isCustomRole } = useRoleManager()
@@ -32,9 +30,11 @@ export function RoleLibraryDesktop() {
       : allRoles.filter((role) => role.category === activeCategory)
 
   const handleCreateRole = () => {
+    console.log("[v0] handleCreateRole called")
     setEditingRole(undefined)
     setEditorMode("create")
     setEditorOpen(true)
+    console.log("[v0] Editor should open now, editorOpen:", true)
   }
 
   const handleEditRole = (role: ProfessionalRole) => {
@@ -62,7 +62,16 @@ export function RoleLibraryDesktop() {
       <header className="border-b border-border p-6">
         <div className="flex items-center justify-between">
           <h1 className="font-sans text-2xl font-semibold text-foreground">Role Library</h1>
-          <Button size="default" className="bg-primary text-primary-foreground" onClick={handleCreateRole}>
+          <Button
+            size="default"
+            className="bg-primary text-primary-foreground"
+            onClick={(e) => {
+              console.log("[v0] New Role button clicked")
+              e.preventDefault()
+              e.stopPropagation()
+              handleCreateRole()
+            }}
+          >
             <Plus className="h-4 w-4 mr-2" />
             New Role
           </Button>
@@ -181,7 +190,10 @@ export function RoleLibraryDesktop() {
 
       <RoleEditorModal
         open={editorOpen}
-        onOpenChange={setEditorOpen}
+        onOpenChange={(open) => {
+          console.log("[v0] RoleEditorModal onOpenChange:", open)
+          setEditorOpen(open)
+        }}
         role={editingRole}
         onSave={handleSaveRole}
         mode={editorMode}

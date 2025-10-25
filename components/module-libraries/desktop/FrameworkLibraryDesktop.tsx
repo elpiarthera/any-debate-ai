@@ -23,9 +23,11 @@ export function FrameworkLibraryDesktop() {
   )
 
   const handleCreateFramework = () => {
+    console.log("[v0] handleCreateFramework called")
     setEditingFramework(undefined)
     setEditorMode("create")
     setEditorOpen(true)
+    console.log("[v0] Editor should open now, editorOpen:", true)
   }
 
   const handleEditFramework = (framework: ThinkingFramework) => {
@@ -54,7 +56,15 @@ export function FrameworkLibraryDesktop() {
       <header className="border-b border-border p-6">
         <div className="flex items-center justify-between">
           <h1 className="font-sans text-2xl font-semibold text-foreground">Framework Library</h1>
-          <Button className="bg-primary text-primary-foreground" onClick={handleCreateFramework}>
+          <Button
+            className="bg-primary text-primary-foreground"
+            onClick={(e) => {
+              console.log("[v0] New Framework button clicked")
+              e.preventDefault()
+              e.stopPropagation()
+              handleCreateFramework()
+            }}
+          >
             <Plus className="h-4 w-4 mr-2" />
             New Framework
           </Button>
@@ -183,7 +193,10 @@ export function FrameworkLibraryDesktop() {
 
       <FrameworkEditorModal
         open={editorOpen}
-        onOpenChange={setEditorOpen}
+        onOpenChange={(open) => {
+          console.log("[v0] FrameworkEditorModal onOpenChange:", open)
+          setEditorOpen(open)
+        }}
         framework={editingFramework}
         onSave={handleSaveFramework}
         mode={editorMode}
