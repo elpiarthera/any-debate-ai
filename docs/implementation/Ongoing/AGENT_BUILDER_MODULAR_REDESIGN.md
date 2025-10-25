@@ -551,6 +551,204 @@ interface Model {
 
 ---
 
+### Phase 8: Secondary Navigation Sidebar - NOT STARTED ⏳ (~2-3 hours)
+
+**Goal:** Add an inset sidebar with secondary navigation to allow users to navigate between Agents, Roles, Personas, and Frameworks pages.
+
+**Problem:** Currently, users can access module library pages at `/agents/roles`, `/agents/personas`, `/agents/frameworks`, but there's no visible navigation to reach these pages. Users don't know these pages exist.
+
+**Solution:** Implement shadcn sidebar-08 pattern (inset sidebar with secondary navigation) to provide clear navigation between:
+- All Agents (main page)
+- Roles Library
+- Personas Library
+- Frameworks Library
+
+#### Task 8.1: Install and Configure Sidebar Component
+
+**Command:**
+\`\`\`bash
+npx shadcn@latest add sidebar-08
+\`\`\`
+
+**Files to Create:**
+- `components/agents/AgentsSidebar.tsx` - Secondary navigation sidebar
+- `components/agents/AgentsLayout.tsx` - Layout wrapper with sidebar
+
+**Sidebar Structure:**
+\`\`\`
+┌─────────────────────────────────────┐
+│ AI Agents                           │
+├─────────────────────────────────────┤
+│ 🤖 All Agents                       │ ← /agents
+│ 💼 Roles                            │ ← /agents/roles
+│ 🎯 Personas                         │ ← /agents/personas
+│ 🧠 Frameworks                       │ ← /agents/frameworks
+└─────────────────────────────────────┘
+\`\`\`
+
+#### Task 8.2: Mobile-First Sidebar Implementation
+
+**Mobile Behavior (< 768px):**
+- Sidebar hidden by default
+- Hamburger menu button in header
+- Sidebar opens as full-screen drawer (AdaptiveModal)
+- Gesture support for closing (swipe left)
+- Touch-optimized navigation items (min-h-[44px])
+
+**Desktop Behavior (≥ 768px):**
+- Sidebar always visible (inset, not overlay)
+- Collapsible with toggle button
+- Width: 240px expanded, 64px collapsed
+- Smooth transition animation
+- Hover states on navigation items
+
+**Files to Update:**
+- `app/agents/layout.tsx` - Wrap with AgentsLayout
+- `app/agents/roles/page.tsx` - Use AgentsLayout
+- `app/agents/personas/page.tsx` - Use AgentsLayout
+- `app/agents/frameworks/page.tsx` - Use AgentsLayout
+- `app/agents/new/page.tsx` - Use AgentsLayout
+
+#### Task 8.3: Design System Compliance
+
+**Mobile-First CSS Pattern:**
+\`\`\`tsx
+// Base styles (mobile), then md:, then lg:
+<div className="
+  // Mobile: Hidden by default
+  hidden
+  // Tablet: Show as inset sidebar
+  md:block md:w-[240px]
+  // Desktop: Same as tablet
+  lg:w-[240px]
+">
+  <AgentsSidebar />
+</div>
+\`\`\`
+
+**Touch Targets:**
+- Navigation items: `min-h-[44px]` (WCAG 2.1 Level AA)
+- Toggle button: `min-h-[44px] min-w-[44px]`
+- Spacing between items: `gap-1` (4px minimum)
+
+**Design Tokens:**
+- Background: `bg-sidebar` (new token to add to globals.css)
+- Border: `border-sidebar-border` (new token)
+- Text: `text-sidebar-foreground` (new token)
+- Active item: `bg-sidebar-accent text-sidebar-accent-foreground`
+- Hover: `hover:bg-sidebar-accent/50`
+
+**New Design Tokens to Add to globals.css:**
+\`\`\`css
+@theme inline {
+  /* Sidebar tokens */
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--card-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+}
+\`\`\`
+
+#### Task 8.4: Navigation State Management
+
+**Active Route Detection:**
+\`\`\`tsx
+import { usePathname } from 'next/navigation'
+
+const pathname = usePathname()
+const isActive = (path: string) => pathname === path || pathname.startsWith(path)
+\`\`\`
+
+**Navigation Items:**
+\`\`\`tsx
+const navItems = [
+  { 
+    label: 'All Agents', 
+    href: '/agents', 
+    icon: Bot,
+    exact: true // Only match exact path
+  },
+  { 
+    label: 'Roles', 
+    href: '/agents/roles', 
+    icon: Briefcase 
+  },
+  { 
+    label: 'Personas', 
+    href: '/agents/personas', 
+    icon: Target 
+  },
+  { 
+    label: 'Frameworks', 
+    href: '/agents/frameworks', 
+    icon: Brain 
+  },
+]
+\`\`\`
+
+#### Task 8.5: Accessibility & Polish
+
+**Accessibility Requirements:**
+- ARIA labels for navigation items
+- ARIA current="page" for active item
+- Keyboard navigation (Tab, Enter, Arrow keys)
+- Focus indicators visible
+- Screen reader announcements
+
+**Polish:**
+- Smooth transitions (transition-all duration-200)
+- Hover states with subtle background change
+- Active state with accent color
+- Icon + label layout
+- Badge for agent count (optional)
+
+**Example Navigation Item:**
+\`\`\`tsx
+<Link
+  href="/agents/roles"
+  className={cn(
+    "flex items-center gap-3 px-3 py-2 rounded-lg transition-all",
+    "min-h-[44px]", // Touch target
+    "hover:bg-sidebar-accent/50",
+    isActive('/agents/roles') && "bg-sidebar-accent text-sidebar-accent-foreground"
+  )}
+  aria-current={isActive('/agents/roles') ? 'page' : undefined}
+>
+  <Briefcase className="h-5 w-5" />
+  <span className="text-sm font-medium">Roles</span>
+  {roleCount > 0 && (
+    <span className="ml-auto text-xs text-muted-foreground">
+      {roleCount}
+    </span>
+  )}
+</Link>
+\`\`\`
+
+#### Task 8.6: Testing & Validation
+
+**Testing Checklist:**
+- [ ] Mobile: Sidebar opens as full-screen drawer
+- [ ] Mobile: Hamburger menu button visible in header
+- [ ] Mobile: Gesture support for closing drawer
+- [ ] Desktop: Sidebar always visible (inset)
+- [ ] Desktop: Collapsible with smooth animation
+- [ ] Active route highlighted correctly
+- [ ] Navigation works on all pages
+- [ ] Touch targets meet 44px minimum
+- [ ] Keyboard navigation works
+- [ ] Screen reader announces correctly
+- [ ] Focus indicators visible
+- [ ] Design tokens used throughout
+
+**Files Summary:**
+- `components/agents/AgentsSidebar.tsx` - Sidebar component
+- `components/agents/AgentsLayout.tsx` - Layout wrapper
+- `app/agents/layout.tsx` - Updated with AgentsLayout
+- `app/globals.css` - Added sidebar design tokens
+
+---
+
 ## Summary
 
 **Total Implementation Time:** ~7-9 hours
@@ -563,12 +761,14 @@ interface Model {
 - Phase 5: Enhancements ✅
 - Phase 6: Polish & Testing ✅
 - Phase 7: TRUE MODULARITY ✅
+- Phase 8: Secondary Navigation Sidebar ⏳
 
 **Key Achievements:**
 - Fully modular agent builder with reusable components
 - In-flow module creation during agent composition
 - LLM model selection with detailed metadata
 - Enhanced module cards with rich information display
+- Secondary navigation sidebar for easy access to module libraries ⏳
 - Mobile-first design throughout with proper touch targets
 - Comprehensive error handling and loading states
 - WCAG AA accessibility compliance
@@ -579,4 +779,5 @@ interface Model {
 - Modules are independent, reusable resources
 - Users can create modules independently OR during agent creation
 - All modules stored in libraries for reuse across agents
+- Clear navigation between agents and module libraries ⏳
 - Proper separation of concerns with form components
