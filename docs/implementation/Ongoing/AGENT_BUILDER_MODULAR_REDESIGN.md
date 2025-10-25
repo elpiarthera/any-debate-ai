@@ -551,90 +551,65 @@ interface Model {
 
 ---
 
-### Phase 8: Secondary Navigation Sidebar - COMPLETED ✅ (~2-3 hours)
+### Phase 8: Secondary Navigation Sidebar - COMPLETED ✅ (~30 minutes)
 
-**Goal:** Add an inset sidebar with secondary navigation to allow users to navigate between Agents, Roles, Personas, and Frameworks pages.
+**Goal:** Add collapsible secondary navigation inside the main DashboardSidebar (sidebar-08 pattern) to allow users to navigate between Agents, Roles, Personas, and Frameworks pages.
 
-**Problem:** Currently, users can access module library pages at `/agents/roles`, `/agents/personas`, `/agents/frameworks`, but there's no visible navigation to reach these pages. Users don't know these pages exist.
+**Problem:** Users could access module library pages at `/agents/roles`, `/agents/personas`, `/agents/frameworks`, but there was no visible navigation to reach these pages.
 
-**Solution:** Implemented shadcn sidebar-08 pattern (inset sidebar with secondary navigation) to provide clear navigation between:
-- All Agents (main page)
-- Roles Library
-- Personas Library
-- Frameworks Library
-
-**Files Created:**
-- `components/agents/AgentsSecondarySidebar.tsx` - Secondary navigation sidebar with inset variant
+**Solution:** Implemented shadcn sidebar-08 pattern by adding collapsible submenu under "Agents" in the main DashboardSidebar.
 
 **Files Updated:**
-- `app/agents/page.tsx` - Added SidebarProvider and AgentsSecondarySidebar with mobile drawer support
-- `app/agents/roles/page.tsx` - Added consistent layout with secondary sidebar
-- `app/agents/personas/page.tsx` - Added consistent layout with secondary sidebar
-- `app/agents/frameworks/page.tsx` - Added consistent layout with secondary sidebar
+- `components/dashboard/DashboardSidebar.tsx` - Added collapsible submenu under "Agents" with secondary navigation items
+- `app/agents/page.tsx` - Simplified to remove duplicate secondary sidebar
+- `app/agents/roles/page.tsx` - Simplified to just render RoleLibrary
+- `app/agents/personas/page.tsx` - Simplified to just render PersonaLibrary
+- `app/agents/frameworks/page.tsx` - Simplified to just render FrameworkLibrary
 
 **Features Implemented:**
 
-1. **Desktop Layout:**
-   - Inset secondary sidebar always visible
-   - SidebarProvider wraps the secondary sidebar and content
-   - SidebarInset for proper spacing and rounded corners
-   - Navigation links with active state highlighting
-   - Icons for each section (Users, Briefcase, User, Brain)
+1. **Collapsible Submenu:**
+   - "Agents" menu item now has a chevron icon indicating it's expandable
+   - Clicking "Agents" toggles the submenu visibility
+   - Submenu contains: All Agents, Roles, Personas, Frameworks
+   - Active state highlighting for both parent and submenu items
 
-2. **Mobile Layout:**
-   - Secondary sidebar hidden by default
-   - "Agents Menu" button in header to open drawer
-   - AdaptiveModal for mobile drawer experience
-   - Touch-optimized navigation items (48px minimum height)
-   - Separate modals for main dashboard and secondary navigation
+2. **Mobile Support:**
+   - Submenu works in mobile drawer modal
+   - Touch-optimized with 44px minimum height for submenu items
+   - Smooth expand/collapse animation
 
 3. **Design System Compliance:**
-   - Uses semantic design tokens (bg-sidebar, text-sidebar-foreground, etc.)
-   - Mobile-first approach with proper breakpoints
-   - Touch targets: 44px for buttons, 48px for navigation items
-   - Proper ARIA labels and accessibility support
+   - Uses semantic design tokens (bg-sidebar-accent, text-sidebar-foreground)
+   - Proper indentation for submenu items (ml-4)
+   - Icons for each submenu item (Users, Briefcase, UserCircle, Lightbulb)
    - Active route detection with usePathname
 
 4. **Navigation Structure:**
-   - All Agents → `/agents`
-   - Roles → `/agents/roles`
-   - Personas → `/agents/personas`
-   - Frameworks → `/agents/frameworks`
-
-**Mobile UX:**
-\`\`\`
-┌─────────────────────────────────────┐
-│ [☰] [Agents Menu] [OrgSwitcher]    │ ← Header with menu buttons
-├─────────────────────────────────────┤
-│ Content (Agents/Roles/Personas/etc) │
-│                                     │
-└─────────────────────────────────────┘
-
-When "Agents Menu" clicked:
-┌─────────────────────────────────────┐
-│ Agents Menu                    [×]  │
-├─────────────────────────────────────┤
-│ 🤖 All Agents                       │
-│ 💼 Roles                            │
-│ 🎯 Personas                         │
-│ 🧠 Frameworks                       │
-└─────────────────────────────────────┘
-\`\`\`
+   - Main: Agents (expandable)
+     - All Agents → `/agents`
+     - Roles → `/agents/roles`
+     - Personas → `/agents/personas`
+     - Frameworks → `/agents/frameworks`
 
 **Desktop UX:**
 \`\`\`
-┌──────────┬────────────┬─────────────────────────┐
-│ Main     │ Secondary  │ Content                 │
-│ Sidebar  │ Sidebar    │                         │
-│          │ (Inset)    │                         │
-│ Dashboard│ ┌────────┐ │ ┌─────────────────────┐ │
-│ Debates  │ │All Agents│ │ Agent List/Library  │ │
-│ Agents ✓ │ │Roles    │ │                     │ │
-│ Templates│ │Personas │ │                     │ │
-│ Memory   │ │Frameworks│ │                     │ │
-│ ...      │ └────────┘ │ └─────────────────────┘ │
-└──────────┴────────────┴─────────────────────────┘
+┌──────────────────────┐
+│ Dashboard            │
+│ Debates          3   │
+│ Agents           ▼   │ ← Expandable
+│   All Agents         │ ← Submenu
+│   Roles              │
+│   Personas           │
+│   Frameworks         │
+│ Templates            │
+│ Memory          New  │
+│ ...                  │
+└──────────────────────┘
 \`\`\`
+
+**Mobile UX:**
+Same collapsible behavior in the mobile drawer modal.
 
 ---
 
