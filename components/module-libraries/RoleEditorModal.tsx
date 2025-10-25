@@ -64,8 +64,8 @@ export function RoleEditorModal({ open, onOpenChange, role, onSave, mode }: Role
 
   return (
     <AdaptiveModal
-      open={open}
-      onOpenChange={onOpenChange}
+      isOpen={open}
+      onClose={() => onOpenChange(false)}
       title={mode === "create" ? "Create New Role" : "Edit Role"}
       description={mode === "create" ? "Define a new professional role for your AI agents" : "Update role details"}
     >

@@ -79,8 +79,8 @@ export function FrameworkEditorModal({ open, onOpenChange, framework, onSave, mo
 
   return (
     <AdaptiveModal
-      open={open}
-      onOpenChange={onOpenChange}
+      isOpen={open}
+      onClose={() => onOpenChange(false)}
       title={mode === "create" ? "Create New Framework" : "Edit Framework"}
       description={
         mode === "create" ? "Define a new thinking framework for your AI agents" : "Update framework details"

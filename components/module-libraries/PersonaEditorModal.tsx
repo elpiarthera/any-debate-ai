@@ -66,8 +66,8 @@ export function PersonaEditorModal({ open, onOpenChange, persona, onSave, mode }
 
   return (
     <AdaptiveModal
-      open={open}
-      onOpenChange={onOpenChange}
+      isOpen={open}
+      onClose={() => onOpenChange(false)}
       title={mode === "create" ? "Create New Persona" : "Edit Persona"}
       description={mode === "create" ? "Define a new personality style for your AI agents" : "Update persona details"}
     >
