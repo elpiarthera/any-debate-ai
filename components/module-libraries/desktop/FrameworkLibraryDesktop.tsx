@@ -6,15 +6,47 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Search, Plus, MoreVertical } from "lucide-react"
-import { frameworks } from "@/lib/agent-config/frameworks"
+import { useFrameworkManager } from "@/hooks/useFrameworkManager"
+import { FrameworkEditorModal } from "@/components/module-libraries/FrameworkEditorModal"
+import type { ThinkingFramework } from "@/lib/agent-config/frameworks"
 
 export function FrameworkLibraryDesktop() {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState<"my" | "system">("my")
+  const { allFrameworks, createFramework, updateFramework, deleteFramework, isCustomFramework } = useFrameworkManager()
+  const [editorOpen, setEditorOpen] = useState(false)
+  const [editingFramework, setEditingFramework] = useState<ThinkingFramework | undefined>()
+  const [editorMode, setEditorMode] = useState<"create" | "edit">("create")
 
-  const filteredFrameworks = frameworks.filter((framework) =>
+  const filteredFrameworks = allFrameworks.filter((framework) =>
     framework.name.toLowerCase().includes(searchQuery.toLowerCase()),
   )
+
+  const handleCreateFramework = () => {
+    setEditingFramework(undefined)
+    setEditorMode("create")
+    setEditorOpen(true)
+  }
+
+  const handleEditFramework = (framework: ThinkingFramework) => {
+    setEditingFramework(framework)
+    setEditorMode("edit")
+    setEditorOpen(true)
+  }
+
+  const handleSaveFramework = (frameworkData: Omit<ThinkingFramework, "id"> | ThinkingFramework) => {
+    if (editorMode === "create") {
+      createFramework(frameworkData as Omit<ThinkingFramework, "id">)
+    } else if ("id" in frameworkData) {
+      updateFramework(frameworkData.id, frameworkData)
+    }
+  }
+
+  const handleDeleteFramework = (id: string) => {
+    if (confirm("Are you sure you want to delete this framework?")) {
+      deleteFramework(id)
+    }
+  }
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -22,7 +54,7 @@ export function FrameworkLibraryDesktop() {
       <header className="border-b border-border p-6">
         <div className="flex items-center justify-between">
           <h1 className="font-sans text-2xl font-semibold text-foreground">Framework Library</h1>
-          <Button className="bg-primary text-primary-foreground">
+          <Button className="bg-primary text-primary-foreground" onClick={handleCreateFramework}>
             <Plus className="h-4 w-4 mr-2" />
             New Framework
           </Button>
@@ -69,15 +101,30 @@ export function FrameworkLibraryDesktop() {
               <Card
                 key={framework.id}
                 className="p-4 bg-card border-border hover:bg-accent transition-colors cursor-pointer"
+                onClick={() => handleEditFramework(framework)}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">{framework.icon}</span>
                     <h3 className="font-sans font-medium text-foreground">{framework.name}</h3>
+                    {isCustomFramework(framework.id) && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground border border-border">
+                        Custom
+                      </span>
+                    )}
                   </div>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="h-4 w-4 text-muted-foreground" />
-                  </Button>
+                  {isCustomFramework(framework.id) && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeleteFramework(framework.id)
+                      }}
+                    >
+                      <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  )}
                 </div>
 
                 <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{framework.description}</p>
@@ -89,10 +136,27 @@ export function FrameworkLibraryDesktop() {
                 )}
 
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 bg-background border-border">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 bg-background border-border"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleEditFramework(framework)
+                    }}
+                  >
                     Edit
                   </Button>
-                  <Button variant="outline" size="sm" className="flex-1 bg-background border-border">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 bg-background border-border"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const duplicate = { ...framework, id: `custom-${Date.now()}`, name: `${framework.name} (Copy)` }
+                      createFramework(duplicate)
+                    }}
+                  >
                     Duplicate
                   </Button>
                 </div>
@@ -116,6 +180,14 @@ export function FrameworkLibraryDesktop() {
           </div>
         </aside>
       </div>
+
+      <FrameworkEditorModal
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        framework={editingFramework}
+        onSave={handleSaveFramework}
+        mode={editorMode}
+      />
     </div>
   )
 }
