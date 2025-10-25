@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,6 +29,22 @@ export function FrameworkEditorModal({ open, onOpenChange, framework, onSave, mo
   })
   const [newBestFor, setNewBestFor] = useState("")
   const [newStep, setNewStep] = useState("")
+
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        name: framework?.name || "",
+        icon: framework?.icon || "🧠",
+        description: framework?.description || "",
+        methodology: framework?.methodology || "",
+        bestFor: framework?.bestFor || [],
+        steps: framework?.steps || [],
+        systemPromptModifier: framework?.systemPromptModifier || "",
+      })
+      setNewBestFor("")
+      setNewStep("")
+    }
+  }, [open, framework])
 
   const handleSave = () => {
     if (mode === "edit" && framework) {

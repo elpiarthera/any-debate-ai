@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,6 +28,21 @@ export function PersonaEditorModal({ open, onOpenChange, persona, onSave, mode }
     systemPromptModifier: persona?.systemPromptModifier || "",
   })
   const [newTrait, setNewTrait] = useState("")
+
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        name: persona?.name || "",
+        icon: persona?.icon || "😊",
+        description: persona?.description || "",
+        traits: persona?.traits || [],
+        communicationStyle: persona?.communicationStyle || "",
+        decisionMaking: persona?.decisionMaking || "",
+        systemPromptModifier: persona?.systemPromptModifier || "",
+      })
+      setNewTrait("")
+    }
+  }, [open, persona])
 
   const handleSave = () => {
     if (mode === "edit" && persona) {

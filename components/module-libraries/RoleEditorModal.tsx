@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,6 +27,20 @@ export function RoleEditorModal({ open, onOpenChange, role, onSave, mode }: Role
     systemPrompt: role?.systemPrompt || "",
   })
   const [newExpertise, setNewExpertise] = useState("")
+
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        name: role?.name || "",
+        icon: role?.icon || "👤",
+        description: role?.description || "",
+        category: role?.category || ROLE_CATEGORIES[0],
+        expertise: role?.expertise || [],
+        systemPrompt: role?.systemPrompt || "",
+      })
+      setNewExpertise("")
+    }
+  }, [open, role])
 
   const handleSave = () => {
     if (mode === "edit" && role) {
