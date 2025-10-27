@@ -6,7 +6,6 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Layers } from "lucide-react"
-import { useArtifacts } from "@ai-sdk-tools/artifacts/client"
 
 interface CanvasToggleProps {
   isCanvasOpen: boolean
@@ -15,7 +14,6 @@ interface CanvasToggleProps {
 
 export function CanvasToggle({ isCanvasOpen, onToggleCanvas }: CanvasToggleProps) {
   const [collaboratingAgents] = useState<string[]>([]) // Mock collaboration state
-  const { artifacts } = useArtifacts()
 
   return (
     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
