@@ -35,7 +35,8 @@ export function ArtifactCanvas({ className, isCanvasOpen, onCloseCanvas }: Artif
   })
 
   const artifacts: any[] = []
-  const activeArtifactId: string | null = null
+  const latest: any = null
+  const activeArtifactId = latest?.id || null
 
   const filteredArtifacts = useMemo(() => {
     if (!artifacts) return []
