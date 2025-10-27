@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { FileText, X, Maximize2, Minimize2, Users, Sparkles, SlidersHorizontal } from "lucide-react"
-import { useArtifacts } from "@ai-sdk-tools/artifacts/client"
 import { ArtifactRenderer } from "./ArtifactRenderer"
 import { ArtifactToolbar } from "./ArtifactToolbar"
 import { ArtifactSearch } from "./search/ArtifactSearch"
@@ -35,8 +34,8 @@ export function ArtifactCanvas({ className, isCanvasOpen, onCloseCanvas }: Artif
     collaborators: [],
   })
 
-  const { artifacts, latest } = useArtifacts()
-  const activeArtifactId = latest?.id || null
+  const artifacts: any[] = []
+  const activeArtifactId: string | null = null
 
   const filteredArtifacts = useMemo(() => {
     if (!artifacts) return []
