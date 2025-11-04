@@ -1,7 +1,7 @@
 # AnyDebate AI Design System
 
 > **Version:** 1.0.1  
-> **Last Updated:** January 2025  
+> **Last Updated:** November 2025  
 > **Status:** Active
 
 ## Table of Contents
@@ -518,7 +518,7 @@ Components use **Class Variance Authority** for type-safe variants:
 import { cva, type VariantProps } from 'class-variance-authority'
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 dark:bg-destructive/60",
   {
     variants: {
       variant: {
@@ -1133,7 +1133,7 @@ import "../styles/globals.css"
 
 ## Changelog
 
-### Version 1.0.1 (January 2025)
+### Version 1.0.1 (November 2025)
 - **Accuracy Update**: Verified all color tokens match `app/globals.css`
 - **Component Updates**: Updated Button and Card examples to match actual implementations
 - **Special Effects**: Documented glass-effect, grid-pattern variants, and metric-card
@@ -1141,7 +1141,7 @@ import "../styles/globals.css"
 - **File Structure**: Clarified that only `app/globals.css` is active
 - **Accessibility**: Added reduced motion support documentation
 
-### Version 1.0.0 (January 2025)
+### Version 1.0.0 (November 2025)
 - Initial design system documentation
 - OKLCH color system implementation
 - Tailwind CSS v4 migration
@@ -1150,5 +1150,5 @@ import "../styles/globals.css"
 
 ---
 
-**Last Verified:** January 2025  
+**Last Verified:** November 2025  
 **Verified Against:** `app/globals.css`, `components/ui/*`, `app/layout.tsx`
