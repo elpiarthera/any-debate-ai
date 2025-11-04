@@ -1,6 +1,6 @@
 # AnyDebate AI Design System
 
-> **Version:** 1.0.0  
+> **Version:** 1.0.1  
 > **Last Updated:** January 2025  
 > **Status:** Active
 
@@ -34,9 +34,20 @@ The AnyDebate AI design system is built on **Tailwind CSS v4** with **shadcn/ui*
 - **CSS Framework:** Tailwind CSS v4 (with `@theme inline` configuration)
 - **Component Library:** shadcn/ui (Radix UI primitives)
 - **Color Space:** OKLCH (perceptually uniform)
-- **Fonts:** Geist Sans & Geist Mono
+- **Fonts:** Geist Sans & Geist Mono (via Inter fallback)
 - **Utility Function:** `cn()` (clsx + tailwind-merge)
 - **Animation:** Framer Motion + tw-animate-css
+
+### File Structure
+
+\`\`\`
+app/
+  └── globals.css          # Active design system (imported in layout.tsx)
+styles/
+  └── globals.css          # Legacy file (not used)
+\`\`\`
+
+**Important:** Only `app/globals.css` is active and imported in the application. All design tokens and custom styles are defined there.
 
 ---
 
@@ -104,26 +115,86 @@ The color system uses **CSS custom properties** defined in `app/globals.css` and
 
 \`\`\`css
 :root {
-  /* Semantic color tokens */
+  /* Semantic color tokens - Light theme: bright, clean, professional */
   --background: oklch(0.98 0 0);           /* Page background */
   --foreground: oklch(0.15 0 0);           /* Primary text */
   --card: oklch(0.95 0 0);                 /* Card backgrounds */
   --card-foreground: oklch(0.15 0 0);      /* Card text */
+  --popover: oklch(0.98 0 0);              /* Popover backgrounds */
+  --popover-foreground: oklch(0.15 0 0);   /* Popover text */
   --primary: oklch(0.15 0 0);              /* Primary actions */
   --primary-foreground: oklch(0.98 0 0);   /* Text on primary */
+  --secondary: oklch(0.92 0 0);            /* Secondary actions */
+  --secondary-foreground: oklch(0.15 0 0); /* Text on secondary */
   --muted: oklch(0.92 0 0);                /* Muted backgrounds */
   --muted-foreground: oklch(0.45 0 0);     /* Muted text */
+  --accent: oklch(0.88 0 0);               /* Accent backgrounds */
+  --accent-foreground: oklch(0.15 0 0);    /* Text on accent */
+  --destructive: oklch(0.577 0.245 27.325); /* Error/danger */
+  --destructive-foreground: oklch(0.98 0 0); /* Text on destructive */
   --border: oklch(0.88 0 0);               /* Border color */
+  --input: oklch(0.92 0 0);                /* Input backgrounds */
   --ring: oklch(0.6 0 0);                  /* Focus rings */
-  /* ... more tokens */
+  
+  /* Chart colors for data visualization */
+  --chart-1: oklch(0.646 0.222 41.116);    /* Orange */
+  --chart-2: oklch(0.6 0.118 184.704);     /* Cyan */
+  --chart-3: oklch(0.398 0.07 227.392);    /* Blue */
+  --chart-4: oklch(0.828 0.189 84.429);    /* Yellow */
+  --chart-5: oklch(0.769 0.188 70.08);     /* Lime */
+  
+  /* Border radius */
+  --radius: 0.75rem; /* 12px - base radius */
+  
+  /* Sidebar-specific tokens */
+  --sidebar: oklch(0.95 0 0);
+  --sidebar-foreground: oklch(0.15 0 0);
+  --sidebar-primary: oklch(0.15 0 0);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.92 0 0);
+  --sidebar-accent-foreground: oklch(0.15 0 0);
+  --sidebar-border: oklch(0.88 0 0);
+  --sidebar-ring: oklch(0.6 0 0);
 }
 
 .dark {
-  /* Dark theme overrides */
-  --background: oklch(0.04 0 0);
-  --foreground: oklch(0.95 0 0);
-  --primary: oklch(0.7 0.15 240);          /* Blue accent in dark */
-  /* ... more tokens */
+  /* Dark theme: sophisticated dark design with blue accents */
+  --background: oklch(0.04 0 0);           /* Very dark background */
+  --foreground: oklch(0.95 0 0);           /* Light text */
+  --card: oklch(0.06 0 0);                 /* Slightly lighter cards */
+  --card-foreground: oklch(0.95 0 0);      /* Light text on cards */
+  --popover: oklch(0.06 0 0);              /* Popover backgrounds */
+  --popover-foreground: oklch(0.95 0 0);   /* Popover text */
+  --primary: oklch(0.7 0.15 240);          /* Blue accent */
+  --primary-foreground: oklch(0.04 0 0);   /* Dark text on primary */
+  --secondary: oklch(0.1 0 0);             /* Dark secondary */
+  --secondary-foreground: oklch(0.95 0 0); /* Light text on secondary */
+  --muted: oklch(0.08 0 0);                /* Muted backgrounds */
+  --muted-foreground: oklch(0.6 0 0);      /* Muted text */
+  --accent: oklch(0.12 0 0);               /* Accent backgrounds */
+  --accent-foreground: oklch(0.95 0 0);    /* Text on accent */
+  --destructive: oklch(0.6 0.2 25);        /* Red accent */
+  --destructive-foreground: oklch(0.95 0 0); /* Light text on destructive */
+  --border: oklch(0.12 0 0);               /* Subtle borders */
+  --input: oklch(0.08 0 0);                /* Input backgrounds */
+  --ring: oklch(0.7 0.15 240);             /* Blue focus ring */
+  
+  /* Chart colors for dark mode */
+  --chart-1: oklch(0.7 0.15 240);          /* Blue */
+  --chart-2: oklch(0.65 0.18 160);         /* Teal */
+  --chart-3: oklch(0.6 0.2 120);           /* Green */
+  --chart-4: oklch(0.75 0.12 280);         /* Purple */
+  --chart-5: oklch(0.68 0.16 60);          /* Yellow */
+  
+  /* Sidebar for dark mode */
+  --sidebar: oklch(0.05 0 0);
+  --sidebar-foreground: oklch(0.9 0 0);
+  --sidebar-primary: oklch(0.7 0.15 240);
+  --sidebar-primary-foreground: oklch(0.04 0 0);
+  --sidebar-accent: oklch(0.08 0 0);
+  --sidebar-accent-foreground: oklch(0.9 0 0);
+  --sidebar-border: oklch(0.1 0 0);
+  --sidebar-ring: oklch(0.7 0.15 240);
 }
 \`\`\`
 
@@ -138,23 +209,24 @@ The color system uses **CSS custom properties** defined in `app/globals.css` and
 | `primary` | Primary brand color | `oklch(0.15 0 0)` | `oklch(0.7 0.15 240)` |
 | `primary-foreground` | Text on primary | `oklch(0.98 0 0)` | `oklch(0.04 0 0)` |
 | `secondary` | Secondary actions | `oklch(0.92 0 0)` | `oklch(0.1 0 0)` |
+| `secondary-foreground` | Text on secondary | `oklch(0.15 0 0)` | `oklch(0.95 0 0)` |
 | `muted` | Muted backgrounds | `oklch(0.92 0 0)` | `oklch(0.08 0 0)` |
 | `muted-foreground` | Muted text | `oklch(0.45 0 0)` | `oklch(0.6 0 0)` |
 | `accent` | Accent backgrounds | `oklch(0.88 0 0)` | `oklch(0.12 0 0)` |
+| `accent-foreground` | Text on accent | `oklch(0.15 0 0)` | `oklch(0.95 0 0)` |
 | `destructive` | Error/danger states | `oklch(0.577 0.245 27.325)` | `oklch(0.6 0.2 25)` |
+| `destructive-foreground` | Text on destructive | `oklch(0.98 0 0)` | `oklch(0.95 0 0)` |
 | `border` | Border color | `oklch(0.88 0 0)` | `oklch(0.12 0 0)` |
 | `input` | Input backgrounds | `oklch(0.92 0 0)` | `oklch(0.08 0 0)` |
 | `ring` | Focus ring color | `oklch(0.6 0 0)` | `oklch(0.7 0.15 240)` |
-
-### Sidebar-Specific Tokens
-
-| Token | Usage |
-|-------|-------|
-| `sidebar` | Sidebar background |
-| `sidebar-foreground` | Sidebar text |
-| `sidebar-primary` | Sidebar active state |
-| `sidebar-accent` | Sidebar hover state |
-| `sidebar-border` | Sidebar borders |
+| `sidebar` | Sidebar background | `oklch(0.95 0 0)` | `oklch(0.05 0 0)` |
+| `sidebar-foreground` | Sidebar text | `oklch(0.15 0 0)` | `oklch(0.9 0 0)` |
+| `sidebar-primary` | Sidebar active state | `oklch(0.15 0 0)` | `oklch(0.7 0.15 240)` |
+| `sidebar-primary-foreground` | Text on sidebar primary | `oklch(0.98 0 0)` | `oklch(0.04 0 0)` |
+| `sidebar-accent` | Sidebar hover state | `oklch(0.92 0 0)` | `oklch(0.08 0 0)` |
+| `sidebar-accent-foreground` | Text on sidebar accent | `oklch(0.15 0 0)` | `oklch(0.9 0 0)` |
+| `sidebar-border` | Sidebar borders | `oklch(0.88 0 0)` | `oklch(0.1 0 0)` |
+| `sidebar-ring` | Sidebar focus ring | `oklch(0.6 0 0)` | `oklch(0.7 0.15 240)` |
 
 ### Chart Colors
 
@@ -199,12 +271,12 @@ Five chart colors are provided for data visualization:
 
 ### Font System
 
-The design system uses **Geist Sans** for UI text and **Geist Mono** for code.
+The design system uses **Geist Sans** for UI text and **Geist Mono** for code, with **Inter** as the current fallback.
 
 #### Font Configuration
 
 \`\`\`css
-/* globals.css */
+/* app/globals.css */
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -212,11 +284,16 @@ The design system uses **Geist Sans** for UI text and **Geist Mono** for code.
 \`\`\`
 
 \`\`\`tsx
-// layout.tsx
-import { Geist, Geist_Mono } from 'next/font/google'
+// app/layout.tsx
+import { Inter } from 'next/font/google'
 
-const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
-const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+})
+
+// Note: Currently using Inter as fallback
+// Geist fonts will be integrated in future update
 \`\`\`
 
 ### Font Classes
@@ -378,19 +455,27 @@ Tailwind's spacing scale is based on `0.25rem` (4px) increments:
 ### Border Radius
 
 \`\`\`css
-/* globals.css */
+/* app/globals.css */
 :root {
-  --radius: 0.75rem; /* 12px */
+  --radius: 0.75rem; /* 12px - base radius */
+}
+
+/* Mapped to Tailwind utilities via @theme inline */
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);  /* 8px */
+  --radius-md: calc(var(--radius) - 2px);  /* 10px */
+  --radius-lg: var(--radius);              /* 12px */
+  --radius-xl: calc(var(--radius) + 4px);  /* 16px */
 }
 \`\`\`
 
-| Class | Value | Usage |
-|-------|-------|-------|
-| `rounded-sm` | `calc(var(--radius) - 4px)` | Small elements |
-| `rounded-md` | `calc(var(--radius) - 2px)` | Buttons, inputs |
-| `rounded-lg` | `var(--radius)` | Cards, panels |
-| `rounded-xl` | `calc(var(--radius) + 4px)` | Large containers |
-| `rounded-full` | `9999px` | Circles, pills |
+| Class | Value | Pixels | Usage |
+|-------|-------|--------|-------|
+| `rounded-sm` | `calc(var(--radius) - 4px)` | 8px | Small elements |
+| `rounded-md` | `calc(var(--radius) - 2px)` | 10px | Buttons, inputs |
+| `rounded-lg` | `var(--radius)` | 12px | Cards, panels |
+| `rounded-xl` | `calc(var(--radius) + 4px)` | 16px | Large containers |
+| `rounded-full` | `9999px` | Full | Circles, pills |
 
 ---
 
@@ -429,23 +514,25 @@ export function cn(...inputs: ClassValue[]) {
 Components use **Class Variance Authority** for type-safe variants:
 
 \`\`\`tsx
-// Example: Button component
+// Example: Button component (actual implementation)
 import { cva, type VariantProps } from 'class-variance-authority'
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-all",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        destructive: 'bg-destructive text-white hover:bg-destructive/90',
-        outline: 'border bg-background hover:bg-accent',
-        ghost: 'hover:bg-accent hover:text-accent-foreground',
+        default: 'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
+        destructive: 'bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
+        outline: 'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
+        secondary: 'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
+        ghost: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
+        link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
-        default: 'h-9 px-4 py-2',
-        sm: 'h-8 px-3',
-        lg: 'h-10 px-6',
+        default: 'h-9 px-4 py-2 has-[>svg]:px-3',
+        sm: 'h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
+        lg: 'h-10 rounded-md px-6 has-[>svg]:px-4',
         icon: 'size-9',
       },
     },
@@ -460,11 +547,18 @@ const buttonVariants = cva(
 <Button variant="outline" size="lg">Click me</Button>
 \`\`\`
 
+**Key Features:**
+- **Advanced focus states**: `focus-visible:ring-[3px]` with ring color
+- **Invalid state handling**: `aria-invalid:ring-destructive/20` for form validation
+- **SVG sizing**: Automatic icon sizing with `[&_svg]:size-4`
+- **Conditional padding**: `has-[>svg]:px-3` adjusts padding when icons present
+- **Dark mode variants**: Specific styles for dark theme
+
 ### Component Composition Pattern
 
 \`\`\`tsx
-// Card component structure
-<Card>
+// Card component structure (actual implementation)
+<Card className="gap-6 py-6">  {/* Default gap-6 and py-6 */}
   <CardHeader>
     <CardTitle>Title</CardTitle>
     <CardDescription>Description</CardDescription>
@@ -481,21 +575,13 @@ const buttonVariants = cva(
 </Card>
 \`\`\`
 
-### Data Slots
-
-Components use `data-slot` attributes for styling hooks:
-
-\`\`\`tsx
-// Component definition
-<div data-slot="card-header" className="...">
-  {children}
-</div>
-
-// Styling based on slots
-<Card className="[&_[data-slot=card-header]]:border-b">
-  <CardHeader>...</CardHeader>
-</Card>
-\`\`\`
+**Card Component Defaults:**
+- `gap-6`: 1.5rem (24px) spacing between sections
+- `py-6`: 1.5rem (24px) vertical padding
+- `px-6`: 1.5rem (24px) horizontal padding on child elements
+- `rounded-xl`: Extra large border radius
+- `border`: 1px solid border color
+- `shadow-sm`: Subtle shadow
 
 ---
 
@@ -563,40 +649,36 @@ Use `@container` for component-level responsiveness:
 
 ### Focus States
 
-All interactive elements have visible focus indicators:
+All interactive elements have visible focus indicators using the `focus-visible` pseudo-class.
 
 \`\`\`tsx
-// Default focus ring
-<button className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+// Button focus (actual implementation)
+<button className="focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]">
   Button
 </button>
 
-// Custom focus styles
+// Input focus
 <input className="focus:border-primary focus:ring-2 focus:ring-primary/20" />
+
+// Invalid state focus
+<input 
+  aria-invalid="true"
+  className="aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+/>
 \`\`\`
 
-### Screen Reader Support
-
-\`\`\`tsx
-// Visually hidden text
-<span className="sr-only">Screen reader only text</span>
-
-// ARIA labels
-<button aria-label="Close dialog">
-  <X className="h-4 w-4" />
-</button>
-
-// ARIA descriptions
-<input aria-describedby="email-help" />
-<p id="email-help" className="text-sm text-muted-foreground">
-  We'll never share your email
-</p>
-\`\`\`
+**Focus Ring Specifications:**
+- **Ring width**: 3px (`ring-[3px]`)
+- **Ring color**: `ring-ring/50` (50% opacity)
+- **Ring offset**: None (direct ring)
+- **Invalid state**: Red ring with `aria-invalid` attribute
 
 ### Reduced Motion
 
+The design system respects user motion preferences for accessibility.
+
 \`\`\`css
-/* globals.css */
+/* app/globals.css */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -609,12 +691,10 @@ All interactive elements have visible focus indicators:
 }
 \`\`\`
 
-### Color Contrast
-
-All color combinations meet **WCAG 2.1 AA** standards:
-- Normal text: 4.5:1 contrast ratio
-- Large text: 3:1 contrast ratio
-- UI components: 3:1 contrast ratio
+**What this does:**
+- Disables all animations for users who prefer reduced motion
+- Removes smooth scrolling
+- Maintains functionality while respecting accessibility preferences
 
 ---
 
@@ -877,84 +957,98 @@ All color combinations meet **WCAG 2.1 AA** standards:
 
 ### Glass Effect
 
+A glassmorphism effect with backdrop blur and semi-transparent background.
+
 \`\`\`tsx
 <div className="glass-effect rounded-lg p-6">
   Content with glass morphism effect
 </div>
 \`\`\`
 
-### Grid Pattern Background
+**CSS Implementation:**
+\`\`\`css
+/* app/globals.css */
+.glass-effect {
+  background: oklch(from var(--card) l c h / 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid oklch(from var(--border) l c h / 0.5);
+}
+\`\`\`
+
+### Grid Pattern Backgrounds
+
+Three grid pattern variants for different use cases.
+
+#### Subtle Grid (Default)
 
 \`\`\`tsx
-// Subtle grid
 <div className="grid-pattern min-h-screen">
   <Content />
 </div>
+\`\`\`
 
-// Large grid
+**CSS Implementation:**
+\`\`\`css
+.grid-pattern {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+\`\`\`
+
+#### Large Grid
+
+\`\`\`tsx
 <div className="grid-pattern-large min-h-screen">
   <Content />
 </div>
+\`\`\`
 
-// Dashboard grid
+**CSS Implementation:**
+\`\`\`css
+.grid-pattern-large {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 100px 100px;
+}
+\`\`\`
+
+#### Dashboard Grid (Fine)
+
+\`\`\`tsx
 <div className="dashboard-grid min-h-screen">
   <Content />
 </div>
 \`\`\`
 
+**CSS Implementation:**
+\`\`\`css
+.dashboard-grid {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+\`\`\`
+
 ### Metric Card
+
+A card with gradient background and backdrop blur for displaying metrics.
 
 \`\`\`tsx
 <div className="metric-card rounded-lg p-6">
   <h3 className="text-sm font-medium text-muted-foreground">Total Users</h3>
   <p className="text-3xl font-bold">1,234</p>
+  <p className="text-xs text-muted-foreground">+12% from last month</p>
 </div>
 \`\`\`
 
----
-
-## Migration Guide
-
-### From Direct Colors to Semantic Tokens
-
-\`\`\`tsx
-// Before
-<div className="bg-white dark:bg-gray-900 text-black dark:text-white">
-  <p className="text-gray-500 dark:text-gray-400">Text</p>
-</div>
-
-// After
-<div className="bg-background text-foreground">
-  <p className="text-muted-foreground">Text</p>
-</div>
-\`\`\`
-
-### From Arbitrary Values to Scale
-
-\`\`\`tsx
-// Before
-<div className="p-[20px] gap-[16px] rounded-[8px]">
-
-// After
-<div className="p-5 gap-4 rounded-lg">
-\`\`\`
-
-### From Margin to Gap
-
-\`\`\`tsx
-// Before
-<div className="flex">
-  <div className="mr-4">Item 1</div>
-  <div className="mr-4">Item 2</div>
-  <div>Item 3</div>
-</div>
-
-// After
-<div className="flex gap-4">
-  <div>Item 1</div>
-  <div>Item 2</div>
-  <div>Item 3</div>
-</div>
+**CSS Implementation:**
+\`\`\`css
+.metric-card {
+  background: linear-gradient(135deg, var(--card) 0%, oklch(from var(--card) l c h / 0.8) 100%);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
 \`\`\`
 
 ---
@@ -1009,6 +1103,20 @@ All color combinations meet **WCAG 2.1 AA** standards:
 <button className="focus-visible:ring-2 focus-visible:ring-ring">
 \`\`\`
 
+### Issue: Special effects not working
+
+**Solution:** Ensure you're importing `app/globals.css`, not `styles/globals.css`:
+
+\`\`\`tsx
+// ✅ Correct (in app/layout.tsx)
+import "./globals.css"
+
+// ❌ Wrong
+import "../styles/globals.css"
+\`\`\`
+
+**Note:** Only `app/globals.css` contains the special effect classes (glass-effect, grid-pattern, etc.)
+
 ---
 
 ## Resources
@@ -1018,10 +1126,20 @@ All color combinations meet **WCAG 2.1 AA** standards:
 - **Radix UI Primitives:** https://www.radix-ui.com
 - **OKLCH Color Picker:** https://oklch.com
 - **CVA Documentation:** https://cva.style
+- **Mobile-First Best Practices:** `docs/guides/mobile-first-best-practices.md`
+- **Feature Implementation Guide:** `docs/guides/feature-implementation-best-practices.md`
 
 ---
 
 ## Changelog
+
+### Version 1.0.1 (January 2025)
+- **Accuracy Update**: Verified all color tokens match `app/globals.css`
+- **Component Updates**: Updated Button and Card examples to match actual implementations
+- **Special Effects**: Documented glass-effect, grid-pattern variants, and metric-card
+- **Focus States**: Added detailed focus-visible and aria-invalid specifications
+- **File Structure**: Clarified that only `app/globals.css` is active
+- **Accessibility**: Added reduced motion support documentation
 
 ### Version 1.0.0 (January 2025)
 - Initial design system documentation
@@ -1029,3 +1147,8 @@ All color combinations meet **WCAG 2.1 AA** standards:
 - Tailwind CSS v4 migration
 - Mobile-first responsive patterns
 - Accessibility guidelines
+
+---
+
+**Last Verified:** January 2025  
+**Verified Against:** `app/globals.css`, `components/ui/*`, `app/layout.tsx`
