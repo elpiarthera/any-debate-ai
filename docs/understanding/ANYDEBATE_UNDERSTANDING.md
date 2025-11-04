@@ -1,379 +1,600 @@
-# AnyDebate - Product Understanding
+# AnyDebate AI - Project Understanding Document
 
-## The Core Insight
-
-**We've been thinking about AI wrong.**
-
-We treat AI like a single advisor—ask a question, get an answer, move on. But the best decisions have never come from one perspective. They come from diverse minds challenging each other, catching blind spots, and refining ideas through debate.
-
-**One AI can be brilliant and still be wrong.** It can miss context, have biases, misunderstand your question, or go down the wrong path. And when it does, you're stuck—manually seeking other opinions, copying responses between tools, orchestrating conversations across browser tabs.
-
-**Smart people already know this.** They copy Claude's response into ChatGPT to get a second opinion. They ask Grok to critique GPT-4's approach. They manually orchestrate debates between AI models because they know multiple perspectives produce better outcomes.
-
-**But it's exhausting. Chaotic. The opposite of how real teams work.**
+**Version**: 2.0.0  
+**Last Updated**: November 4, 2025  
+**Status**: Active Development  
+**Current Phase**: Mobile UX Optimization & Design System Standardization
 
 ---
 
-## What AnyDebate Is
+## 📋 Document Purpose
 
-**AnyDebate is a multi-AI collaboration platform that brings the world's best AI models together to work like a real team.**
-
-Instead of chatting with one AI at a time across different tabs, you bring multiple AI models into one unified interface where they can:
-- Respond to the same question simultaneously
-- Critique and challenge each other's responses
-- Debate autonomously with configured roles and personas
-- Collaborate on artifacts (documents, tables, checklists, charts)
-
-**Supported Models:** All leading AI models available through Together AI and beyond—including GPT-4, GPT-5, Claude, Gemini, Llama, Grok 3, and hundreds more. The platform continuously adds new models as they become available.
-
-**The Core Value:** You stop getting "an AI's answer" and start getting "the best answer from multiple AI minds working together."
+This document provides a comprehensive understanding of the AnyDebate AI project, including its architecture, features, current status, and ongoing development efforts. It serves as the single source of truth for project state and technical decisions.
 
 ---
 
-## The Three Interaction Modes
+## 🎯 Project Overview
 
-AnyDebate provides three distinct ways to leverage multiple AI models, each solving a specific collaboration need:
+AnyDebate AI is a sophisticated multi-AI collaboration platform that enables real-time debates, collaborative artifact creation, and advanced project management across multiple AI models. The platform is built with a mobile-first approach and features a comprehensive design system.
 
-### 1. Compare Mode: Get Multiple Perspectives Instantly
-
-**What It Is:**
-Send one prompt and see how different AI models approach the same problem side-by-side.
-
-**The Problem It Solves:**
-You want to compare how different AI models (GPT-4, Claude, Gemini, Llama, etc.) answer the same question, but you don't want to open multiple browser tabs and type the same prompt repeatedly.
-
-**Without AnyDebate:**
-1. Open ChatGPT tab → Type your prompt → Read response
-2. Open Claude.ai tab → Type the same prompt again → Read response
-3. Open Gemini tab → Type the same prompt again → Read response
-4. Open Llama tab → Type the same prompt again → Read response
-5. Switch between tabs constantly to compare answers
-6. Lose track of which tab has which response
-7. Waste 10+ minutes on logistics instead of thinking
-
-**With AnyDebate:**
-1. Select the AI models you want to compare (GPT-4, Claude, Gemini, Llama, etc.)
-2. Type your prompt once
-3. See all responses appear side-by-side in real-time
-4. Compare different approaches instantly
-5. Identify which perspective is most valuable
-
-**Why It Makes Sense:**
-Eliminates repetitive typing and tab chaos. You get multiple perspectives in seconds instead of minutes.
-
-**Example Use Case:**
-- "How should I structure my database for a SaaS app?" → See how GPT-4, Claude, and Gemini each approach the problem
-- "What's the best marketing strategy for my product?" → Compare different strategic perspectives instantly
-- "Review this code for security issues" → Get multiple security audits at once
+**Current Status**: 
+- ✅ 100% of pre-database features complete and production-ready
+- 🔄 Active mobile UX optimization and design system standardization
+- ⏳ Database persistence and real AI integration pending
 
 ---
 
-### 2. Debate Mode: Let AI Models Critique Each Other
+## 🛠️ Tech Stack
 
-**What It Is:**
-Interactive threaded discussion where you can @mention specific AI models to evaluate, critique, or build on each other's responses.
+### Core Framework
+- **Next.js 14.2.16** - React framework with App Router and Server Components
+- **React 18** - React with concurrent features
+- **TypeScript 5** - Type-safe development
+- **Tailwind CSS 4.1.9** - Utility-first CSS with semantic design tokens
 
-**The Problem It Solves:**
-You want one AI model to evaluate or critique another AI model's answer, but you have to manually copy-paste between different AI tools.
+### UI & Components
+- **Radix UI** - Accessible, unstyled UI primitives
+- **shadcn/ui** - Re-usable component library
+- **Framer Motion** (latest) - Animation and gestures
+- **Sonner** - Toast notifications
+- **Lucide React 0.454.0** - Icon library (1000+ icons)
 
-**Without AnyDebate:**
-1. Ask GPT-4 a question in ChatGPT tab → Get response
-2. Copy GPT-4's entire response
-3. Switch to Claude.ai tab
-4. Paste GPT-4's response and ask: "What do you think of this approach? What are the flaws?"
-5. Read Claude's critique
-6. Copy Claude's critique
-7. Switch back to ChatGPT tab
-8. Paste Claude's feedback and ask GPT-4 to respond
-9. Copy GPT-4's response
-10. Switch back to Claude tab
-11. Continue this exhausting copy-paste cycle for every exchange
+### State Management
+- **React Context API** - Device state, demo mode, theme
+- **Custom Hooks** - Responsive hooks (useBreakpoint, useOrientation, useViewport)
+- **Local Storage** - Client-side persistence
 
-**This is the exact pain you're experiencing right now with me.** When I give you a poor response, you have to copy it to Grok, ask Grok to critique it, then bring that feedback back to me. It's chaotic and time-consuming.
+### Utilities
+- **jsPDF** (latest) - PDF generation
+- **html2canvas** (latest) - Screenshot generation
+- **date-fns 4.1.0** - Date manipulation
+- **clsx 2.1.1** - Conditional className utility
+- **tailwind-merge 2.5.5** - Tailwind class merging
 
-**With AnyDebate:**
-1. Ask GPT-4 a question → Get response
-2. @mention Claude: "What do you think of GPT-4's approach?"
-3. Claude responds with critique in the same thread
-4. @mention Gemini: "Do you agree with Claude's critique?"
-5. Gemini adds another perspective
-6. @mention GPT-4: "How do you respond to these critiques?"
-7. Continue the threaded discussion without any copy-pasting
-
-**Why It Makes Sense:**
-Eliminates the copy-paste nightmare. AI models can critique each other in real-time within a single threaded conversation, just like a real team discussion.
-
-**Example Use Case:**
-- GPT-4 proposes a solution → @Claude to critique it → @Gemini to add another perspective → Refine the solution based on multiple critiques
-- Claude writes code → @GPT-4 to review for bugs → @Llama to suggest optimizations → Get a thoroughly reviewed solution
-- Gemini creates a marketing strategy → @Grok to challenge assumptions → @Claude to refine messaging → Produce a battle-tested strategy
+### Planned Integrations
+- **Vercel AI SDK** (latest) - AI integration framework (ready)
+- **Vercel AI Gateway** - Unified API for AI providers
+- **Convex** - Real-time database (Phase 4)
+- **Clerk** - Authentication (Phase 5)
 
 ---
 
-### 3. Auto-Debate Mode: Watch AI Teams Debate Autonomously
+## 🏗️ Architecture Overview
 
-**What It Is:**
-Configure multiple AI models with specific roles, personas, and thinking frameworks, then watch them debate a topic autonomously in structured rounds—like a real team meeting.
+### Design Philosophy
 
-**The Problem It Solves:**
-You want multiple AI models with different perspectives (CEO, CFO, Designer, Engineer) to debate a topic like a real team, but manually orchestrating this would take hours.
+**Mobile-First Approach**:
+- All components designed for touch interactions first
+- Responsive breakpoints: Mobile (< 768px), Tablet (768-1024px), Desktop (> 1024px)
+- Adaptive components that transform based on device capabilities
+- Touch-optimized with minimum 44px touch targets
 
-**Without AnyDebate:**
-1. Open ChatGPT → Configure it as "CEO" with strategic thinking
-2. Open Claude → Configure it as "CFO" with financial analysis focus
-3. Open Gemini → Configure it as "Designer" with user-centric thinking
-4. Open Llama → Configure it as "Engineer" with technical feasibility focus
-5. Ask the CEO (ChatGPT) for their perspective
-6. Copy CEO's response → Paste to CFO (Claude) → Ask for financial critique
-7. Copy CFO's response → Paste to Designer (Gemini) → Ask for UX perspective
-8. Copy Designer's response → Paste to Engineer (Llama) → Ask for technical feasibility
-9. Copy all responses → Paste back to CEO → Ask for synthesis
-10. Manually manage the entire debate flow for 30+ minutes
-11. Lose track of the conversation thread
-12. Give up because it's too exhausting
+**Design System**:
+- Comprehensive design token system using CSS custom properties
+- OKLCH color space for consistent, perceptually uniform colors
+- Semantic tokens for theming (background, foreground, card, border, etc.)
+- Documented in `docs/guides/design-system.md`
 
-**With AnyDebate:**
-1. Select AI models (GPT-4, Claude, Gemini, Llama)
-2. Configure each with a role (CEO, CFO, Designer, Engineer)
-3. Assign personas (Analytical, Creative, Pragmatic, Critical)
-4. Choose thinking frameworks (First Principles, Design Thinking, SWOT, Risk Analysis)
-5. Set the debate topic: "Should we build feature X?"
-6. Click "Start Auto-Debate"
-7. Watch the AI team debate autonomously in structured rounds
-8. Each AI responds based on their role, persona, and framework
-9. They challenge each other, build on ideas, and refine the discussion
-10. Get a comprehensive multi-perspective analysis in minutes
+**Component Architecture**:
+- Separation of desktop and mobile components
+- Adaptive components for cross-device support
+- Dual sidebar layout pattern for complex interfaces
+- Consistent use of `cn()` utility for className management
 
-**Why It Makes Sense:**
-Automates the entire multi-AI team debate that would be impossible to manage manually. You get the benefit of diverse perspectives (strategic, financial, design, technical) working together without the orchestration nightmare.
+### Layout System
 
-**Example Use Case:**
-- Product decision: CEO (strategic value) vs CFO (cost analysis) vs Designer (user experience) vs Engineer (technical feasibility)
-- Marketing strategy: CMO (brand positioning) vs Data Analyst (metrics) vs Copywriter (messaging) vs Customer Success (user feedback)
-- Architecture review: Senior Engineer (scalability) vs Security Expert (vulnerabilities) vs DevOps (deployment) vs Product Manager (requirements)
+**Dual Sidebar Pattern** (Implemented November 2025):
+The application uses a sophisticated dual sidebar layout for complex pages:
 
----
+**Desktop Layout**:
+\`\`\`
+┌─────────────┬──────────────┬────────────────────────┐
+│ Dashboard   │ Context      │ Main Content           │
+│ Sidebar     │ Sidebar      │                        │
+│ (240px)     │ (240-280px)  │ (flex-1)               │
+│             │              │                        │
+│ - Dashboard │ - Filters    │ - Primary content      │
+│ - Debates   │ - History    │ - Interactive elements │
+│ - Agents    │ - Categories │ - Data visualization   │
+│ - Analytics │ - Search     │                        │
+│ - Settings  │              │                        │
+└─────────────┴──────────────┴────────────────────────┘
+\`\`\`
 
-## The Agent Configuration System
+**Mobile Layout**:
+\`\`\`
+┌──────────────────────────────────────┐
+│ Header [☰ Menu] [🔍 Context] [Actions]│
+├──────────────────────────────────────┤
+│                                      │
+│ Main Content (full width)           │
+│                                      │
+│ - Touch-optimized                   │
+│ - Full viewport width               │
+│ - Scrollable content                │
+│                                      │
+└──────────────────────────────────────┘
 
-**6,400+ Unique Agent Configurations**
+Modal 1: Dashboard Menu (☰)
+- Navigation sidebar
+- Org switcher
+- User profile
 
-AnyDebate allows you to customize HOW each AI model behaves by combining:
+Modal 2: Context Sidebar (🔍)
+- Page-specific filters
+- Search functionality
+- Quick actions
+\`\`\`
 
-**50+ Professional Roles:**
-- Business: CEO, CFO, CMO, Product Manager, Sales Director
-- Technical: Software Engineer, DevOps, Security Expert, Data Scientist
-- Creative: Designer, Copywriter, Brand Strategist, UX Researcher
-- Analytical: Financial Analyst, Market Researcher, Business Analyst
-- And 40+ more...
+**Pages Using Dual Sidebar**:
+1. `/debates` - Dashboard + Chat History sidebars
+2. `/marketplace` - Dashboard + Categories sidebars
+3. `/dashboard/memory` - Dashboard + Filters sidebars
+4. `/dashboard/billing` - Dashboard sidebar only
 
-**8 Behavioral Personas:**
-- Analytical: Data-driven, logical, systematic
-- Creative: Innovative, imaginative, unconventional
-- Pragmatic: Practical, realistic, action-oriented
-- Critical: Skeptical, questioning, rigorous
-- Optimistic: Positive, opportunity-focused
-- Cautious: Risk-aware, careful, thorough
-- Visionary: Future-focused, strategic, big-picture
-- Detail-Oriented: Precise, meticulous, comprehensive
-
-**16+ Thinking Frameworks:**
-- First Principles: Break down to fundamental truths
-- Design Thinking: User-centric problem-solving
-- SWOT Analysis: Strengths, Weaknesses, Opportunities, Threats
-- Risk Analysis: Identify and mitigate risks
-- Systems Thinking: Understand interconnections
-- Lean Startup: Build-measure-learn cycles
-- Jobs-to-be-Done: Focus on user outcomes
-- Blue Ocean Strategy: Create uncontested market space
-- And 8+ more...
-
-**The Math:** 50 roles × 8 personas × 16 frameworks = **6,400+ unique agent configurations**
-
-**Example Configurations:**
-- "Analytical CEO using First Principles" (GPT-4)
-- "Creative Designer using Design Thinking" (Claude)
-- "Critical CFO using Risk Analysis" (Gemini)
-- "Pragmatic Engineer using Systems Thinking" (Llama)
-
-This allows you to create AI teams with diverse perspectives that mirror real-world team dynamics.
+**Key Components**:
+- `DashboardLayout` - Main layout wrapper with sidebar management
+- `DashboardSidebar` - Core navigation sidebar
+- `AdaptiveModal` - Responsive modal/drawer component
+- Context-specific sidebars (ChatSidebar, MemoryFilters, etc.)
 
 ---
 
-## Collaborative Artifacts
+## 📁 Project Structure
 
-**Work Together on Tangible Outputs**
-
-Beyond conversation, AnyDebate enables you and AI models to collaboratively create and edit:
-
-**Document Artifacts:**
-- Reports, proposals, specifications
-- Real-time collaborative editing
-- Multiple AIs contributing sections
-
-**Table Artifacts:**
-- Data comparisons, feature matrices
-- Structured information organization
-- Collaborative data entry
-
-**Checklist Artifacts:**
-- Action items, requirements, criteria
-- Track progress and completion
-- Assign items to specific agents
-
-**Chart Artifacts:**
-- Visual data representation
-- Collaborative analysis
-- Multiple perspectives on data
-
-**Why It Matters:**
-Conversations produce insights. Artifacts produce deliverables. AnyDebate bridges both—turning multi-AI debates into tangible outputs you can use immediately.
-
----
-
-## The Core Value Proposition
-
-**NOT About:** Workflow automation (that's just the mechanism)
-
-**IS About:** Getting better decisions, better insights, and better outcomes through collective AI intelligence
-
-**The Transformation:**
-
-**Before AnyDebate:**
-- You rely on one AI perspective
-- If that AI is wrong, you're stuck
-- Getting multiple opinions requires manual orchestration
-- You waste time on logistics instead of thinking
-- You accept suboptimal answers because the alternative is too exhausting
-
-**With AnyDebate:**
-- You leverage multiple AI perspectives simultaneously
-- AI models catch each other's errors in real-time
-- Collaboration happens automatically in one interface
-- You focus on thinking, not orchestration
-- You get better outcomes because multiple AI minds are working together
-
-**The Insight:**
-One AI can be brilliant and still be wrong. Multiple AIs working together get it right.
-
----
-
-## How This Should Inform the Landing Page
-
-### The Hero Section
-
-**Headline:**
-"One AI Can Be Wrong. A Team of AIs Working Together Gets It Right."
-
-**Subheadline:**
-"Stop relying on a single AI perspective. AnyDebate brings the world's best AI models together to debate, critique, and refine ideas—giving you better decisions through collective AI intelligence."
-
-**Visual:**
-Screenshot of the multi-column interface showing 4 AI models responding simultaneously, with visible @mentions and threaded discussions.
-
-**CTA:**
-"Try AnyDebate" (opens the app)
-
-### Section 1: The Problem (Relatable Pain)
-
-**Headline:** "You're Already Doing This—But It's Exhausting"
-
-**Visual:** Split screen showing:
-- Left: Person with 4 browser tabs open, frantically copying and pasting
-- Right: AnyDebate's unified interface with all models in one place
-
-**Copy:**
-"When you need multiple AI perspectives, you open ChatGPT, Claude, Gemini, and Grok in different tabs. You copy responses. Paste them. Switch tabs. Lose context. Waste time on logistics instead of thinking.
-
-Smart people do this because they know one AI can miss things. But it's chaotic. The opposite of how real teams work."
-
-### Section 2: The Three Modes (Visual + Concrete)
-
-**Headline:** "Three Ways to Leverage Collective AI Intelligence"
-
-**Compare Mode:**
-- Screenshot showing side-by-side responses
-- "Get Multiple Perspectives Instantly"
-- "Send one prompt. See how GPT-4, Claude, Gemini, and dozens of other models approach the same problem."
-
-**Debate Mode:**
-- Screenshot showing threaded discussion with @mentions
-- "Let AI Models Critique Each Other"
-- "@mention Claude to critique GPT-4's approach. @mention Gemini to add another perspective. Watch them refine ideas together."
-
-**Auto-Debate Mode:**
-- Screenshot showing autonomous debate in rounds
-- "Watch AI Teams Debate Like Real Teams"
-- "Configure AI models with roles (CEO, CFO, Designer, Engineer) and watch them debate autonomously. Get comprehensive analysis in minutes."
-
-### Section 3: Agent Configuration (The Depth)
-
-**Headline:** "6,400+ Unique Agent Configurations"
-
-**Visual:** Interactive diagram showing:
-- 50+ Roles × 8 Personas × 16 Frameworks = 6,400+ Configurations
-
-**Copy:**
-"Customize how each AI model thinks. Assign roles (CEO, Engineer, Designer). Choose personas (Analytical, Creative, Critical). Select frameworks (First Principles, Design Thinking, SWOT).
-
-Create AI teams with diverse perspectives that mirror real-world team dynamics."
-
-### Section 4: Collaborative Artifacts (The Output)
-
-**Headline:** "Turn Debates Into Deliverables"
-
-**Visual:** Screenshot of artifact canvas showing document, table, checklist, chart
-
-**Copy:**
-"Conversations produce insights. Artifacts produce deliverables. Work with AI models to create documents, tables, checklists, and charts collaboratively—turning multi-AI debates into tangible outputs."
-
-### Section 5: The Transformation (The Vision)
-
-**Headline:** "Stop Getting 'An AI's Answer.' Start Getting 'The Best Answer.'"
-
-**Copy:**
-"One AI can be brilliant and still be wrong. It can miss context, have biases, or go down the wrong path.
-
-Multiple AIs working together catch errors, challenge assumptions, and refine ideas—producing outcomes no single AI could achieve alone.
-
-This is collective AI intelligence. This is AnyDebate."
-
-**CTA:**
-"Try AnyDebate" (opens the app)
+\`\`\`
+├── app/                          # Next.js App Router
+│   ├── page.tsx                 # Landing page with redirect
+│   ├── dashboard/               # Dashboard pages
+│   │   ├── page.tsx            # Home dashboard
+│   │   ├── billing/            # Billing management
+│   │   └── memory/             # Memory dashboard
+│   ├── debates/                 # Debate interface
+│   ├── agents/                  # Agent management
+│   ├── marketplace/             # Agent marketplace
+│   ├── analytics/               # Analytics dashboard
+│   ├── settings/                # User settings
+│   ├── api/                     # API routes
+│   ├── layout.tsx               # Root layout
+│   └── globals.css              # Global styles & design tokens (ACTIVE)
+│
+├── components/
+│   ├── adaptive/                # Adaptive component system
+│   │   ├── AdaptiveGrid.tsx
+│   │   ├── AdaptiveModal.tsx   # Responsive modal/drawer
+│   │   ├── AdaptiveNavigation.tsx
+│   │   └── AdaptiveTable.tsx
+│   ├── dashboard/               # Dashboard system
+│   │   ├── DashboardLayout.tsx # Main layout with dual sidebar
+│   │   ├── DashboardSidebar.tsx # Core navigation
+│   │   ├── DashboardContent.tsx
+│   │   ├── MetricCard.tsx
+│   │   ├── QuickActions.tsx
+│   │   └── RecentActivity.tsx
+│   ├── agent-config/            # Agent builder system
+│   ├── agent-management/        # Agent management UI
+│   ├── artifacts/               # Artifact system
+│   ├── chat/                    # Advanced chat features
+│   ├── debate/                  # Core debate components
+│   ├── export/                  # Export system
+│   ├── marketplace/             # Marketplace components
+│   │   ├── desktop/            # Desktop-optimized
+│   │   └── mobile/             # Mobile-optimized
+│   ├── memory/                  # Memory dashboard components
+│   │   ├── desktop/            # Desktop-optimized
+│   │   └── mobile/             # Mobile-optimized
+│   ├── templates/               # Template system
+│   └── ui/                      # shadcn/ui components
+│
+├── lib/
+│   ├── agent-config/            # Agent configuration
+│   ├── artifacts/               # Artifact utilities
+│   ├── chat/                    # Chat utilities
+│   ├── export/                  # Export system
+│   ├── templates/               # Template system
+│   └── utils.ts                 # Utility functions (cn, etc.)
+│
+├── contexts/
+│   ├── DeviceProvider.tsx       # Device state management
+│   └── DemoContext.tsx          # Demo mode state
+│
+├── hooks/
+│   ├── responsive/              # Responsive hooks
+│   │   ├── useBreakpoint.ts
+│   │   ├── useOrientation.ts
+│   │   └── useViewport.ts
+│   └── use-mobile.ts
+│
+├── docs/                        # Comprehensive documentation
+│   ├── guides/                  # Implementation guides
+│   │   ├── design-system.md    # Design system documentation
+│   │   ├── mobile-first-best-practices.md
+│   │   └── feature-implementation-best-practices.md
+│   ├── implementation/          # Implementation tracking
+│   │   ├── Ongoing/            # Active work
+│   │   │   ├── dual-sidebar-layout-implementation-report.md
+│   │   │   └── [other ongoing work]
+│   │   ├── Done/               # Completed work
+│   │   └── ToDo/               # Planned work
+│   ├── understanding/           # Project understanding
+│   │   └── ANYDEBATE_UNDERSTANDING.md (this file)
+│   ├── reports/                 # Status reports
+│   └── planning/                # Planning documents
+│
+├── styles/
+│   └── globals.css              # LEGACY - Not used (use app/globals.css)
+│
+└── config/
+    ├── features.ts              # Feature flags
+    └── responsive.ts            # Responsive configuration
+\`\`\`
 
 ---
 
-## Key Messaging Principles
+## 🎨 Design System
 
-1. **Don't list specific models** - Say "the world's best AI models" or "leading AI models" (AnyDebate supports hundreds and continuously adds more)
+### Overview
 
-2. **Emphasize collaboration, not comparison** - It's not just about seeing different answers side-by-side; it's about AI models working together to produce better outcomes
+The AnyDebate AI design system is built on modern web standards with a focus on consistency, accessibility, and mobile-first design. Full documentation available in `docs/guides/design-system.md`.
 
-3. **Show the pain first** - People need to feel the problem (tab switching, copy-pasting chaos) before they appreciate the solution
+### Color System
 
-4. **Use concrete examples** - Don't just say "better decisions"—show specific scenarios where multiple AI perspectives catch errors
+**Technology**: OKLCH color space for perceptually uniform colors
 
-5. **Visual proof is essential** - Screenshots of the actual interface showing multi-column layout, @mentions, threaded discussions, and autonomous debates
+**Semantic Tokens** (from `app/globals.css`):
+\`\`\`css
+/* Light Theme */
+--background: oklch(0.98 0 0)      /* Slightly off-white */
+--foreground: oklch(0.15 0 0)      /* Near black */
+--card: oklch(0.95 0 0)            /* Light gray */
+--border: oklch(0.88 0 0)          /* Border gray */
+--sidebar: oklch(0.95 0 0)         /* Sidebar background */
+--sidebar-border: oklch(0.88 0 0)  /* Sidebar border */
 
-6. **The "wow effect" comes from the insight** - "One AI can be wrong. Multiple AIs working together get it right." This is the realization that changes everything.
+/* Dark Theme */
+--background: oklch(0.04 0 0)      /* Near black */
+--foreground: oklch(0.95 0 0)      /* Off-white */
+--card: oklch(0.06 0 0)            /* Dark gray */
+--border: oklch(0.12 0 0)          /* Border dark */
+--sidebar: oklch(0.05 0 0)         /* Sidebar dark */
+--sidebar-border: oklch(0.1 0 0)   /* Sidebar border dark */
+\`\`\`
 
-7. **Focus on outcomes, not features** - Better decisions. Better insights. Better outcomes. That's what matters.
+### Typography
+
+**Font Family**: Geist (sans-serif) and Geist Mono (monospace)
+- Configured in `app/layout.tsx`
+- Applied via Tailwind classes: `font-sans`, `font-mono`
+
+**Scale**:
+- Headings: `text-3xl`, `text-2xl`, `text-xl`, `text-lg`
+- Body: `text-base` (16px)
+- Small: `text-sm` (14px)
+- Extra small: `text-xs` (12px)
+
+### Spacing System
+
+**Mobile-First Responsive Spacing**:
+- Mobile: `p-4` (16px), `gap-2` (8px)
+- Tablet: `md:p-6` (24px), `md:gap-3` (12px)
+- Desktop: `lg:p-8` (32px), `lg:gap-4` (16px)
+
+### Border Radius
+
+- `--radius: 0.75rem` (12px) - Default
+- Small: `calc(var(--radius) - 4px)` (8px)
+- Large: `var(--radius)` (12px)
+- XL: `calc(var(--radius) + 4px)` (16px)
+
+### Special Effects
+
+**Glass Effect**:
+\`\`\`css
+.glass-effect {
+  background: oklch(from var(--background) l c h / 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid oklch(from var(--border) l c h / 0.5);
+}
+\`\`\`
+
+**Grid Patterns**:
+- `.grid-pattern-sm` - Small grid (20px)
+- `.grid-pattern-md` - Medium grid (40px)
+- `.grid-pattern-lg` - Large grid (60px)
 
 ---
 
-## The Competitive Moat
+## 📱 Mobile-First Implementation
 
-**No other platform does this.**
+### Core Principles
 
-- ChatGPT, Claude, Gemini, Grok: Single AI, single perspective
-- Poe: Multiple AIs, but no collaboration—just separate conversations
-- Custom solutions: Require technical setup, API keys, manual orchestration
+1. **Full Width Layouts**: Mobile layouts use full viewport width (`w-full min-w-0`)
+2. **Flexible Heights**: Use flex-based layouts (`flex-1 min-h-0`) instead of fixed heights
+3. **Scrollable Content**: Always ensure content is scrollable (`overflow-auto`)
+4. **Touch Targets**: Minimum 44px touch targets for all interactive elements
+5. **Adaptive Components**: Components transform based on device capabilities
 
-**AnyDebate is the only platform that:**
-- Brings multiple AI models together in one unified interface
-- Enables AI models to critique and debate each other
-- Automates multi-AI team debates with role/persona/framework configuration
-- Supports collaborative artifact creation across AI models
-- Continuously adds new models as they become available
+### Device Detection
 
-**The vision:** Collective AI intelligence becomes the new standard for decision-making.
+**DeviceProvider Context**:
+\`\`\`tsx
+const { isMobile, isTablet, isDesktop, orientation, viewport } = useDevice()
+\`\`\`
+
+**Capabilities**:
+- Device type detection (mobile, tablet, desktop)
+- Orientation tracking (portrait, landscape)
+- Viewport size monitoring
+- Touch capability detection
+- SSR-safe with hydration handling
+
+### Responsive Patterns
+
+**Adaptive Modal**:
+- Desktop: Full modal dialog with backdrop
+- Mobile: Bottom drawer with swipe gestures
+
+**Adaptive Grid**:
+- Mobile: 1 column
+- Tablet: 2 columns
+- Desktop: 3-4 columns
+
+**Adaptive Navigation**:
+- Desktop: Horizontal tabs
+- Mobile: Expandable accordion cards
+
+---
+
+## ✅ Completed Features
+
+### Core Platform (100%)
+- Multi-page application with Next.js App Router
+- Responsive design system with adaptive components
+- Dark/Light theme with manual toggle
+- Device context provider
+- Performance optimization
+- WCAG 2.1 AA accessibility compliance
+
+### Agent System (100%)
+- 4-step agent builder wizard
+- 50+ professional roles
+- 8 behavioral personas
+- 16+ thinking frameworks
+- 6,400+ unique agent combinations
+- Agent library with search and filtering
+- Quick agent selector
+- Agent analytics
+
+### Chat Features (100%)
+- Message search with advanced filters
+- 3-level message threading
+- 18 emoji reactions
+- Message bookmarking with collections
+- Session comparison (2-4 sessions)
+- Message actions (copy, edit, delete, pin, share)
+
+### Artifact System (100%)
+- 6 artifact types (documents, tables, checklists, charts, code, diagrams)
+- Multi-format export (PDF, PNG, CSV, JSON)
+- 30+ artifact templates
+- Version history with diff view
+- Artifact search and organization
+- Rich text editor with collaborative features (UI ready)
+
+### Export System (100%)
+- 5 export formats (PDF, Markdown, JSON, HTML, CSV)
+- Selective export (messages, artifacts, time ranges)
+- Custom formatting and branding
+- Batch export with progress tracking
+- Export history and analytics
+
+### Dashboard & Projects (100%)
+- Comprehensive metrics dashboard
+- Activity charts and analytics
+- Project organization with folders and tags
+- Session management (browse, search, filter, sort)
+- Quick actions and keyboard shortcuts
+- Activity feed with notifications
+
+### Agent Templates (100%)
+- 8 pre-built agent teams
+- 9 quick-start scenarios
+- Template gallery with search and filtering
+- Template customization
+- Import/export templates
+
+### Marketplace (100%)
+- Agent marketplace with categories
+- Search and filtering
+- Installation and management
+- Dual sidebar layout (Dashboard + Categories)
+
+### Memory Dashboard (100%)
+- Memory management interface
+- Scope and category filtering
+- Search functionality
+- Dual sidebar layout (Dashboard + Filters)
+
+---
+
+## 🚧 Current Work (November 2025)
+
+### Mobile UX Optimization (P0 - Critical)
+
+**Status**: 🔴 Active Development  
+**Priority**: Critical - Blocking production deployment
+
+**Issues Being Addressed**:
+1. Content not filling full width on mobile (floating UI)
+2. Excessive empty space in mobile modals
+3. Broken scrolling on some pages
+4. Poor modal overlay behavior
+
+**Documentation**: `docs/implementation/Ongoing/dual-sidebar-layout-implementation-report.md`
+
+**Affected Pages**:
+- `/marketplace` - Content width and categories sidebar
+- `/dashboard/memory` - Modal height and scrolling
+- `/dashboard/billing` - Scrolling completely broken
+
+**Required Fixes**:
+1. Add `w-full min-w-0` throughout component hierarchy
+2. Replace fixed heights with flex-based layouts (`flex-1 min-h-0`)
+3. Add `overflow-auto` to content areas
+4. Implement backdrop blur on modals (`backdrop-blur-md`)
+
+### Design System Standardization (P1)
+
+**Status**: 🟡 In Progress  
+**Priority**: High
+
+**Goals**:
+1. Ensure all components use semantic design tokens
+2. Standardize spacing throughout the application
+3. Add missing design tokens (modal backdrop, layout dimensions, touch targets)
+4. Document all patterns in design system guide
+
+**Documentation**: `docs/guides/design-system.md`
+
+**Tasks**:
+- [ ] Add modal/drawer backdrop tokens
+- [ ] Add layout dimension tokens
+- [ ] Add touch target tokens
+- [ ] Audit all components for token usage
+- [ ] Replace arbitrary values with design tokens
+- [ ] Update component documentation
+
+---
+
+## ⏳ Pending Implementation
+
+### Phase 4: Database & Persistence (Convex Integration)
+**Priority**: High  
+**Estimated Effort**: 2-3 weeks  
+**Status**: Planned
+
+**Features**:
+- Real-time database with Convex
+- Session persistence and cloud sync
+- Multi-device synchronization
+- Offline support with optimistic updates
+- Data migration from localStorage
+
+### Phase 5: User Management (Clerk Authentication)
+**Priority**: High  
+**Estimated Effort**: 1-2 weeks  
+**Status**: Planned
+
+**Features**:
+- User authentication (email, social, SSO)
+- User profiles and preferences
+- Team collaboration and sharing
+- Role-based access control
+
+### Backend AI Integration (Vercel AI SDK)
+**Priority**: Critical  
+**Estimated Effort**: 1 week  
+**Status**: Ready to Implement
+
+**Features**:
+- Replace demo responses with real AI API calls
+- Integrate Vercel AI SDK with AI Gateway
+- Support multiple AI providers
+- Implement streaming responses
+- Error handling and retry logic
+
+---
+
+## 📊 Current Status Summary
+
+### Overall Completion
+- **Pre-Database Features**: 100% Complete
+- **Mobile UX Optimization**: 60% Complete (Critical fixes in progress)
+- **Design System Standardization**: 75% Complete
+- **Database Integration**: 0% (Planned)
+- **Authentication**: 0% (Planned)
+- **Real AI Integration**: 0% (Ready to implement)
+
+### Quality Metrics
+- **Desktop UX**: ✅ Production Ready
+- **Mobile UX**: 🔴 Critical Issues (Being Fixed)
+- **Accessibility**: ✅ WCAG 2.1 AA Compliant
+- **Performance**: ✅ Optimized
+- **Documentation**: ✅ Comprehensive
+
+### Blockers
+1. **Mobile UX Issues** (P0) - Blocking production deployment
+   - Content width issues
+   - Modal height problems
+   - Scrolling broken on some pages
+   - Target completion: This week
+
+2. **Design System Gaps** (P1) - Blocking consistency
+   - Missing design tokens
+   - Inconsistent spacing
+   - Arbitrary values in components
+   - Target completion: Next 2 weeks
+
+---
+
+## 🎯 Next Steps
+
+### Immediate (This Week)
+1. Fix critical mobile UX issues (P0)
+2. Test on real mobile devices
+3. Update design system with missing tokens
+
+### Short Term (Next 2 Weeks)
+1. Complete design system standardization
+2. Performance optimization (lazy loading, image optimization)
+3. Documentation updates
+
+### Medium Term (Next Month)
+1. Convex database integration (Phase 4)
+2. Clerk authentication (Phase 5)
+3. Real AI integration with Vercel AI SDK
+
+### Long Term (Next Quarter)
+1. Advanced features and polish (Phase 6)
+2. Mobile native apps
+3. Community template marketplace
+
+---
+
+## 📚 Key Documentation
+
+### Implementation Guides
+- `docs/guides/design-system.md` - Complete design system documentation
+- `docs/guides/mobile-first-best-practices.md` - Mobile-first implementation patterns
+- `docs/guides/feature-implementation-best-practices.md` - Feature development guidelines
+
+### Current Work
+- `docs/implementation/Ongoing/dual-sidebar-layout-implementation-report.md` - Mobile UX fixes
+
+### Project Understanding
+- `docs/understanding/ANYDEBATE_UNDERSTANDING.md` - This document
+- `README.md` - Project overview and getting started
+
+---
+
+## 🔄 Document Maintenance
+
+**Update Frequency**: This document should be updated:
+- After completing major features
+- When architecture changes
+- When new patterns are established
+- Monthly for status updates
+
+**Last Major Updates**:
+- November 4, 2025: Added dual sidebar layout documentation, mobile UX status, design system details
+- January 2025: Initial comprehensive documentation
+- Q4 2024: Project inception and core features
+
+**Next Review**: After mobile UX fixes are completed (estimated: November 11, 2025)
+
+---
+
+**Document Version**: 2.0.0  
+**Last Updated**: November 4, 2025  
+**Maintained By**: Development Team  
+**Status**: ✅ Current and Accurate
