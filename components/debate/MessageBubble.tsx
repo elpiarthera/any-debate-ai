@@ -40,8 +40,15 @@ export function MessageBubble({ message, onShare, otherModels, onReply, onViewTh
   })
 
   const handleShare = (targetModelId: string) => {
+    const targetModel = otherModels.find((m) => m.id === targetModelId)
+    console.log("[v0] Sharing message to model:", {
+      messageId: message.id,
+      targetModelId,
+      targetModelName: targetModel?.name,
+      contentLength: message.content.length,
+    })
     onShare(message.content, targetModelId)
-    toast.success("Message shared successfully!")
+    toast.success(`Message shared to ${targetModel?.name || "model"}!`)
   }
 
   const handleCopy = async () => {

@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -19,6 +21,9 @@ import {
 import { cn } from "@/lib/utils"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { ExportButton } from "@/components/export/ExportButton"
+import { EditSessionDialog } from "./edit-session-dialog"
+import { DeleteConfirmationDialog } from "@/components/shared/delete-confirmation-dialog"
+import { useToast } from "@/hooks/use-toast"
 
 interface ChatSession {
   id: string
@@ -43,7 +48,7 @@ export function ChatSidebar({
   onSessionSelect,
   onNewSession,
 }: ChatSidebarProps) {
-  const [sessions] = useState<ChatSession[]>([
+  const [sessions, setSessions] = useState<ChatSession[]>([
     {
       id: "1",
       title: "AI Ethics Discussion",
@@ -67,6 +72,11 @@ export function ChatSidebar({
     },
   ])
 
+  const [showEditDialog, setShowEditDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [selectedSession, setSelectedSession] = useState<string | null>(null)
+  const { toast } = useToast()
+
   const formatTimestamp = (date: Date) => {
     const now = new Date()
     const diff = now.getTime() - date.getTime()
@@ -77,6 +87,45 @@ export function ChatSidebar({
     if (minutes < 60) return `${minutes}m ago`
     if (hours < 24) return `${hours}h ago`
     return `${days}d ago`
+  }
+
+  const handleEditSession = (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSelectedSession(sessionId)
+    setShowEditDialog(true)
+  }
+
+  const handleDeleteSession = (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSelectedSession(sessionId)
+    setShowDeleteDialog(true)
+  }
+
+  const handleSaveSessionTitle = (newTitle: string) => {
+    if (!selectedSession) return
+
+    setSessions((prev) =>
+      prev.map((session) => (session.id === selectedSession ? { ...session, title: newTitle } : session)),
+    )
+
+    toast({
+      title: "Session renamed",
+      description: `Session renamed to "${newTitle}"`,
+    })
+  }
+
+  const confirmDeleteSession = () => {
+    if (!selectedSession) return
+
+    const session = sessions.find((s) => s.id === selectedSession)
+    setSessions((prev) => prev.filter((s) => s.id !== selectedSession))
+
+    console.log("[v0] Deleting session:", selectedSession)
+    toast({
+      title: "Session deleted",
+      description: `"${session?.title}" has been deleted.`,
+      variant: "destructive",
+    })
   }
 
   const { isMobile, isTablet } = useDevice()
@@ -203,13 +252,19 @@ export function ChatSidebar({
                               size="sm"
                               showText={false}
                             />
-                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-sidebar-accent">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 hover:bg-sidebar-accent"
+                              onClick={(e) => handleEditSession(session.id, e)}
+                            >
                               <Edit3 className="h-3 w-3" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               className="h-6 w-6 p-0 hover:bg-destructive/20 hover:text-destructive"
+                              onClick={(e) => handleDeleteSession(session.id, e)}
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
@@ -269,6 +324,22 @@ export function ChatSidebar({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Dialogs */}
+      <EditSessionDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        sessionId={selectedSession}
+        currentTitle={sessions.find((s) => s.id === selectedSession)?.title}
+        onSave={handleSaveSessionTitle}
+      />
+      <DeleteConfirmationDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={confirmDeleteSession}
+        itemName={sessions.find((s) => s.id === selectedSession)?.title || "session"}
+        itemType="Session"
+      />
     </motion.div>
   )
 }

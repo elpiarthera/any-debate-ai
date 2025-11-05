@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "motion"
+import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import type { DebateMessage } from "@/lib/chat/modes"
 import { ScrollArea } from "@/components/ui/scroll-area"

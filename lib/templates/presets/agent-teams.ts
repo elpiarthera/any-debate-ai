@@ -1,3 +1,4 @@
+// Agent team presets for quick start scenarios
 import type { AgentConfigurationDraft } from "@/lib/agent-config/types"
 
 export interface AgentTeamPreset {

@@ -73,5 +73,5 @@ export function DashboardContent({ currentView }: DashboardContentProps) {
     }
   }
 
-  return <div className={`${isMobile ? "p-4" : "p-6"} h-full overflow-auto`}>{renderContent()}</div>
+  return <div className={`${isMobile ? "p-2" : "p-6"}`}>{renderContent()}</div>
 }

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
+import { useState } from "react"
 import {
   Home,
   MessageSquare,
@@ -20,19 +21,46 @@ import {
   TrendingUp,
   Activity,
   Zap,
+  FileText,
+  Brain,
+  Download,
+  Store,
+  CreditCard,
+  ChevronDown,
+  Briefcase,
+  UserCircle,
+  Lightbulb,
 } from "lucide-react"
 
 interface DashboardSidebarProps {
   isCollapsed: boolean
   onToggleCollapse: () => void
+  onNavigate?: () => void
 }
 
 const navigationItems = [
-  { href: "/dashboard", icon: Home, label: "Home", badge: null },
-  { href: "/debates", icon: MessageSquare, label: "Debates", badge: "3" },
-  { href: "/agents", icon: Users, label: "Agents", badge: null },
-  { href: "/analytics", icon: BarChart3, label: "Analytics", badge: null },
-  { href: "/settings", icon: Settings, label: "Settings", badge: null },
+  { href: "/dashboard", icon: Home, label: "Dashboard", badge: null, adminOnly: false },
+  { href: "/debates", icon: MessageSquare, label: "Debates", badge: "3", adminOnly: false },
+  {
+    href: "/agents",
+    icon: Users,
+    label: "Agents",
+    badge: null,
+    adminOnly: false,
+    submenu: [
+      { href: "/agents", icon: Users, label: "All Agents" },
+      { href: "/agents/roles", icon: Briefcase, label: "Roles" },
+      { href: "/agents/personas", icon: UserCircle, label: "Personas" },
+      { href: "/agents/frameworks", icon: Lightbulb, label: "Frameworks" },
+    ],
+  },
+  { href: "/templates", icon: FileText, label: "Templates", badge: null, adminOnly: false },
+  { href: "/dashboard/memory", icon: Brain, label: "Memory", badge: "New", adminOnly: true },
+  { href: "/analytics", icon: BarChart3, label: "Analytics", badge: null, adminOnly: false },
+  { href: "/export", icon: Download, label: "Export", badge: null, adminOnly: false },
+  { href: "/marketplace", icon: Store, label: "Marketplace", badge: null, adminOnly: false },
+  { href: "/settings", icon: Settings, label: "Settings", badge: null, adminOnly: false },
+  { href: "/dashboard/billing", icon: CreditCard, label: "Billing", badge: null, adminOnly: true },
 ]
 
 const quickActions = [
@@ -66,15 +94,30 @@ const recentActivity = [
   },
 ]
 
-export function DashboardSidebar({ isCollapsed, onToggleCollapse }: DashboardSidebarProps) {
+export function DashboardSidebar({ isCollapsed, onToggleCollapse, onNavigate }: DashboardSidebarProps) {
   const { isMobile, isTablet } = useDevice()
   const pathname = usePathname()
   const router = useRouter()
+  const [expandedItems, setExpandedItems] = useState<string[]>(["/agents"])
 
   const getWidth = () => {
     if (isMobile) return "100%" // Full width on mobile when in modal
     if (isTablet) return isCollapsed ? "64px" : "280px" // Narrower on tablet
     return isCollapsed ? "64px" : "320px" // Full width on desktop
+  }
+
+  const isAdmin = true
+
+  const visibleNavigationItems = navigationItems.filter((item) => !item.adminOnly || isAdmin)
+
+  const handleNavigation = () => {
+    if (isMobile && onNavigate) {
+      onNavigate()
+    }
+  }
+
+  const toggleSubmenu = (href: string) => {
+    setExpandedItems((prev) => (prev.includes(href) ? prev.filter((item) => item !== href) : [...prev, href]))
   }
 
   return (
@@ -113,7 +156,7 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse }: DashboardSid
               variant="ghost"
               size="sm"
               onClick={onToggleCollapse}
-              className="h-8 w-8 p-0 hover:bg-sidebar-accent"
+              className="min-h-[44px] min-w-[44px] p-0 hover:bg-sidebar-accent"
             >
               {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </Button>
@@ -126,9 +169,12 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse }: DashboardSid
         <ScrollArea className="h-full">
           <div className="p-2">
             <div className="space-y-1">
-              {navigationItems.map((item, index) => {
+              {visibleNavigationItems.map((item, index) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href
+                const isSubmenuActive = item.submenu?.some((sub) => pathname === sub.href)
+                const isExpanded = expandedItems.includes(item.href)
+                const hasSubmenu = item.submenu && item.submenu.length > 0
 
                 return (
                   <motion.div
@@ -137,12 +183,20 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse }: DashboardSid
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <Link
-                      href={item.href}
+                    {/* Main nav item */}
+                    <div
+                      onClick={() => {
+                        if (hasSubmenu && !isCollapsed) {
+                          toggleSubmenu(item.href)
+                        } else {
+                          router.push(item.href)
+                          handleNavigation()
+                        }
+                      }}
                       className={cn(
-                        "group relative rounded-lg p-3 mb-2 cursor-pointer transition-colors flex",
+                        "group relative rounded-lg p-3 mb-2 cursor-pointer transition-colors flex min-h-[44px] items-center",
                         "hover:bg-sidebar-accent",
-                        isActive && "bg-sidebar-accent",
+                        (isActive || isSubmenuActive) && "bg-sidebar-accent",
                       )}
                     >
                       {isCollapsed ? (
@@ -155,14 +209,54 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse }: DashboardSid
                             <Icon className="h-5 w-5 text-sidebar-foreground" />
                             <span className="font-medium text-sidebar-foreground">{item.label}</span>
                           </div>
-                          {item.badge && (
-                            <Badge variant="secondary" className="bg-sidebar-accent/50">
-                              {item.badge}
-                            </Badge>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {item.badge && (
+                              <Badge variant="secondary" className="bg-sidebar-accent/50">
+                                {item.badge}
+                              </Badge>
+                            )}
+                            {hasSubmenu && (
+                              <ChevronDown
+                                className={cn(
+                                  "h-4 w-4 text-sidebar-foreground/60 transition-transform",
+                                  isExpanded && "rotate-180",
+                                )}
+                              />
+                            )}
+                          </div>
                         </div>
                       )}
-                    </Link>
+                    </div>
+
+                    {hasSubmenu && !isCollapsed && isExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="ml-4 space-y-1 mb-2"
+                      >
+                        {item.submenu.map((subItem) => {
+                          const SubIcon = subItem.icon
+                          const isSubActive = pathname === subItem.href
+
+                          return (
+                            <Link
+                              key={subItem.href}
+                              href={subItem.href}
+                              onClick={handleNavigation}
+                              className={cn(
+                                "flex items-center gap-3 rounded-lg p-2 pl-3 min-h-[44px] transition-colors",
+                                "hover:bg-sidebar-accent/50",
+                                isSubActive && "bg-sidebar-accent/70 text-sidebar-foreground font-medium",
+                              )}
+                            >
+                              <SubIcon className="h-4 w-4 text-sidebar-foreground/80" />
+                              <span className="text-sm text-sidebar-foreground">{subItem.label}</span>
+                            </Link>
+                          )
+                        })}
+                      </motion.div>
+                    )}
                   </motion.div>
                 )
               })}
@@ -188,10 +282,11 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse }: DashboardSid
                         <Button
                           key={action.action}
                           variant="ghost"
-                          className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent"
+                          className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent min-h-[44px]"
                           onClick={() => {
                             if (action.action === "quick-start") {
                               router.push("/quick-start")
+                              handleNavigation()
                             } else {
                               console.log(`[v0] Quick action: ${action.action}`)
                             }

@@ -16,6 +16,10 @@ export interface Agent {
   role: string
   persona: string
   framework: string
+  roleId?: string
+  personaId?: string
+  frameworkId?: string
+  customInstructions?: string
   isFavorite: boolean
   usageCount: number
   createdAt: Date

@@ -107,3 +107,5 @@ export function getPersonaById(id: string): Persona | undefined {
 export function getPersonasByTrait(trait: string): Persona[] {
   return PERSONAS.filter((persona) => persona.traits.some((t) => t.toLowerCase().includes(trait.toLowerCase())))
 }
+
+export const personas = PERSONAS

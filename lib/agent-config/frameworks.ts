@@ -294,6 +294,8 @@ export const THINKING_FRAMEWORKS: ThinkingFramework[] = [
 
 export const FRAMEWORKS = THINKING_FRAMEWORKS
 
+export const frameworks = THINKING_FRAMEWORKS
+
 export const FRAMEWORK_CATEGORIES = ["Strategy", "Innovation", "Process", "Analysis"] as const
 
 export function getFrameworkById(id: string): ThinkingFramework | undefined {

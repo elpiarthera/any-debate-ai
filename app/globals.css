@@ -38,6 +38,20 @@
   --sidebar-accent-foreground: oklch(0.15 0 0);
   --sidebar-border: oklch(0.88 0 0);
   --sidebar-ring: oklch(0.6 0 0);
+
+  /* Added modal/drawer backdrop tokens for better visual hierarchy */
+  --modal-backdrop: oklch(from var(--background) l c h / 0.95);
+  --drawer-backdrop: oklch(from var(--background) l c h / 0.95);
+
+  /* Added layout dimension tokens for consistent sizing */
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 64px;
+  --header-height: 64px;
+  --mobile-header-height: 56px;
+
+  /* Added touch target tokens for mobile accessibility */
+  --touch-target-min: 44px;
+  --touch-target-comfortable: 48px;
 }
 
 .dark {
@@ -74,6 +88,10 @@
   --sidebar-accent-foreground: oklch(0.9 0 0);
   --sidebar-border: oklch(0.1 0 0);
   --sidebar-ring: oklch(0.7 0.15 240);
+
+  /* Added dark theme modal/drawer backdrop tokens */
+  --modal-backdrop: oklch(from var(--background) l c h / 0.95);
+  --drawer-backdrop: oklch(from var(--background) l c h / 0.95);
 }
 
 @theme inline {

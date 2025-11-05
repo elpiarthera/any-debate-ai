@@ -21,19 +21,19 @@ export function AdaptiveModal({ isOpen, onClose, title, children, className, des
     return (
       <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DrawerContent
-          className={`bg-background border-border ${className}`}
+          className={`bg-background/95 backdrop-blur-md border-border flex flex-col !mt-0 !max-h-fit w-full ${className}`}
           aria-describedby={description ? undefined : "drawer-no-description"}
         >
-          <DrawerHeader>
-            <DrawerTitle className="text-foreground">{title}</DrawerTitle>
-            {description && <p className="text-sm text-muted-foreground">{description}</p>}
+          <DrawerHeader className="shrink-0 !p-0 pt-4 px-4 pb-3 w-full">
+            <DrawerTitle className="text-foreground text-lg">{title}</DrawerTitle>
+            {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
             {!description && (
               <span id="drawer-no-description" className="sr-only">
                 No additional description
               </span>
             )}
           </DrawerHeader>
-          <div className="flex-1 overflow-hidden">{children}</div>
+          <div className="px-4 pb-6 w-full">{children}</div>
         </DrawerContent>
       </Drawer>
     )
