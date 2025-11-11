@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -34,6 +34,13 @@ export function PreferencesPanel() {
 
   const [isSaving, setIsSaving] = useState(false)
 
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("ai-debate-theme")
+    if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
+      setPreferences((prev) => ({ ...prev, theme: savedTheme as Preferences["theme"] }))
+    }
+  }, [])
+
   const handleSave = async () => {
     setIsSaving(true)
     console.log("[v0] Saving preferences:", preferences)
@@ -48,6 +55,29 @@ export function PreferencesPanel() {
 
   const updatePreference = <K extends keyof Preferences>(key: K, value: Preferences[K]) => {
     setPreferences((prev) => ({ ...prev, [key]: value }))
+
+    if (key === "theme") {
+      const themeValue = value as Preferences["theme"]
+      console.log("[v0] Theme preference changed to:", themeValue)
+
+      if (themeValue === "light") {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+        localStorage.setItem("ai-debate-theme", "light")
+        console.log("[v0] Applied light theme")
+      } else if (themeValue === "dark") {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+        localStorage.setItem("ai-debate-theme", "dark")
+        console.log("[v0] Applied dark theme")
+      } else if (themeValue === "system") {
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+        document.documentElement.classList.remove("light", "dark")
+        document.documentElement.classList.add(prefersDark ? "dark" : "light")
+        localStorage.setItem("ai-debate-theme", "system")
+        console.log("[v0] Applied system theme, resolved to:", prefersDark ? "dark" : "light")
+      }
+    }
   }
 
   return (

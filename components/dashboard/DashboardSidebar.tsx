@@ -131,8 +131,8 @@ export function DashboardSidebar({ isCollapsed, onToggleCollapse, onNavigate }: 
       style={{ width: isMobile ? "100%" : undefined }} // Override for mobile
     >
       {/* Header */}
-      <div className="p-4 border-b border-sidebar-border shrink-0">
-        <div className="flex items-center justify-between">
+      <div className="border-b border-sidebar-border shrink-0">
+        <div className="flex items-center justify-between p-4 h-[72px]">
           <AnimatePresence>
             {!isCollapsed && (
               <motion.div

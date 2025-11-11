@@ -6,7 +6,6 @@ import { SessionList } from "./SessionList"
 import { AgentLibrary } from "./AgentLibrary"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { BarChart3, Settings } from "lucide-react"
-import { useEffect } from "react"
 
 interface DashboardContentProps {
   currentView: string
@@ -14,32 +13,6 @@ interface DashboardContentProps {
 
 export function DashboardContent({ currentView }: DashboardContentProps) {
   const { isMobile } = useDevice()
-
-  useEffect(() => {
-    console.log("[v0] DashboardContent mounted, currentView:", currentView)
-    console.log("[v0] DashboardContent - window.scrollY:", window.scrollY)
-  }, [])
-
-  useEffect(() => {
-    console.log("[v0] DashboardContent view changed to:", currentView)
-  }, [currentView])
-
-  const getAnimationProps = () => {
-    if (isMobile) {
-      return {
-        initial: { opacity: 0 },
-        animate: { opacity: 1 },
-        onAnimationStart: () => console.log("[v0] DashboardContent animation started (mobile - opacity only)"),
-        onAnimationComplete: () => console.log("[v0] DashboardContent animation completed (mobile)"),
-      }
-    }
-    return {
-      initial: { opacity: 0, y: 20 },
-      animate: { opacity: 1, y: 0 },
-      onAnimationStart: () => console.log("[v0] DashboardContent animation started (desktop - opacity + y)"),
-      onAnimationComplete: () => console.log("[v0] DashboardContent animation completed (desktop)"),
-    }
-  }
 
   const renderOverview = () => (
     <div className="space-y-6">
@@ -52,19 +25,19 @@ export function DashboardContent({ currentView }: DashboardContentProps) {
   )
 
   const renderDebates = () => (
-    <motion.div {...getAnimationProps()} className="space-y-6">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <SessionList />
     </motion.div>
   )
 
   const renderAgents = () => (
-    <motion.div {...getAnimationProps()} className="space-y-6">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <AgentLibrary />
     </motion.div>
   )
 
   const renderAnalytics = () => (
-    <motion.div {...getAnimationProps()} className="space-y-6">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <div className="flex items-center gap-2">
         <BarChart3 className="h-6 w-6" />
         <h2 className="text-2xl font-bold">Analytics</h2>
@@ -75,7 +48,7 @@ export function DashboardContent({ currentView }: DashboardContentProps) {
   )
 
   const renderSettings = () => (
-    <motion.div {...getAnimationProps()} className="space-y-6">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <div className="flex items-center gap-2">
         <Settings className="h-6 w-6" />
         <h2 className="text-2xl font-bold">Settings</h2>
@@ -100,5 +73,5 @@ export function DashboardContent({ currentView }: DashboardContentProps) {
     }
   }
 
-  return renderContent()
+  return <div className={`${isMobile ? "p-2" : "p-6"} h-full overflow-auto`}>{renderContent()}</div>
 }

@@ -56,8 +56,8 @@ export function AgentFilterSidebar({
       style={{ width: isMobile ? "100%" : undefined }} // Override for mobile
     >
       {/* Header */}
-      <div className="p-4 border-b border-sidebar-border shrink-0">
-        <div className="flex items-center justify-between">
+      <div className="p-4 border-b border-sidebar-border shrink-0 h-[72px] flex items-center">
+        <div className="flex items-center justify-between w-full">
           <AnimatePresence>
             {!isCollapsed && (
               <motion.div

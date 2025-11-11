@@ -6,12 +6,14 @@ import { FrameworkLibraryDesktop } from "./desktop/FrameworkLibraryDesktop"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useFrameworkManager } from "@/hooks/useFrameworkManager"
 
-export function FrameworkLibrary() {
+interface FrameworkLibraryProps {
+  selectedFilter: string
+}
+
+export function FrameworkLibrary({ selectedFilter }: FrameworkLibraryProps) {
   const { isMobile } = useDevice()
-  // <CHANGE> Added loading state check
   const { isLoading } = useFrameworkManager()
 
-  // <CHANGE> Show skeleton loading state
   if (isLoading) {
     return (
       <div className="space-y-4 p-4">
@@ -25,5 +27,5 @@ export function FrameworkLibrary() {
     )
   }
 
-  return isMobile ? <FrameworkLibraryMobile /> : <FrameworkLibraryDesktop />
+  return isMobile ? <FrameworkLibraryMobile /> : <FrameworkLibraryDesktop selectedFilter={selectedFilter} />
 }

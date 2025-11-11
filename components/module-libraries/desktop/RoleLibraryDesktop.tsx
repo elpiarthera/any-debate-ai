@@ -59,8 +59,8 @@ export function RoleLibraryDesktop() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <header className="border-b border-border p-6">
-        <div className="flex items-center justify-between">
+      <header className="border-b border-border h-[72px] flex items-center px-6">
+        <div className="flex items-center justify-between w-full">
           <h1 className="font-sans text-2xl font-semibold text-foreground">Role Library</h1>
           <Button
             size="default"

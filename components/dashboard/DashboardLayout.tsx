@@ -1,6 +1,7 @@
 "use client"
 import type { ReactNode } from "react"
-import { useState, useEffect, useRef } from "react"
+import { useState } from "react"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
 import { DashboardSidebar } from "./DashboardSidebar"
@@ -11,7 +12,6 @@ import Link from "next/link"
 import { OrgSwitcher } from "./OrgSwitcher"
 import { TokenBalance } from "./TokenBalance"
 import { QuickActionsMenu } from "./QuickActionsMenu"
-import { motion } from "framer-motion"
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -38,101 +38,6 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const { isMobile } = useDevice()
-  const contentRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    console.log("[v0] DashboardLayout mounted, title:", title)
-    console.log("[v0] Initial window.scrollY:", window.scrollY)
-    console.log("[v0] Initial contentRef.scrollTop:", contentRef.current?.scrollTop)
-  }, [])
-
-  useEffect(() => {
-    console.log("[v0] Title changed to:", title)
-
-    const scrollToTop = () => {
-      if (contentRef.current) {
-        contentRef.current.scrollTop = 0
-      }
-      window.scrollTo(0, 0)
-      document.documentElement.scrollTop = 0
-      document.body.scrollTop = 0
-    }
-
-    // Scroll immediately
-    scrollToTop()
-
-    // Scroll again after a frame
-    requestAnimationFrame(() => {
-      scrollToTop()
-      console.log("[v0] Scrolled to top after requestAnimationFrame")
-    })
-
-    // Scroll again after animation frame completes
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        scrollToTop()
-        console.log("[v0] Scrolled to top after double requestAnimationFrame")
-      })
-    })
-  }, [title])
-
-  useEffect(() => {
-    console.log("[v0] ===== SCROLL MONITORING STARTED =====")
-
-    const logScrollState = (source: string) => {
-      console.log(`[v0] ${source}:`)
-      console.log(`  - window.scrollY: ${window.scrollY}`)
-      console.log(`  - document.documentElement.scrollTop: ${document.documentElement.scrollTop}`)
-      console.log(`  - document.body.scrollTop: ${document.body.scrollTop}`)
-      console.log(`  - contentRef.scrollTop: ${contentRef.current?.scrollTop}`)
-    }
-
-    // Log initial state
-    logScrollState("INITIAL STATE")
-
-    // Monitor window scroll events
-    const handleWindowScroll = (e: Event) => {
-      console.log("[v0] ⚠️ WINDOW SCROLL EVENT DETECTED")
-      logScrollState("Window scroll")
-      console.log("[v0] Event target:", e.target)
-      console.trace("[v0] Stack trace:")
-    }
-
-    // Monitor content container scroll events
-    const handleContentScroll = (e: Event) => {
-      console.log("[v0] ⚠️ CONTENT SCROLL EVENT DETECTED")
-      logScrollState("Content scroll")
-      console.log("[v0] Event target:", e.target)
-      console.trace("[v0] Stack trace:")
-    }
-
-    // Monitor document scroll events
-    const handleDocumentScroll = (e: Event) => {
-      console.log("[v0] ⚠️ DOCUMENT SCROLL EVENT DETECTED")
-      logScrollState("Document scroll")
-    }
-
-    window.addEventListener("scroll", handleWindowScroll, true)
-    document.addEventListener("scroll", handleDocumentScroll, true)
-    contentRef.current?.addEventListener("scroll", handleContentScroll, true)
-
-    // Check scroll position at multiple intervals
-    const intervals = [100, 200, 500, 1000, 2000, 3000, 5000]
-    const timeouts = intervals.map((delay) =>
-      setTimeout(() => {
-        console.log(`[v0] ===== ${delay}ms CHECK =====`)
-        logScrollState(`After ${delay}ms`)
-      }, delay),
-    )
-
-    return () => {
-      window.removeEventListener("scroll", handleWindowScroll, true)
-      document.removeEventListener("scroll", handleDocumentScroll, true)
-      contentRef.current?.removeEventListener("scroll", handleContentScroll, true)
-      timeouts.forEach(clearTimeout)
-      console.log("[v0] ===== SCROLL MONITORING STOPPED =====")
-    }
-  }, [])
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
@@ -146,13 +51,13 @@ export function DashboardLayout({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-0 w-full min-w-0">
+        {/* Header */}
         <motion.header
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="border-b border-border/50 backdrop-blur-sm bg-background/95 sticky top-0 z-50 shrink-0 w-full"
+          className="border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-40 shrink-0"
         >
-          <div className={`flex items-center justify-between ${isMobile ? "p-3" : "p-3 md:p-4"} w-full`}>
+          <div className="flex items-center justify-between p-4 h-[72px]">
             <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
               {/* Mobile menu button */}
               {isMobile && (
@@ -205,7 +110,7 @@ export function DashboardLayout({
         </motion.header>
 
         {/* Content */}
-        <div ref={contentRef} className="flex-1 min-h-0 overflow-auto w-full min-w-0" data-dashboard-content>
+        <div className="flex-1 min-h-0 overflow-auto w-full min-w-0">
           <div className={`w-full max-w-full ${isMobile ? "p-3" : "p-4 md:p-6 lg:p-8"}`}>{children}</div>
         </div>
       </div>
@@ -219,7 +124,7 @@ export function DashboardLayout({
           description="Navigate through dashboard sections"
         >
           <OrgSwitcher />
-          <div className="mt-2">
+          <div className="mt-3">
             <DashboardSidebar
               isCollapsed={false}
               onToggleCollapse={() => setIsSidebarCollapsed(true)}

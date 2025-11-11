@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { FrameworkLibrary } from "@/components/module-libraries/FrameworkLibrary"
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar"
+import { FrameworkFilterSidebar } from "@/components/module-libraries/FrameworkFilterSidebar"
 import { useDevice } from "@/contexts/DeviceProvider"
 import { AdaptiveModal } from "@/components/adaptive/AdaptiveModal"
 import { Menu } from "lucide-react"
@@ -12,7 +13,9 @@ import { OrgSwitcher } from "@/components/dashboard/OrgSwitcher"
 export default function FrameworksPage() {
   const { isMobile } = useDevice()
   const [isDashboardSidebarCollapsed, setIsDashboardSidebarCollapsed] = useState(false)
+  const [isFilterSidebarCollapsed, setIsFilterSidebarCollapsed] = useState(false)
   const [isDashboardSidebarOpen, setIsDashboardSidebarOpen] = useState(false)
+  const [selectedFilter, setSelectedFilter] = useState("All")
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -24,8 +27,16 @@ export default function FrameworksPage() {
       )}
 
       {!isMobile && (
-        <div className="flex-1 overflow-hidden">
-          <FrameworkLibrary />
+        <div className="flex-1 flex overflow-hidden">
+          <FrameworkFilterSidebar
+            isCollapsed={isFilterSidebarCollapsed}
+            onToggleCollapse={() => setIsFilterSidebarCollapsed(!isFilterSidebarCollapsed)}
+            selectedFilter={selectedFilter}
+            onFilterChange={setSelectedFilter}
+          />
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <FrameworkLibrary selectedFilter={selectedFilter} />
+          </div>
         </div>
       )}
 
@@ -45,7 +56,7 @@ export default function FrameworksPage() {
             </div>
           </div>
 
-          <FrameworkLibrary />
+          <FrameworkLibrary selectedFilter={selectedFilter} />
         </div>
       )}
 

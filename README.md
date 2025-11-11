@@ -2,8 +2,8 @@
 
 A sophisticated multi-AI collaboration platform that enables real-time debates, collaborative artifact creation, and advanced project management across multiple AI models. **All client-side features production-ready** - database persistence and real AI integration pending.
 
-![AI Debate App](https://img.shields.io/badge/Next.js-14.2.25-black?style=for-the-badge&logo=next.js)
-![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)
+![AI Debate App](https://img.shields.io/badge/Next.js-14.2.16-black?style=for-the-badge&logo=next.js)
+![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1.9-38B2AC?style=for-the-badge&logo=tailwind-css)
 
@@ -17,7 +17,7 @@ A sophisticated multi-AI collaboration platform that enables real-time debates, 
 - ✅ **Frontend Logic**: State management, routing, and client-side features fully functional
 - ✅ **Demo Mode**: Simulated AI responses for testing and demonstration
 - ✅ **Local Storage**: Client-side data persistence for sessions, agents, and preferences
-- ⏳ **Backend Integration**: Real AI API integration pending (Vercel AI SDK ready)
+- ⏳ **Backend Integration**: AI API integration configured with AI Gateway and Together.ai
 - ⏳ **Database**: Convex integration planned for cloud persistence
 - ⏳ **Authentication**: Clerk integration planned for user management
 
@@ -699,23 +699,23 @@ All features below are **100% implemented and functional** with UI/UX complete. 
 **Documentation**: `docs/PHASE_6_ADVANCED_FEATURES_PLAN.md`
 
 ### Backend AI Integration (Vercel AI SDK)
-**Priority**: Critical | **Estimated Effort**: 1 week | **Status**: Ready to Implement
+**Priority**: Critical | **Estimated Effort**: 1 week | **Status**: Configured, not activated
 
 **Features**:
 - Replace demo responses with real AI API calls
 - Integrate Vercel AI SDK with AI Gateway
-- Support multiple AI providers (OpenAI, Anthropic, Google, etc.)
+- Support multiple AI providers (OpenAI, Anthropic, Google, Together.ai)
 - Implement streaming responses
 - Add error handling and retry logic
 - Rate limiting and cost management
 
-**Status**: SDK already integrated, needs activation
+**Status**: SDK integrated, needs environment setup and activation
 
 ## 🛠️ Tech Stack
 
 ### Core Framework
-- **Next.js 14.2.25** - React framework with App Router and Server Components
-- **React 19** - Latest React with concurrent features
+- **Next.js 14.2.16** - React framework with App Router and Server Components
+- **React 18** - React with concurrent features
 - **TypeScript 5** - Type-safe development
 - **Tailwind CSS 4.1.9** - Utility-first CSS with semantic tokens
 
@@ -738,286 +738,219 @@ All features below are **100% implemented and functional** with UI/UX complete. 
 - **clsx** - Conditional className utility
 
 ### Planned Integrations
-- **Vercel AI SDK 5** - AI integration framework (ready)
-- **Vercel AI Gateway** - Unified API for AI providers
-- **Convex** - Real-time database (Phase 4)
-- **Clerk** - Authentication (Phase 5)
+- **Vercel AI SDK 5** - AI integration framework (configured, not activated)
+- **Vercel AI Gateway** - Unified API for AI providers (configured)
+- **Together.ai** - Additional AI provider (configured)
+- **Convex** - Real-time database (Phase 4 - not started)
+- **Clerk** - Authentication (Phase 5 - not started)
 
 ## 📁 Project Structure
 
 \`\`\`
-├── app/                          # Next.js App Router
-│   ├── page.tsx                 # Landing page with redirect
-│   ├── dashboard/               # Home dashboard
-│   │   └── page.tsx
-│   ├── debates/                 # Debate interface
-│   │   └── page.tsx
-│   ├── agents/                  # Agent management
-│   │   └── page.tsx
-│   ├── analytics/               # Analytics dashboard
-│   │   └── page.tsx
-│   ├── api/                     # API routes
-│   │   └── chat/
-│   ├── layout.tsx               # Root layout
-│   └── globals.css              # Global styles & design tokens
+AnyDebateAI/
+├── app/                          # Next.js 14 App Router
+│   ├── agents/                   # AI Agent Management
+│   │   ├── [id]/edit/           # Edit specific agent
+│   │   ├── frameworks/          # Framework library
+│   │   ├── personas/            # Persona library
+│   │   ├── roles/               # Role library
+│   │   ├── new/                 # Create new agent
+│   │   └── page.tsx            # All agents list
+│   ├── dashboard/               # Main Dashboard
+│   │   ├── billing/            # Billing & subscriptions
+│   │   ├── memory/             # Memory management
+│   │   ├── organization/[slug]/ # Organization management
+│   │   │   ├── members/        # Team members
+│   │   │   ├── settings/       # Org settings
+│   │   │   └── page.tsx        # Org dashboard
+│   │   └── page.tsx            # Dashboard home
+│   ├── debates/                 # Debate sessions
+│   ├── templates/               # Debate templates
+│   ├── marketplace/             # Agent marketplace
+│   ├── artifacts/               # Saved artifacts
+│   ├── export/                  # Export center
+│   ├── messages/                # Message history
+│   ├── sessions/                # Session management
+│   ├── analytics/               # Usage analytics
+│   ├── settings/                # User settings
+│   ├── pricing/                 # Pricing page
+│   ├── quick-start/             # Onboarding flow
+│   ├── api/chat/               # Chat API endpoint
+│   ├── layout.tsx              # Root layout
+│   └── page.tsx                # Landing/Home page
 │
-├── components/
-│   ├── adaptive/                # Adaptive component system
-│   │   ├── AdaptiveGrid.tsx
-│   │   ├── AdaptiveModal.tsx
-│   │   ├── AdaptiveNavigation.tsx
-│   │   └── AdaptiveTable.tsx
-│   ├── agent-config/            # Agent builder system
-│   │   ├── AgentBuilderModal.tsx
-│   │   ├── RoleSelector.tsx
-│   │   ├── PersonaSelector.tsx
-│   │   ├── FrameworkSelector.tsx
-│   │   └── AgentPreview.tsx
-│   ├── agent-management/        # Agent management UI
-│   │   ├── QuickAgentSelector.tsx
-│   │   └── AgentCard.tsx
-│   ├── artifacts/               # Artifact system
-│   │   ├── ArtifactCanvas.tsx
-│   │   ├── ArtifactRenderer.tsx
-│   │   ├── export/              # Multi-format export
-│   │   ├── templates/           # 30+ templates
-│   │   ├── version-history/     # Version control
-│   │   └── search/              # Artifact search
-│   ├── chat/                    # Advanced chat features
-│   │   ├── ChatThread.tsx
-│   │   ├── search/              # Message search
-│   │   ├── threading/           # Message threading
-│   │   ├── reactions/           # Enhanced reactions
-│   │   ├── bookmarks/           # Message bookmarking
-│   │   └── comparison/          # Session comparison
-│   ├── dashboard/               # Dashboard system
+├── components/                  # React Components
+│   ├── chat/                   # Chat & debate modes
+│   │   ├── compare/           # Compare Mode
+│   │   ├── debate/            # Debate Mode
+│   │   ├── auto-debate/       # Auto Debate Mode
+│   │   ├── comparison/        # Session comparison
+│   │   ├── bookmarks/         # Bookmark system
+│   │   ├── reactions/         # Message reactions
+│   │   ├── threading/         # Thread system
+│   │   ├── search/            # Message search
+│   │   ├── ChatSidebar.tsx    # Chat sidebar
+│   │   ├── ChatThread.tsx     # Message thread
+│   │   └── ModeSelector.tsx   # Mode switcher
+│   ├── dashboard/             # Dashboard UI
 │   │   ├── DashboardLayout.tsx
 │   │   ├── DashboardSidebar.tsx
 │   │   ├── DashboardContent.tsx
+│   │   ├── DashboardHeader.tsx
 │   │   ├── MetricCard.tsx
 │   │   ├── QuickActions.tsx
-│   │   └── RecentActivity.tsx
-│   ├── debate/                  # Core debate components
-│   │   ├── ModelColumn.tsx
-│   │   ├── MessageBubble.tsx
-│   │   ├── AddModelButton.tsx
-│   │   └── AutoModeSwitch.tsx
-│   ├── export/                  # Export system
-│   │   ├── ExportButton.tsx
-│   │   └── ExportDialog.tsx
-│   ├── templates/               # Template system
+│   │   ├── QuickActionsMenu.tsx
+│   │   ├── RecentActivity.tsx
+│   │   ├── SessionList.tsx
+│   │   ├── TokenBalance.tsx
+│   │   ├── AgentLibrary.tsx
+│   │   └── OrgSwitcher.tsx
+│   ├── agents/                # Agent management
+│   │   ├── AgentFilterSidebar.tsx
+│   │   ├── agent-card.tsx
+│   │   ├── agent-list.tsx
+│   │   ├── desktop/
+│   │   └── mobile/
+│   ├── agent-composer/        # Advanced agent builder
+│   │   ├── AgentComposer.tsx
+│   │   ├── AgentEditor.tsx
+│   │   ├── ModelSelector.tsx
+│   │   ├── ModuleCard.tsx
+│   │   └── ModuleSelector.tsx
+│   ├── agent-config/          # Agent configuration
+│   │   ├── AgentBuilderModal.tsx
+│   │   ├── AgentPreview.tsx
+│   │   ├── RoleSelector.tsx
+│   │   ├── PersonaSelector.tsx
+│   │   └── FrameworkSelector.tsx
+│   ├── agent-management/      # Agent operations
+│   │   ├── AgentCard.tsx
+│   │   └── QuickAgentSelector.tsx
+│   ├── module-libraries/      # Module management
+│   │   ├── FrameworkLibrary.tsx
+│   │   ├── FrameworkFilterSidebar.tsx
+│   │   ├── FrameworkEditorModal.tsx
+│   │   ├── PersonaLibrary.tsx
+│   │   ├── PersonaEditorModal.tsx
+│   │   ├── RoleLibrary.tsx
+│   │   ├── RoleEditorModal.tsx
+│   │   ├── forms/
+│   │   ├── desktop/
+│   │   └── mobile/
+│   ├── artifacts/             # Artifact system
+│   │   ├── ArtifactCanvas.tsx
+│   │   ├── ArtifactRenderer.tsx
+│   │   ├── ArtifactToolbar.tsx
+│   │   ├── ChartArtifact.tsx
+│   │   ├── ChecklistArtifact.tsx
+│   │   ├── DataTableArtifact.tsx
+│   │   ├── DocumentArtifact.tsx
+│   │   ├── CollaborationIndicator.tsx
+│   │   ├── save-artifact-as-memory-form.tsx
+│   │   ├── export/            # Export functionality
+│   │   ├── organization/      # Artifact organization
+│   │   ├── search/            # Search & filters
+│   │   ├── templates/         # Template selector
+│   │   └── version-history/   # Version control
+│   ├── memory/                # Memory system
+│   │   ├── MemoryFilterSidebar.tsx
+│   │   ├── memory-dashboard.tsx
+│   │   ├── add-memory-form.tsx
+│   │   ├── edit-memory-dialog.tsx
+│   │   ├── document-upload.tsx
+│   │   ├── url-scraper.tsx
+│   │   ├── desktop/
+│   │   ├── mobile/
+│   │   └── shared/
+│   ├── templates/             # Template management
 │   │   ├── TemplateGallery.tsx
 │   │   ├── AgentTeamPreview.tsx
 │   │   ├── QuickStartPanel.tsx
-│   │   ├── mobile/              # Mobile-optimized
-│   │   └── desktop/             # Desktop-optimized
-│   └── ui/                      # shadcn/ui components
+│   │   ├── mobile/
+│   │   └── desktop/
+│   ├── marketplace/           # Marketplace UI
+│   │   ├── MarketplaceFilterSidebar.tsx
+│   │   ├── marketplace-list.tsx
+│   │   ├── desktop/
+│   │   └── mobile/
+│   ├── messages/              # Message management
+│   │   ├── message-card.tsx
+│   │   ├── message-list.tsx
+│   │   ├── desktop/
+│   │   └── mobile/
+│   ├── billing/               # Billing components
+│   │   ├── token-balance-widget.tsx
+│   │   ├── token-balance-warning.tsx
+│   │   ├── purchase-tokens-dialog.tsx
+│   │   ├── plan-selection-reference.tsx
+│   │   ├── change-plan-dialog.tsx
+│   │   └── cancel-subscription-dialog.tsx
+│   ├── export/                # Export system
+│   │   ├── ExportButton.tsx
+│   │   ├── ExportDialog.tsx
+│   │   ├── export-center.tsx
+│   │   ├── desktop/
+│   │   └── mobile/
+│   ├── debate/                # Debate components
+│   │   ├── ModelColumn.tsx
+│   │   ├── MessageBubble.tsx
+│   │   ├── AddModelButton.tsx
+│   │   ├── ModelSettings.tsx
+│   │   ├── AutoModeSwitch.tsx
+│   │   └── save-debate-result-form.tsx
+│   ├── landing/               # Landing page
+│   │   ├── LandingPage.tsx
+│   │   ├── InteractiveDemo.tsx
+│   │   ├── TestimonialCarousel.tsx
+│   │   ├── TrustSignals.tsx
+│   │   ├── AnalyticsProvider.tsx
+│   │   ├── desktop/
+│   │   ├── mobile/
+│   │   └── shared/
+│   ├── adaptive/              # Responsive utilities
+│   │   ├── AdaptiveGrid.tsx
+│   │   ├── AdaptiveModal.tsx
+│   │   └── AdaptiveNavigation.tsx
+│   ├── layout/                # Layout components
+│   │   └── main-nav.tsx
+│   └── ui/                    # shadcn/ui components
 │
-├── lib/
-│   ├── agent-config/            # Agent configuration
-│   │   ├── roles.ts             # 50+ professional roles
-│   │   ├── personas.ts          # 8 behavioral personas
-│   │   ├── frameworks.ts        # 16+ thinking frameworks
+├── lib/                        # Utilities & Configuration
+│   ├── ai-config.ts           # AI SDK configuration
+│   ├── utils.ts               # Utility functions
+│   ├── chat/                  # Chat utilities
+│   │   └── modes.ts           # Mode definitions
+│   ├── agent-config/          # Agent configuration
+│   │   ├── roles.ts           # 50+ roles
+│   │   ├── personas.ts        # 8 personas
+│   │   ├── frameworks.ts      # 16+ frameworks
 │   │   └── types.ts
-│   ├── artifacts/               # Artifact utilities
-│   │   ├── export.ts            # Multi-format export
-│   │   ├── templates.ts         # Template library
-│   │   ├── version-history.ts   # Version control
-│   │   └── organization.ts      # Search & filtering
-│   ├── chat/                    # Chat utilities
-│   │   ├── search.ts            # Message search
-│   │   ├── threading.ts         # Threading logic
-│   │   ├── reactions.ts         # Reaction management
-│   │   ├── bookmarks.ts         # Bookmark system
-│   │   └── comparison.ts        # Session comparison
-│   ├── export/                  # Export system
-│   │   ├── export-manager.ts
-│   │   ├── pdf-exporter.ts
-│   │   ├── markdown-exporter.ts
-│   │   └── json-exporter.ts
-│   ├── templates/               # Template system
-│   │   ├── presets/             # Pre-built teams & scenarios
-│   │   ├── built-in/            # 8 template categories
-│   │   ├── storage.ts           # Local storage management
-│   │   ├── import-export.ts     # Template sharing
-│   │   └── analytics.ts         # Usage tracking
-│   └── utils.ts
+│   ├── artifacts/             # Artifact utilities
+│   ├── export/                # Export utilities
+│   └── templates/             # Template utilities
 │
-├── contexts/
-│   ├── DeviceProvider.tsx       # Device state management
-│   └── DemoContext.tsx          # Demo mode state
+├── hooks/                      # Custom React Hooks
+│   ├── use-mobile.tsx
+│   └── use-toast.ts
 │
-├── hooks/
-│   ├── responsive/              # Responsive hooks
-│   │   ├── useBreakpoint.ts
-│   │   ├── useOrientation.ts
-│   │   └── useViewport.ts
-│   └── use-mobile.ts
+├── contexts/                   # React Context Providers
+│   ├── DeviceProvider.tsx
+│   └── DemoContext.tsx
 │
-├── docs/                        # Comprehensive documentation
-│   ├── implementation-plan.md   # Master implementation plan
-│   ├── implementation-report.md # Current status report
-│   ├── mobile-first-best-practices.md
-│   ├── OPTION_1_EXPORT_SYSTEM_PLAN.md
-│   ├── OPTION_2_DASHBOARD_PLAN.md
-│   ├── OPTION_3_AGENT_TEMPLATES_PLAN.md
-│   ├── OPTION_4_ARTIFACT_FEATURES_PLAN.md
-│   ├── OPTION_5_CHAT_FEATURES_PLAN.md
-│   ├── PHASE_4_CONVEX_DATABASE_PLAN.md
-│   ├── PHASE_5_USER_MANAGEMENT_PLAN.md
-│   └── PHASE_6_ADVANCED_FEATURES_PLAN.md
+├── docs/                       # Documentation
+│   ├── guides/                # Implementation guides
+│   ├── implementation/        # Implementation plans
+│   │   ├── Done/             # Completed features
+│   │   ├── Ongoing/          # Current work (MVP)
+│   │   └── ToDo/             # Planned features
+│   ├── understanding/         # System documentation
+│   ├── navigation/            # Navigation docs
+│   ├── planning/              # Planning docs
+│   ├── reports/               # Status reports
+│   └── migration/             # Migration guides
 │
-└── config/
-    ├── features.ts              # Feature flags
-    └── responsive.ts            # Responsive configuration
+└── public/                     # Static assets
 \`\`\`
-
-## 📊 Feature Completion Matrix
-
-| Feature Category | Status | Completion | Documentation |
-|------------------|--------|------------|---------------|
-| **Core Platform Architecture** | ✅ Complete | 100% | Built-in |
-| **Agent System** | ✅ Complete | 100% | Built-in |
-| **Option 1: Export System** | ✅ Complete | 100% | `OPTION_1_EXPORT_SYSTEM_PLAN.md` |
-| **Option 2: Dashboard & Projects** | ✅ Complete | 100% | `OPTION_2_DASHBOARD_PLAN.md` |
-| **Option 3: Agent Templates** | ✅ Complete | 100% | `OPTION_3_AGENT_TEMPLATES_PLAN.md` |
-| **Option 4: Artifact Features** | ✅ Complete | 100% | `OPTION_4_ARTIFACT_FEATURES_PLAN.md` |
-| **Option 5: Chat Features** | ✅ Complete | 100% | `OPTION_5_CHAT_FEATURES_PLAN.md` |
-| **Phase 4: Convex Database** | 🚧 Planned | 0% | `PHASE_4_CONVEX_DATABASE_PLAN.md` |
-| **Phase 5: User Management (Clerk)** | 🚧 Planned | 0% | `PHASE_5_USER_MANAGEMENT_PLAN.md` |
-| **Phase 6: Advanced Features** | 🚧 Planned | 0% | `PHASE_6_ADVANCED_FEATURES_PLAN.md` |
-| **Backend AI Integration** | 🚧 Ready | 0% | Built-in |
-
-**Overall Status**: 100% Complete (All pre-database features production-ready)
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+
-- npm, yarn, or pnpm
-
-### Installation
-
-1. **Clone the repository**
-   \`\`\`bash
-   git clone <repository-url>
-   cd ai-debate-app
-   \`\`\`
-
-2. **Install dependencies**
-   \`\`\`bash
-   npm install
-   # or
-   yarn install
-   # or
-   pnpm install
-   \`\`\`
-
-3. **Set up environment variables** (optional for current features)
-   \`\`\`bash
-   cp .env.example .env.local
-   \`\`\`
-
-4. **Start the development server**
-   \`\`\`bash
-   npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
-   \`\`\`
-
-5. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-## 📖 Usage Guide
-
-### Getting Started
-
-1. **Home/Dashboard**: View metrics, recent activity, and quick actions
-2. **Debates Page**: Start multi-AI debates with QuickAgentSelector
-3. **Agents Page**: Browse, search, and manage your agent library
-4. **Analytics**: View detailed statistics and metrics (basic stats available)
-
-### Agent Management
-
-#### Creating Custom Agents
-1. Click "Create Agent" or "Custom Agent" button
-2. **Step 1**: Select a professional role (50+ options)
-3. **Step 2**: Choose a behavioral persona (8 styles)
-4. **Step 3**: Pick a thinking framework (16+ methodologies)
-5. **Step 4**: Preview and create your agent
-
-#### Using Agent Templates
-1. Visit Templates Gallery
-2. Browse 8 pre-built agent teams or 9 quick-start scenarios
-3. Click "Use Template" to load agent configuration
-4. Customize agents as needed
-
-### Debate Features
-
-#### Starting a Debate
-1. Use QuickAgentSelector to add agents (up to 4)
-2. Type your message in the input field
-3. Press Enter or click Send
-4. Watch agents respond in real-time (demo mode)
-
-#### Auto-Debate Mode
-1. Toggle "Auto Debate" switch in header
-2. Send initial message
-3. Agents respond sequentially, creating a debate chain
-
-#### Advanced Chat Features
-- **Search Messages**: Use search bar to find specific messages
-- **Thread Replies**: Click reply icon to create threaded conversations
-- **React to Messages**: Add emoji reactions to any message
-- **Bookmark Messages**: Save important messages with tags and notes
-- **Compare Sessions**: Analyze multiple debate sessions side-by-side
-
-### Artifact Management
-
-#### Creating Artifacts
-1. Use artifact tools during debates
-2. Choose from 30+ templates (documents, tables, checklists, charts)
-3. Edit collaboratively with AI agents
-4. Track changes with version history
-
-#### Exporting Artifacts
-1. Click export button on any artifact
-2. Choose format: PDF, PNG, CSV, or JSON
-3. Configure export options
-4. Download or save to library
-
-### Export & Sharing
-
-#### Exporting Sessions
-1. Click "Export" button in header
-2. Select export format (PDF, Markdown, JSON)
-3. Choose what to include (messages, artifacts, metadata)
-4. Configure formatting options
-5. Download or save
-
-#### Batch Export
-1. Go to Dashboard
-2. Select multiple sessions
-3. Click "Batch Export"
-4. Choose format and options
-5. Download as ZIP file
-
-## 🎨 Design System
-
-### Responsive Architecture
-- **Mobile-First**: All components designed for touch interactions
-- **Adaptive Components**: Automatically adjust to device capabilities
-- **Breakpoints**: Mobile (< 768px), Tablet (768-1024px), Desktop (> 1024px)
-- **Device Context**: Comprehensive device state management
-
-### Theme System
-- **Dark/Light Mode**: Manual theme switching
-- **Semantic Tokens**: CSS custom properties for consistent theming
-- **Typography**: Inter font family with responsive scaling
-- **Animations**: Framer Motion with performance optimization
-- **Accessibility**: WCAG 2.1 AA compliance
 
 ## 🧪 Testing
 
@@ -1121,7 +1054,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **Architecture**: Built with Next.js 14, React 19, and TypeScript 5
+- **Architecture**: Built with Next.js 14, React 18, and TypeScript 5
 - **UI Components**: shadcn/ui and Radix UI
 - **Styling**: Tailwind CSS 4 with semantic design tokens
 - **Animations**: Framer Motion for smooth transitions

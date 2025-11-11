@@ -55,8 +55,8 @@ export function PersonaLibraryDesktop() {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <header className="border-b border-border p-6">
-        <div className="flex items-center justify-between gap-4">
+      <header className="border-b border-border h-[72px] flex items-center px-6">
+        <div className="flex items-center justify-between gap-4 w-full">
           <h1 className="font-sans text-2xl font-semibold text-foreground">Persona Library</h1>
           <Button
             className="bg-primary text-primary-foreground"

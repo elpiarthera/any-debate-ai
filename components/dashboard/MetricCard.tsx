@@ -31,23 +31,8 @@ export function MetricCard({
     neutral: "text-muted-foreground",
   }[changeType]
 
-  const getAnimationProps = () => {
-    if (isMobile) {
-      return {
-        initial: { opacity: 0 },
-        animate: { opacity: 1 },
-        transition: { delay: index * 0.1 },
-      }
-    }
-    return {
-      initial: { opacity: 0, y: 20 },
-      animate: { opacity: 1, y: 0 },
-      transition: { delay: index * 0.1 },
-    }
-  }
-
   return (
-    <motion.div {...getAnimationProps()}>
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
       <Card className="hover:shadow-lg transition-all duration-200">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className={`${isMobile ? "text-xs" : "text-sm"} font-medium`}>{title}</CardTitle>

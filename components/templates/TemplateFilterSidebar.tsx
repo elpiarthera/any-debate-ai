@@ -44,8 +44,8 @@ export function TemplateFilterSidebar({
       style={{ width: isMobile ? "100%" : undefined }}
     >
       {/* Header */}
-      <div className="p-4 border-b border-sidebar-border shrink-0">
-        <div className="flex items-center justify-between">
+      <div className="h-[72px] p-4 border-b border-sidebar-border shrink-0 flex items-center">
+        <div className="flex items-center justify-between w-full">
           <AnimatePresence>
             {!isCollapsed && (
               <motion.div

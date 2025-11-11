@@ -1,30 +1,26 @@
 "use client"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { ChevronLeft, ChevronRight, Filter } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useDevice } from "@/contexts/DeviceProvider"
-import { MemoryFilters } from "./shared/memory-filters"
-import type { MemoryScope, MemoryCategory } from "./memory-dashboard"
 
-interface MemoryFilterSidebarProps {
+interface FrameworkFilterSidebarProps {
   isCollapsed: boolean
   onToggleCollapse: () => void
-  selectedScope: MemoryScope | "all"
-  onScopeChange: (scope: MemoryScope | "all") => void
-  selectedCategory: MemoryCategory | "all"
-  onCategoryChange: (category: MemoryCategory | "all") => void
+  selectedFilter: string
+  onFilterChange: (filter: string) => void
 }
 
-export function MemoryFilterSidebar({
+const filters = ["All", "My Frameworks", "System"]
+
+export function FrameworkFilterSidebar({
   isCollapsed,
   onToggleCollapse,
-  selectedScope,
-  onScopeChange,
-  selectedCategory,
-  onCategoryChange,
-}: MemoryFilterSidebarProps) {
+  selectedFilter,
+  onFilterChange,
+}: FrameworkFilterSidebarProps) {
   const { isMobile, isTablet } = useDevice()
 
   const getWidth = () => {
@@ -41,8 +37,8 @@ export function MemoryFilterSidebar({
       style={{ width: isMobile ? "100%" : undefined }}
     >
       {/* Header */}
-      <div className="p-4 border-b border-sidebar-border shrink-0 h-[72px]">
-        <div className="flex items-center justify-between">
+      <div className="p-4 border-b border-sidebar-border shrink-0 h-[72px] flex items-center">
+        <div className="flex items-center justify-between w-full">
           <AnimatePresence>
             {!isCollapsed && (
               <motion.div
@@ -70,7 +66,7 @@ export function MemoryFilterSidebar({
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters List */}
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
           <div className="p-4">
@@ -80,13 +76,27 @@ export function MemoryFilterSidebar({
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
+                  className="space-y-6"
                 >
-                  <MemoryFilters
-                    selectedScope={selectedScope}
-                    onScopeChange={onScopeChange}
-                    selectedCategory={selectedCategory}
-                    onCategoryChange={onCategoryChange}
-                  />
+                  {/* Filters Section */}
+                  <div>
+                    <div className="flex flex-col gap-1">
+                      {filters.map((filter) => (
+                        <button
+                          key={filter}
+                          onClick={() => onFilterChange(filter)}
+                          className={cn(
+                            "w-full px-3 py-2 rounded-md text-sm font-medium transition-colors text-left",
+                            selectedFilter === filter
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                              : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
+                          )}
+                        >
+                          {filter}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
