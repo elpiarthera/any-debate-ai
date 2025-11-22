@@ -329,3 +329,10 @@ export const createChartTool = tool({
     return `Created ${type} chart: "${title}" with ${data.length} data points`
   },
 })
+
+export const tools = {
+  createDocument: createDocumentTool,
+  createTable: createTableTool,
+  createChecklist: createChecklistTool,
+  createChart: createChartTool,
+}

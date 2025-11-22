@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useDevice } from "@/contexts/DeviceProvider"
+import { toast } from "react-hot-toast"
 import {
   Search,
   Users,
@@ -18,6 +19,7 @@ import {
   GraduationCap,
   Stethoscope,
   Scale,
+  Plus,
 } from "lucide-react"
 import {
   PROFESSIONAL_ROLES,
@@ -26,6 +28,7 @@ import {
   searchRoles,
   getRoleById,
 } from "@/lib/agent-config/roles"
+import { RoleEditorModal } from "@/components/module-libraries/RoleEditorModal"
 
 interface RoleSelectorProps {
   selectedRoleId?: string
@@ -47,6 +50,7 @@ export function RoleSelector({ selectedRoleId, onRoleSelect }: RoleSelectorProps
   const { isMobile } = useDevice()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   const filteredRoles = searchQuery
     ? searchRoles(searchQuery)
@@ -56,10 +60,30 @@ export function RoleSelector({ selectedRoleId, onRoleSelect }: RoleSelectorProps
 
   const selectedRole = selectedRoleId ? getRoleById(selectedRoleId) : null
 
+  const handleCreateRole = (newRole: any) => {
+    console.log("[v0] Created new role:", newRole)
+    // Auto-select the newly created role
+    if (newRole.id) {
+      onRoleSelect(newRole.id)
+      toast.success(`Role "${newRole.name}" created and selected!`)
+    }
+  }
+
   return (
     <div className="h-full flex flex-col space-y-3 md:space-y-4">
       <div className="flex-shrink-0">
-        <h3 className="text-base md:text-lg font-semibold mb-2">Choose Professional Role</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-base md:text-lg font-semibold">Choose Professional Role</h3>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1 bg-transparent"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Create New</span>
+          </Button>
+        </div>
         <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">
           Select the professional expertise and domain knowledge for your AI agent
         </p>
@@ -193,6 +217,14 @@ export function RoleSelector({ selectedRoleId, onRoleSelect }: RoleSelectorProps
           </div>
         )}
       </div>
+
+      {/* RoleEditorModal */}
+      <RoleEditorModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onSave={handleCreateRole}
+        mode="create"
+      />
     </div>
   )
 }

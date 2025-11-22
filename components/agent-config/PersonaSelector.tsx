@@ -6,8 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { useDevice } from "@/contexts/DeviceProvider"
-import { Search, User } from "lucide-react"
+import { Search, User, Plus } from "lucide-react"
 import { PERSONAS } from "@/lib/agent-config/personas"
+import { PersonaEditorModal } from "@/components/module-libraries/PersonaEditorModal"
+import { Button } from "@/components/ui/button"
+import { toast } from "@/components/ui/use-toast"
 
 interface PersonaSelectorProps {
   selectedPersonaId?: string
@@ -17,6 +20,7 @@ interface PersonaSelectorProps {
 export function PersonaSelector({ selectedPersonaId, onPersonaSelect }: PersonaSelectorProps) {
   const { isMobile } = useDevice()
   const [searchQuery, setSearchQuery] = useState("")
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   const filteredPersonas = PERSONAS.filter(
     (persona) =>
@@ -25,12 +29,32 @@ export function PersonaSelector({ selectedPersonaId, onPersonaSelect }: PersonaS
       persona.communicationStyle.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
+  const handleCreatePersona = (newPersona: any) => {
+    console.log("[v0] Created new persona:", newPersona)
+    // Auto-select the newly created persona
+    if (newPersona.id) {
+      onPersonaSelect(newPersona.id)
+      toast.success(`Persona "${newPersona.name}" created and selected!`)
+    }
+  }
+
   return (
     <div className="space-y-4 md:space-y-6 h-full flex flex-col">
       <div className="flex-shrink-0">
-        <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-          <User className="h-4 w-4 md:h-5 md:w-5 text-primary flex-shrink-0" />
-          <h3 className="text-base md:text-lg font-semibold">Choose Personality Style</h3>
+        <div className="flex items-center justify-between mb-3 md:mb-4">
+          <div className="flex items-center gap-2 md:gap-3">
+            <User className="h-4 w-4 md:h-5 md:w-5 text-primary flex-shrink-0" />
+            <h3 className="text-base md:text-lg font-semibold">Choose Personality Style</h3>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1 bg-transparent"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Create New</span>
+          </Button>
         </div>
         <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">
           Select how your agent communicates and makes decisions
@@ -96,6 +120,13 @@ export function PersonaSelector({ selectedPersonaId, onPersonaSelect }: PersonaS
           ))}
         </div>
       </div>
+
+      <PersonaEditorModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onSave={handleCreatePersona}
+        mode="create"
+      />
     </div>
   )
 }

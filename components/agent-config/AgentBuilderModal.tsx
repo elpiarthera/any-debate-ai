@@ -33,6 +33,7 @@ export function AgentBuilderModal({ isOpen, onClose, onSave, initialConfig }: Ag
     roleId: "",
     personaId: "",
     frameworkId: "",
+    model: "gpt-4-turbo",
     customInstructions: "",
     ...initialConfig,
   })
@@ -46,7 +47,7 @@ export function AgentBuilderModal({ isOpen, onClose, onSave, initialConfig }: Ag
           (index === 0 && draft.roleId !== "") ||
           (index === 1 && draft.personaId !== "") ||
           (index === 2 && draft.frameworkId !== "") ||
-          (index === 3 && draft.name !== ""),
+          (index === 3 && draft.name !== "" && draft.model !== ""),
       })),
     )
   }, [currentStep, draft])
@@ -62,7 +63,7 @@ export function AgentBuilderModal({ isOpen, onClose, onSave, initialConfig }: Ag
       case 2:
         return draft.frameworkId !== ""
       case 3:
-        return draft.name !== ""
+        return draft.name !== "" && draft.model !== ""
       default:
         return false
     }
@@ -81,7 +82,7 @@ export function AgentBuilderModal({ isOpen, onClose, onSave, initialConfig }: Ag
   }
 
   const handleSave = () => {
-    if (draft.name && draft.roleId && draft.personaId && draft.frameworkId) {
+    if (draft.name && draft.roleId && draft.personaId && draft.frameworkId && draft.model) {
       onSave(draft as AgentConfigurationDraft)
       toast.success(`Agent "${draft.name}" configured successfully!`)
       onClose()
@@ -113,6 +114,7 @@ export function AgentBuilderModal({ isOpen, onClose, onSave, initialConfig }: Ag
           <AgentPreview
             draft={draft}
             onNameChange={(name) => setDraft({ ...draft, name })}
+            onModelChange={(model) => setDraft({ ...draft, model })}
             onCustomInstructionsChange={(customInstructions) => setDraft({ ...draft, customInstructions })}
           />
         )

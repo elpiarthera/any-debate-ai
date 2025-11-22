@@ -119,7 +119,7 @@ Create artifacts when they would enhance the debate or provide valuable collabor
       },
     })
 
-    return result.toDataStreamResponse()
+    return result.toUIMessageStreamResponse()
   } catch (error) {
     console.error("[v0] Chat API error:", error)
 

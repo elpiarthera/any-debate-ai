@@ -8,6 +8,7 @@ export interface AgentConfiguration {
   role: Role
   persona: Persona
   framework: ThinkingFramework
+  model: string
   customInstructions?: string
   systemPrompt: string
   createdAt: Date
@@ -19,6 +20,7 @@ export interface AgentConfigurationDraft {
   roleId: string
   personaId: string
   frameworkId: string
+  model: string
   customInstructions?: string
 }
 

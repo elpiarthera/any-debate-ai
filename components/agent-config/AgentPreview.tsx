@@ -6,23 +6,35 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { useDevice } from "@/contexts/DeviceProvider"
-import { Eye, Sparkles, User, Brain, Briefcase } from "lucide-react"
+import { Eye, Sparkles, User, Brain, Briefcase, Cpu } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { ROLES } from "@/lib/agent-config/roles"
 import { PERSONAS } from "@/lib/agent-config/personas"
 import { FRAMEWORKS } from "@/lib/agent-config/frameworks"
+import { AVAILABLE_MODELS, MODEL_CATEGORIES } from "@/lib/models/available-models"
 import type { AgentConfigurationDraft } from "@/lib/agent-config/types"
 
 interface AgentPreviewProps {
   draft: Partial<AgentConfigurationDraft>
   onNameChange: (name: string) => void
+  onModelChange: (model: string) => void
   onCustomInstructionsChange: (instructions: string) => void
 }
 
-export function AgentPreview({ draft, onNameChange, onCustomInstructionsChange }: AgentPreviewProps) {
+export function AgentPreview({ draft, onNameChange, onModelChange, onCustomInstructionsChange }: AgentPreviewProps) {
   const { isMobile } = useDevice()
   const selectedRole = ROLES.find((role) => role.id === draft.roleId)
   const selectedPersona = PERSONAS.find((persona) => persona.id === draft.personaId)
   const selectedFramework = FRAMEWORKS.find((framework) => framework.id === draft.frameworkId)
+  const selectedModel = AVAILABLE_MODELS.find((model) => model.id === draft.model)
 
   return (
     <div className="space-y-4 md:space-y-6 h-full flex flex-col">
@@ -49,6 +61,34 @@ export function AgentPreview({ draft, onNameChange, onCustomInstructionsChange }
             onChange={(e) => onNameChange(e.target.value)}
             className="text-base md:text-lg font-medium min-h-[48px]"
           />
+        </div>
+
+        {/* AI Model */}
+        <div className="space-y-2">
+          <Label htmlFor="agent-model" className="text-sm">
+            AI Model *
+          </Label>
+          <Select value={draft.model} onValueChange={onModelChange}>
+            <SelectTrigger id="agent-model" className="min-h-[48px]">
+              <SelectValue placeholder="Select an AI model" />
+            </SelectTrigger>
+            <SelectContent>
+              {MODEL_CATEGORIES.map((category) => (
+                <SelectGroup key={category.name}>
+                  <SelectLabel>{category.name}</SelectLabel>
+                  {category.models.map((model) => (
+                    <SelectItem key={model.id} value={model.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{model.icon}</span>
+                        <span>{model.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              ))}
+            </SelectContent>
+          </Select>
+          {selectedModel && <p className="text-xs text-muted-foreground">{selectedModel.description}</p>}
         </div>
 
         {/* Configuration Summary */}
@@ -109,6 +149,27 @@ export function AgentPreview({ draft, onNameChange, onCustomInstructionsChange }
                 </div>
               </div>
             )}
+
+            <Separator />
+
+            {/* Model */}
+            {selectedModel && (
+              <div className="flex items-start gap-2 md:gap-3">
+                <Cpu className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="font-medium text-xs md:text-sm">Model:</span>
+                    <Badge variant="secondary" className="text-xs">
+                      {selectedModel.provider}
+                    </Badge>
+                  </div>
+                  <p className="text-xs md:text-sm font-medium">{selectedModel.name}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-1">
+                    {selectedModel.contextWindow.toLocaleString()} token context
+                  </p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -144,7 +205,7 @@ export function AgentPreview({ draft, onNameChange, onCustomInstructionsChange }
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm md:text-base truncate">{draft.name || "Unnamed Agent"}</p>
                 <p className="text-xs md:text-sm text-muted-foreground line-clamp-1">
-                  {selectedRole?.name} • {selectedPersona?.name} • {selectedFramework?.name}
+                  {selectedRole?.name} • {selectedPersona?.name} • {selectedFramework?.name} • {selectedModel?.name}
                 </p>
               </div>
               <Badge variant="secondary" className="text-xs flex-shrink-0">

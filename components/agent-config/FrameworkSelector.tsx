@@ -6,8 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, Brain } from "lucide-react"
+import { Search, Brain, Plus } from "lucide-react"
 import { FRAMEWORKS, FRAMEWORK_CATEGORIES } from "@/lib/agent-config/frameworks"
+import { FrameworkEditorModal } from "@/components/module-libraries/FrameworkEditorModal"
+import { Button } from "@/components/ui/button"
+import { toast } from "@/components/ui/use-toast"
 
 interface FrameworkSelectorProps {
   selectedFrameworkId?: string
@@ -17,6 +20,7 @@ interface FrameworkSelectorProps {
 export function FrameworkSelector({ selectedFrameworkId, onFrameworkSelect }: FrameworkSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   const filteredFrameworks = FRAMEWORKS.filter((framework) => {
     const matchesSearch =
@@ -31,12 +35,32 @@ export function FrameworkSelector({ selectedFrameworkId, onFrameworkSelect }: Fr
     return matchesSearch && matchesCategory
   })
 
+  const handleCreateFramework = (newFramework: any) => {
+    console.log("[v0] Created new framework:", newFramework)
+    // Auto-select the newly created framework
+    if (newFramework.id) {
+      onFrameworkSelect(newFramework.id)
+      toast.success(`Framework "${newFramework.name}" created and selected!`)
+    }
+  }
+
   return (
     <div className="space-y-6 h-full flex flex-col">
       <div className="flex-shrink-0">
-        <div className="flex items-center gap-3 mb-4">
-          <Brain className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Select Thinking Framework</h3>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Brain className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold">Select Thinking Framework</h3>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1 bg-transparent"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Create New</span>
+          </Button>
         </div>
         <p className="text-sm text-muted-foreground mb-4">
           Choose how your agent approaches problems and makes decisions
@@ -116,6 +140,13 @@ export function FrameworkSelector({ selectedFrameworkId, onFrameworkSelect }: Fr
           ))}
         </div>
       </div>
+
+      <FrameworkEditorModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onSave={handleCreateFramework}
+        mode="create"
+      />
     </div>
   )
 }

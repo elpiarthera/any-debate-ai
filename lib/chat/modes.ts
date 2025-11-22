@@ -63,6 +63,11 @@ export interface CompareRound {
     content: string
     timestamp: Date
     isStreaming?: boolean
+    error?: {
+      type: "network" | "rate_limit" | "model_error" | "timeout" | "invalid_key" | "unknown"
+      message: string
+      retryable: boolean
+    }
   }[]
 }
 
