@@ -210,9 +210,7 @@ POLAR_ENVIRONMENT=sandbox                       # development: sandbox, producti
 # Vercel Analytics
 NEXT_PUBLIC_VERCEL_ANALYTICS_ID=your_analytics_id  # OPTIONAL
 
-# PostHog (Product Analytics)
-NEXT_PUBLIC_POSTHOG_KEY=phc_...                    # OPTIONAL
-NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com   # OPTIONAL
+# Product Analytics - Configure via dashboard if needed
 
 # Sentry (Error Tracking)
 SENTRY_DSN=https://...@sentry.io/...               # OPTIONAL
@@ -495,6 +493,7 @@ POLAR_ENVIRONMENT=sandbox
 # Optional: Analytics & Monitoring
 # -----------------
 # NEXT_PUBLIC_VERCEL_ANALYTICS_ID=your_analytics_id
+# Product Analytics - Configure via dashboard if needed
 # SENTRY_DSN=https://...@sentry.io/...
 # NEXT_PUBLIC_SENTRY_DSN=https://...@sentry.io/...
 
