@@ -68,13 +68,22 @@ export function LandingBenefitsMobile() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="h-full bg-card/50 border-border/50 active:bg-card/80 active:border-primary/50 transition-all p-6 min-h-[80px]">
-                <benefit.icon className="h-10 w-10 text-primary mb-4" />
-                <h3 className="text-lg font-semibold mb-3">{benefit.benefit}</h3>
-                <p className="text-sm text-muted-foreground text-pretty mb-4">{benefit.description}</p>
-                <Badge variant="secondary" className="text-xs">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  {benefit.outcome}
+              <Card className="h-full bg-card/50 border-border/50 hover:bg-card/80 hover:border-primary transition-all p-6 overflow-hidden min-w-0">
+                <div className="flex items-start gap-3 mb-3 min-w-0">
+                  <benefit.icon className="h-8 w-8 text-primary flex-shrink-0 mt-1" />
+                  <h3 className="text-lg font-semibold text-balance min-w-0 break-words overflow-hidden">
+                    {benefit.benefit}
+                  </h3>
+                </div>
+                <p className="text-sm text-muted-foreground text-pretty mb-4 break-words overflow-hidden">
+                  {benefit.description}
+                </p>
+                <Badge
+                  variant="secondary"
+                  className="text-xs flex items-start gap-1.5 whitespace-normal max-w-full w-full"
+                >
+                  <TrendingUp className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                  <span className="break-words flex-1">{benefit.outcome}</span>
                 </Badge>
               </Card>
             </motion.div>

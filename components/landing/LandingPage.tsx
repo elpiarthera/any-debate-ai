@@ -38,7 +38,7 @@ export function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background grid-pattern-large">
+    <div className="min-h-screen bg-background grid-pattern-large overflow-x-hidden min-w-0">
       <ExitIntentPopup trigger="mouse-leave" showOnce={true} />
 
       {/* Hero Section */}

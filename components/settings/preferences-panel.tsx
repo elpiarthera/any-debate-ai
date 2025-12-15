@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useDevice } from "@/contexts/DeviceProvider"
+import { useTooltipPreferences } from "@/contexts/TooltipPreferencesContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
@@ -22,6 +23,7 @@ interface Preferences {
 export function PreferencesPanel() {
   const { isMobile } = useDevice()
   const { toast } = useToast()
+  const { tooltipPreferences, updateTooltipPreferences } = useTooltipPreferences()
 
   const [preferences, setPreferences] = useState<Preferences>({
     theme: "dark",
@@ -43,8 +45,6 @@ export function PreferencesPanel() {
 
   const handleSave = async () => {
     setIsSaving(true)
-    console.log("[v0] Saving preferences:", preferences)
-    // Mock save - in real app would call API
     await new Promise((resolve) => setTimeout(resolve, 1000))
     setIsSaving(false)
     toast({
@@ -58,24 +58,20 @@ export function PreferencesPanel() {
 
     if (key === "theme") {
       const themeValue = value as Preferences["theme"]
-      console.log("[v0] Theme preference changed to:", themeValue)
 
       if (themeValue === "light") {
         document.documentElement.classList.remove("dark")
         document.documentElement.classList.add("light")
         localStorage.setItem("ai-debate-theme", "light")
-        console.log("[v0] Applied light theme")
       } else if (themeValue === "dark") {
         document.documentElement.classList.remove("light")
         document.documentElement.classList.add("dark")
         localStorage.setItem("ai-debate-theme", "dark")
-        console.log("[v0] Applied dark theme")
       } else if (themeValue === "system") {
         const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
         document.documentElement.classList.remove("light", "dark")
         document.documentElement.classList.add(prefersDark ? "dark" : "light")
         localStorage.setItem("ai-debate-theme", "system")
-        console.log("[v0] Applied system theme, resolved to:", prefersDark ? "dark" : "light")
       }
     }
   }
@@ -184,6 +180,54 @@ export function PreferencesPanel() {
               onCheckedChange={(checked) => updatePreference("soundEffects", checked)}
             />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg md:text-xl">Tooltips</CardTitle>
+          <CardDescription>Configure sidebar tooltip behavior</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 md:space-y-6">
+          <div className="flex items-center justify-between min-h-[44px]">
+            <div className="space-y-0.5">
+              <Label htmlFor="tooltips-enabled" className="text-base">
+                Show Tooltips
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Display tooltips when hovering over collapsed sidebar icons
+              </p>
+            </div>
+            <Switch
+              id="tooltips-enabled"
+              checked={tooltipPreferences.enabled}
+              onCheckedChange={(checked) => updateTooltipPreferences({ enabled: checked })}
+            />
+          </div>
+
+          {tooltipPreferences.enabled && (
+            <div className="space-y-2">
+              <Label htmlFor="tooltip-delay" className="text-base">
+                Tooltip Delay
+              </Label>
+              <Select
+                value={tooltipPreferences.delay.toString()}
+                onValueChange={(value) => updateTooltipPreferences({ delay: Number.parseInt(value) })}
+              >
+                <SelectTrigger id="tooltip-delay" className="min-h-[48px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">Instant</SelectItem>
+                  <SelectItem value="200">Fast (200ms)</SelectItem>
+                  <SelectItem value="300">Normal (300ms)</SelectItem>
+                  <SelectItem value="500">Slow (500ms)</SelectItem>
+                  <SelectItem value="700">Very Slow (700ms)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Time before tooltip appears when hovering</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

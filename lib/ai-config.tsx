@@ -15,24 +15,27 @@ export const TOGETHER_CONFIG = {
 // Model mappings with fallback strategy
 export const MODEL_MAPPINGS = {
   "GPT-4": {
-    primary: "openai/gpt-4o",
-    fallback: "openai/gpt-4o-mini",
-    provider: "gateway",
+    primary: "gpt-4-turbo",
+    fallback: "gpt-3.5-turbo",
+    provider: "gateway" as const,
+    gatewayProvider: "openai",
   },
   "Claude-3.5": {
-    primary: "anthropic/claude-3-5-sonnet-20241022",
-    fallback: "anthropic/claude-3-5-haiku-20241022",
-    provider: "gateway",
+    primary: "claude-3-5-sonnet-20241022",
+    fallback: "claude-3-haiku-20240307",
+    provider: "gateway" as const,
+    gatewayProvider: "anthropic",
   },
   "Llama-3": {
     primary: "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
     fallback: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-    provider: "together",
+    provider: "together" as const,
   },
   Gemini: {
-    primary: "google/gemini-1.5-pro",
-    fallback: "google/gemini-1.5-flash",
-    provider: "gateway",
+    primary: "gemini-1.5-pro",
+    fallback: "gemini-1.5-flash",
+    provider: "gateway" as const,
+    gatewayProvider: "google",
   },
 } as const
 
@@ -48,16 +51,20 @@ export function getModelConfig(modelType: string) {
   return config
 }
 
-// Create model instance based on provider
 export function createModelInstance(modelConfig: (typeof MODEL_MAPPINGS)[keyof typeof MODEL_MAPPINGS]) {
+  console.log("[v0] Creating model instance for config:", modelConfig)
+
   if (modelConfig.provider === "together") {
-    return togetherai(modelConfig.primary, {
+    const instance = togetherai(modelConfig.primary, {
       apiKey: TOGETHER_CONFIG.apiKey,
     })
+    console.log("[v0] Created Together.ai instance")
+    return instance
   }
 
-  // Use AI Gateway for OpenAI, Anthropic, and Google models
-  return modelConfig.primary
+  // For AI Gateway models, return the gateway format string directly
+  // The AI SDK v5 will handle this automatically
+  const gatewayModel = `${modelConfig.gatewayProvider}/${modelConfig.primary}`
+  console.log("[v0] Returning gateway model string:", gatewayModel)
+  return gatewayModel
 }
-
-// Export the model configuration functions that are still needed

@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { DemoProvider } from "@/contexts/DemoContext"
 import { DeviceProvider } from "@/contexts/DeviceProvider"
+import { TooltipPreferencesProvider } from "@/contexts/TooltipPreferencesContext"
 import "./globals.css"
 
 const inter = Inter({
@@ -23,10 +24,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
-      <body>
+    <html lang="en" className={`${inter.variable} dark overflow-x-hidden`} suppressHydrationWarning>
+      <body className="overflow-x-hidden">
         <DeviceProvider>
-          <DemoProvider>{children}</DemoProvider>
+          <DemoProvider>
+            <TooltipPreferencesProvider>{children}</TooltipPreferencesProvider>
+          </DemoProvider>
         </DeviceProvider>
       </body>
     </html>

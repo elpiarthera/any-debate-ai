@@ -184,6 +184,10 @@ export default defineSchema({
       language: v.string(),
       notifications: v.boolean(),
       defaultAgents: v.array(v.string()),
+      tooltips: v.optional(v.object({
+        enabled: v.boolean(),
+        delayDuration: v.number(),
+      })),
     }),
     totalSessions: v.number(),
     lastActiveAt: v.number(),
@@ -2540,12 +2544,12 @@ components/
 **Next Steps**: Complete Task 0.2 - Database Schema Design
 Implementation  
 **Next Steps**: Complete Task 0.2 - Database Schema Design
+Implementation  
+**Next Steps**: Complete Task 0.2 - Database Schema Design
 
 Implementation  
 **Next Steps**: Complete Task 0.2 - Database Schema Design
- Schema Design
-Implementation  
-**Next Steps**: Complete Task 0.2 - Database Schema Design
+ Design
 
 Implementation  
 **Next Steps**: Complete Task 0.2 - Database Schema Design

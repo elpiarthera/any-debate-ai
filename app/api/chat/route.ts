@@ -49,6 +49,10 @@ export async function POST(req: Request) {
     const modelConfig = getModelConfig(model)
     const modelInstance = createModelInstance(modelConfig)
 
+    console.log("[v0] Model instance:", modelInstance)
+    console.log("[v0] Model instance type:", typeof modelInstance)
+    console.log("[v0] Model config:", JSON.stringify(modelConfig, null, 2))
+
     const baseSystemPrompt = agentConfig
       ? generateSystemPrompt(agentConfig)
       : `You are an AI assistant participating in a collaborative debate platform. Provide thoughtful, well-reasoned responses.

@@ -362,7 +362,10 @@ AnyDebate Database (Convex)
 │   │   ├── defaultModel: string
 │   │   ├── language: string
 │   │   ├── notifications: boolean
-│   │   └── defaultAgents: string[] (agent IDs)
+│   │   ├── defaultAgents: string[] (agent IDs)
+│   │   └── tooltips: object (optional) // Added tooltip preferences
+│   │       ├── enabled: boolean (default: true)
+│   │       └── delayDuration: number (default: 300ms)
 │   ├── totalSessions: number
 │   ├── lastActiveAt: number
 │   ├── createdAt: number
@@ -939,6 +942,10 @@ users: defineTable({
     language: v.string(),
     notifications: v.boolean(),
     defaultAgents: v.array(v.string()), // Agent IDs
+    tooltips: v.optional(v.object({
+      enabled: v.boolean(),        // Show/hide tooltips on collapsed sidebars
+      delayDuration: v.number(),   // Hover delay in milliseconds (0-1000)
+    })),
   }),
   
   // Usage stats (across all orgs)
@@ -955,7 +962,10 @@ users: defineTable({
 
 **Fields**:
 - `clerkUserId`: Links to Clerk user (unique)
-- `preferences`: User-specific settings (theme, language, notifications)
+- `preferences`: User-specific settings (theme, language, notifications, tooltips)
+- `preferences.tooltips`: Optional tooltip behavior settings
+  - `enabled`: Whether to show tooltips on collapsed sidebar icons (default: true)
+  - `delayDuration`: Hover delay before tooltip appears in ms (default: 300)
 - `totalSessions`: Counter across all organizations
 - `lastActiveAt`: For activity tracking
 
@@ -963,6 +973,7 @@ users: defineTable({
 - Clerk handles: name, email, avatar, authentication
 - We only store: preferences and activity stats
 - Created automatically on first login
+- Tooltip preferences are optional for backward compatibility with existing users
 
 ---
 
@@ -4702,1302 +4713,3474 @@ Modules can be:
 - **Shared within scope**: System modules available to all, organization modules to all workspaces, workspace modules to all members
 - **Versioned**: Future enhancement to track module versions and agent compatibility
 
-### Mobile-First Considerations
+### Module Queries and Mutations
 
-The module system is designed with mobile-first principles:
-- **Quick queries**: Indexed by organization, workspace, category for fast filtering
-- **Minimal data transfer**: Only fetch active modules, paginate results
-- **Offline support**: Cache frequently used modules in localStorage
-- **Touch-optimized**: Module cards designed for 80px minimum height
-- **Search-first**: Full-text search across all module fields for quick discovery
+#### Roles
 
----
-
-### 28. Collaboration Events
-
-**Purpose**: Track real-time collaboration events for auditing and playback
-
+**Queries:**
 \`\`\`typescript
-collaborationEvents: defineTable({
-  // Organization isolation
-  organizationId: v.string(),
-  
-  // Workspace reference
-  workspaceId: v.id('workspaces'),
-  
-  // Session reference
-  sessionId: v.id('sessions'),
-  
-  // Artifact reference (the artifact being collaborated on)
-  artifactId: v.id('artifacts'),
-  
-  // User reference (optional, can be agent for automated actions)
-  userId: v.optional(v.string()),
-  
-  // Agent reference (optional, for agent-initiated actions)
-  agentId: v.optional(v.id('agents')),
-  
-  // Type of event
-  eventType: v.union(
-    v.literal('edit'),
-    v.literal('comment'),
-    v.literal('cursor'),
-    v.literal('view'),
-    v.literal('create'),
-    v.literal('delete')
-  ),
-  
-  // Description of the event
-  description: v.string(),
-  
-  // Event-specific metadata
-  metadata: v.object({
-    field: v.optional(v.string()), // e.g., "title", "content", "description"
-    oldValue: v.optional(v.string()), // The value before the change
-    newValue: v.optional(v.string()), // The value after the change
-    position: v.optional(v.object({ // Cursor position
-      x: v.number(),
-      y: v.number(),
-    })),
-    color: v.optional(v.string()), // Cursor color for identification
-  }),
-  
-  // Timestamp of when the event occurred
-  timestamp: v.number(),
-  
-  // Timestamp of when the event was logged
-  createdAt: v.number(),
-})
-  .index('by_organization', ['organizationId'])
-  .index('by_workspace', ['workspaceId'])
-  .index('by_session', ['sessionId'])
-  .index('by_artifact', ['artifactId'])
-  .index('by_user', ['userId'])
-  .index('by_agent', ['agentId'])
-  .index('by_organization_and_artifact', ['organizationId', 'artifactId'])
-  .index('by_workspace_and_artifact', ['workspaceId', 'artifactId'])
-  .index('by_session_and_artifact', ['sessionId', 'artifactId'])
-  .index('by_timestamp', ['organizationId', 'timestamp'])
-\`\`\`
-
-**Fields**:
-- `organizationId`: Multi-tenancy isolation.
-- `workspaceId`: Links to the workspace.
-- `sessionId`: Links to the session where the collaboration occurred.
-- `artifactId`: Links to the specific artifact being collaborated on.
-- `userId`: The user who performed the action (optional).
-- `agentId`: The agent that performed the action (optional).
-- `eventType`: The type of collaboration event (edit, comment, cursor, view, create, delete).
-- `description`: A human-readable description of the event.
-- `metadata`: Additional details specific to the event type (e.g., field changes, cursor position, color).
-- `timestamp`: The time the event actually occurred.
-- `createdAt`: The time the event was logged in the database.
-
-**Notes**:
-- This table provides a log of real-time collaboration activities.
-- Can be used for auditing, debugging, or replaying collaborative sessions.
-- Crucial for implementing features like collaborative editing and presence indicators.
-
----
-
-### 29. Working Memory
-
-**Purpose**: Store persistent memory for AI agents across different scopes
-
-\`\`\`typescript
-workingMemory: defineTable({
-  // Organization and workspace isolation
-  organizationId: v.string(),
-  workspaceId: v.string(),
-  
-  // Scope and identifiers
-  scope: v.union(
-    v.literal('chat'),
-    v.literal('user'),
-    v.literal('workspace'),
-    v.literal('organization')
-  ),
-  chatId: v.optional(v.id('sessions')), // For 'chat' scope
-  userId: v.optional(v.string()), // For 'user' scope
-  
-  // Memory content
-  title: v.string(),
-  category: v.string(), // Technical, Business, Domain Knowledge, Policies, Processes, General
-  content: v.string(), // Markdown template with learned facts
-  tags: v.array(v.string()),
-  
-  // Source tracking
-  source: v.union(
-    v.literal('manual'), // User-created
-    v.literal('document'), // Extracted from document
-    v.literal('url'), // Scraped from URL
-    v.literal('agent'), // Auto-generated by agent
-    v.literal('chat'), // Saved from conversation
-    v.literal('artifact'), // Saved from generated artifact
-    v.literal('debate_result') // Saved from debate outcome
-  ),
-  sourceUrl: v.optional(v.string()), // Original URL if from web
-  sourceDocument: v.optional(v.string()), // Original filename if from doc
-  sourceChatId: v.optional(v.id('sessions')), // Link to original chat/debate
-  sourceArtifactId: v.optional(v.string()), // Link to original artifact
-  sourceDebateId: v.optional(v.id('sessions')), // Link to original debate
-  
-  // Metadata
-  createdBy: v.string(), // User ID who created
-  usageCount: v.number(), // How many times referenced by agents
-  lastUsedAt: v.optional(v.number()),
-  
-  // Timestamps
-  createdAt: v.number(),
-  updatedAt: v.number(),
-})
-  .index('by_organization', ['organizationId'])
-  .index('by_workspace', ['workspaceId'])
-  .index('by_scope_chat', ['scope', 'chatId'])
-  .index('by_scope_user', ['scope', 'userId'])
-  .index('by_scope_workspace', ['scope', 'workspaceId'])
-  .index('by_scope_organization', ['scope', 'organizationId'])
-  .index('by_organization_and_workspace', ['organizationId', 'workspaceId'])
-  .index('by_category', ['category'])
-  .index('by_source', ['source'])
-  .index('by_created_by', ['createdBy'])
-  .index('by_source_chat', ['sourceChatId'])
-  .index('by_source_artifact', ['sourceArtifactId'])
-  .index('by_source_debate', ['sourceDebateId'])
-\`\`\`
-
-**Fields**:
-- `organizationId`: Multi-tenancy isolation
-- `workspaceId`: Workspace isolation
-- `scope`: Memory scope (chat, user, workspace, organization)
-- `chatId`: Links to session for 'chat' scope (optional)
-- `userId`: Links to user for 'user' scope (optional)
-- `title`: Short descriptive title for the memory
-- `category`: Category for organization (Technical, Business, Domain Knowledge, Policies, Processes, General)
-- `content`: Markdown-formatted memory content with learned facts
-- `tags`: Array of tags for filtering and search
-- `source`: How the memory was created (manual, document, url, agent)
-- `sourceUrl`: Original URL if scraped from web (optional)
-- `sourceDocument`: Original filename if extracted from document (optional)
-- `sourceChatId`: Link to the original chat/debate session (optional)
-- `sourceArtifactId`: Link to the original artifact (optional)
-- `sourceDebateId`: Link to the original debate session (optional)
-- `createdBy`: User ID who created the memory
-- `usageCount`: Counter for how many times agents have referenced this memory
-- `lastUsedAt`: Timestamp of last usage by an agent (optional)
-- `createdAt`: Creation timestamp
-- `updatedAt`: Last update timestamp
-
-**Memory Scopes**:
-1. **chat**: Memory tied to a single debate session (chatId required)
-   - Agents remember facts within that specific conversation
-   - Cleared when session ends or archived
-
-2. **user**: Memory tied to a single user across all their debates (userId required)
-   - Personal preferences, communication style, expertise level
-   - Persists across all user's sessions
-
-3. **workspace**: Shared memory for all users in a workspace (workspaceId required)
-   - Team-specific knowledge, domain expertise, project context
-   - Accessible to all workspace members
-
-4. **organization**: Company-wide memory across all workspaces (organizationId required)
-   - Organizational policies, values, standards, guidelines
-   - Inherited by all workspaces in the organization
-
-**Memory Hierarchy**:
-When agents load memory, they combine all relevant scopes in order of specificity:
-1. Organization memory (broadest)
-2. Workspace memory
-3. User memory
-4. Chat memory (most specific)
-
-**Source Types**:
-- `manual`: Created by user through UI
-- `document`: Extracted from uploaded document (PDF, DOCX, TXT, MD)
-- `url`: Scraped from web URL using Firecrawl
-- `agent`: Auto-generated by agent during conversation
-- `chat`: Saved directly from conversation history
-- `artifact`: Saved from a generated artifact
-- `debate_result`: Saved from the outcome of a debate
-
-**Usage Tracking**:
-- `usageCount`: Incremented each time an agent references this memory
-- `lastUsedAt`: Updated with timestamp when memory is used
-- Used for analytics and identifying most valuable memories
-
-**Notes**:
-- Implements AI SDK Tools memory feature using Convex instead of Upstash
-- Supports document upload with AI extraction
-- Supports URL scraping with Firecrawl
-- Enables agents to maintain persistent knowledge across conversations
-- Critical for Phase 8 Memory Implementation
-
----
-
-## Relationships
-
-### Entity Relationship Diagram (Text)
-
-\`\`\`
-AnyDebate Convex Database
-│
-├── 🏢 organizations (Organization-level data)
-│   ├── clerkOrganizationId (unique)
-│   ├── name, slug
-│   ├── totalSessions, totalMessages, totalTokensUsed
-│   ├── createdAt: number
-│   └── updatedAt: number
-│   │
-│   ├──< 🏗️ workspaces (1:N)
-│   │   ├── organizationId (FK)
-│   │   ├── name, description, slug
-│   │   ├── settings { defaultModel, autoSave, exportFormat }
-│   │   ├── isDefault
-│   │   ├── createdAt: number
-│   │   └── updatedAt: number
-│   │   │
-│   │   ├──< 👥 workspaceMemberships (1:N)
-│   │   │   ├── organizationId (FK)
-│   │   │   ├── workspaceId (FK)
-│   │   │   ├── userId (FK)
-│   │   │   ├── role (admin|member)
-│   │   │   ├── createdAt: number
-│   │   │   └── updatedAt: number
-│   │   │
-│   │   ├──< 💬 sessions (1:N)
-│   │   │   ├── organizationId (FK)
-│   │   │   ├── workspaceId (FK)
-│   │   │   ├── userId (FK)
-│   │   │   ├── agentIds (FK) // Agents participating in this session
-│   │   │   ├── title, mode (compare|debate|auto-debate), status (active|completed|archived)
-│   │   │   ├── config { rounds, currentRound, speakingOrder }
-│   │   │   ├── metadata { tags, description, visibility }
-│   │   │   ├── messageCount, tokensUsed, duration
-│   │   │   │
-│   │   │   ├──< 💭 messages (1:N)
-│   │   │   │   ├── organizationId (FK)
-│   │   │   │   ├── workspaceId (FK)
-│   │   │   │   ├── sessionId (FK)
-│   │   │   │   ├── userId (FK)
-│   │   │   │   ├── agentId (optional FK)
-│   │   │   │   ├── role (user/assistant/system)
-│   │   │   │   ├── content, metadata { model, temperature, tokens, latency }
-│   │   │   │   ├── parentMessageId (for threading)
-│   │   │   │   ├── threadId (for grouping threaded messages)
-│   │   │   │   ├── replyCount, hasReplies, bookmarked
-│   │   │   │   ├── reactions {id, emoji, label, count, users, timestamp} // CHANGED TO OBJECT
-│   │   │   │   ├── isStreaming
-│   │   │   │   └── createdAt, updatedAt
-│   │   │   │
-│   │   │   ├──< 🤖 agents (1:N)
-│   │   │   │   ├── organizationId (FK)
-│   │   │   │   ├── workspaceId (FK)
-│   │   │   │   ├── userId (FK)
-│   │   │   │   ├── roleId (FK to roles)
-│   │   │   │   ├── personaId (FK to personas)
-│   │   │   │   ├── frameworkId (FK to frameworks)
-│   │   │   │   ├── role, persona, framework (display names)
-│   │   │   │   ├── model, provider
-│   │   │   │   ├── systemPrompt
-│   │   │   │   ├── customInstructions
-│   │   │   │   ├── parameters { temperature, maxTokens }
-│   │   │   │   ├── usageCount
-│   │   │   │   ├── isFavorite
-│   │   │   │   ├── isTemplate
-│   │   │   │   ├── isActive
-│   │   │   │   ├── visibility (private|workspace|organization)
-│   │   │   │   └── createdAt, updatedAt
-│   │   │   │
-│   │   │   ├──< 📦 artifacts (1:N)
-│   │   │   │   ├── organizationId (FK)
-│   │   │   │   ├── workspaceId (FK)
-│   │   │   │   ├── sessionId (FK)
-│   │   │   │   ├── messageId (optional FK)
-│   │   │   │   ├── userId (FK)
-│   │   │   │   ├── title, description
-│   │   │   │   ├── type (document/data-table/checklist/chart)
-│   │   │   │   ├── content (JSON stringified)
-│   │   │   │   ├── folderId (optional FK)
-│   │   │   │   ├── tags (array of tag IDs)
-│   │   │   │   ├── isFavorite, isPinned
-│   │   │   │   ├── lastAccessedAt
-│   │   │   │   ├── collaborators (array of userIds)
-│   │   │   │   ├── fileId (optional FK to _storage)
-│   │   │   │   ├── metadata { size, version, exports {format, url, timestamp}, author, mimeType, wordCount, rowCount, itemCount }
-│   │   │   │   └── createdAt, updatedAt
-│   │   │   │
-│   │   │   ├──< 🗂️ artifactTemplates (1:N)
-│   │   │   │   ├── organizationId (FK)
-│   │   │   │   ├── workspaceId (FK)
-│   │   │   │   ├── userId (FK)
-│   │   │   │   ├── name, description, icon, category, tags
-│   │   │   │   ├── type (document/data-table/checklist/chart)
-│   │   │   │   ├── data (JSON stringified)
-│   │   │   │   ├── isSystem
-│   │   │   │   ├── visibility (private|workspace|organization)
-│   │   │   │   ├── usageCount
-│   │   │   │   └── createdAt, updatedAt
-│   │   │   │
-│   │   │   ├──< 📜 artifactVersions (1:N)
-│   │   │   │   ├── organizationId (FK)
-│   │   │   │   ├── workspaceId (FK)
-│   │   │   │   ├── artifactId (FK)
-│   │   │   │   ├── version, timestamp, author, changeDescription, changeType
-│   │   │   │   ├── changedFields (optional)
-│   │   │   │   ├── previousVersionId (optional FK)
-│   │   │   │   ├── data (JSON stringified snapshot)
-│   │   │   │   └── createdAt
-│   │   │   │
-│   │   │   ├──< 🤝 collaborationEvents (1:N)
-│   │   │   │   ├── organizationId (FK)
-│   │   │   │   ├── workspaceId (FK)
-│   │   │   │   ├── sessionId (FK)
-│   │   │   │   ├── artifactId (FK)
-│   │   │   │   ├── userId (optional FK)
-│   │   │   │   ├── agentId (optional FK)
-│   │   │   │   ├── eventType (edit|comment|cursor|view|create|delete)
-│   │   │   │   ├── description
-│   │   │   │   ├── metadata { field, oldValue, newValue, position {x, y}, color }
-│   │   │   │   ├── timestamp
-│   │   │   │   └── createdAt
-│   │   │   │
-│   │   │   ├──< 📋 templates (1:N)
-│   │   │   │   ├── organizationId (FK)
-│   │   │   │   ├── workspaceId (FK)
-│   │   │   │   ├── userId (FK)
-│   │   │   │   ├── name, description, category
-│   │   │   │   ├── agents { name, roleId, personaId, frameworkId }
-│   │   │   │   ├── topic, conversationType
-│   │   │   │   ├── suggestedQuestions
-│   │   │   │   ├── isCustom, popularity
-│   │   │   │   ├── tags, author
-│   │   │   │   ├── visibility (private|workspace|organization)
-│   │   │   │   └── createdAt, updatedAt
-│   │   │   │
-│   │   │   ├──< 📁 projects (1:N)
-│   │   │   │   ├── organizationId (FK)
-│   │   │   │   ├── workspaceId (FK)
-│   │   │   │   ├── userId (FK)
-│   │   │   │   ├── name, description
-│   │   │   │   ├── sessionIds (FK)
-│   │   │   │   └── createdAt, updatedAt
-│   │   │   │
-│   │   │   ├──< 📌 bookmarks (1:N)
-│   │   │   │   ├── organizationId (FK)
-│   │   │   │   ├── workspaceId (FK)
-│   │   │   │   ├── userId (FK)
-│   │   │   │   ├── messageId (FK)
-│   │   │   │   ├── sessionId (FK)
-│   │   │   │   ├── title, note, tags // CHANGED 'notes' to 'note'
-│   │   │   │   ├── collectionId (optional FK)
-│   │   │   │   └── createdAt, updatedAt
-│   │   │   │
-│   │   │   ├──< 📚 bookmarkCollections (1:N)
-│   │   │   │   ├── organizationId (FK)
-│   │   │   │   ├── workspaceId (FK)
-│   │   │   │   ├── userId (FK)
-│   │   │   │   ├── name, description, color, icon
-│   │   │   │   ├── bookmarkIds (FK)
-│   │   │   │   └── createdAt, updatedAt
-│   │   │   │
-│   │   │   └──< 🎯 activities (1:N)
-│   │   │       ├── organizationId (FK)
-│   │   │       ├── workspaceId (FK)
-│   │   │       ├── userId (FK)
-│   │   │       ├── type (debate/export/agent/template/artifact)
-│   │   │       ├── title, description, metadata
-│   │   │       ├── createdAt
-│   │   │
-│   │   └──< 📊 sessionComparisons (1:N)
-│   │       ├── organizationId (FK)
-│   │       ├── workspaceId (FK)
-│   │       ├── userId (FK)
-│   │       ├── name (optional)
-│   │       ├── sessionIds (FK)
-│   │       └── createdAt, updatedAt
-│   │
-│   └──< 💳 subscriptions (1:1)
-│       ├── organizationId (FK, unique)
-│       ├── polarSubscriptionId, polarCustomerId, polarProductId
-│       ├── status
-│       ├── currentPeriodStart, currentPeriodEnd
-│       ├── cancelAtPeriodEnd
-│       ├── metadata { planName, features }
-│       └── createdAt, updatedAt, canceledAt
-│
-├── 👤 users
-│   ├── _id: Id<"users">
-│   ├── clerkUserId: string (unique, indexed)
-│   ├── preferences: object
-│   │   ├── theme: "light" | "dark" | "system"
-│   │   ├── defaultModel: string
-│   │   ├── language: string
-│   │   ├── notifications: boolean
-│   │   └── defaultAgents: string[] (agent IDs)
-│   ├── totalSessions: number
-│   ├── lastActiveAt: number
-│   ├── createdAt: number
-│   └── updatedAt: number
-│
-├── 💼 roles (1:N with agents)
-│   ├── _id: Id<"roles">
-│   ├── id: string (unique)
-│   ├── name, category, description
-│   ├── expertise, systemPrompt
-│   ├── icon, isSystem, isActive
-│   ├── organizationId (optional FK)
-│   ├── workspaceId (optional FK)
-│   ├── usageCount
-│   └── createdAt, updatedAt
-│
-├── 🎭 personas (1:N with agents)
-│   ├── _id: Id<"personas">
-│   ├── id: string (unique)
-│   ├── name, description
-│   ├── traits, communicationStyle, decisionMaking
-│   ├── systemPromptModifier
-│   ├── icon, isSystem, isActive
-│   ├── organizationId (optional FK)
-│   ├── workspaceId (optional FK)
-│   ├── usageCount
-│   └── createdAt, updatedAt
-│
-├── 🧠 frameworks (1:N with agents)
-│   ├── _id: Id<"frameworks">
-│   ├── id: string (unique)
-│   ├── name, description
-│   ├── methodology, bestFor, steps
-│   ├── systemPromptModifier
-│   ├── icon, isSystem, isActive
-│   ├── organizationId (optional FK)
-│   ├── workspaceId (optional FK)
-│   ├── usageCount
-│   └── createdAt, updatedAt
-│
-├── 📁 folders
-│   ├── _id: Id<"folders">
-│   ├── organizationId (FK)
-│   ├── workspaceId (FK)
-│   ├── userId (FK)
-│   ├── name, description, color, icon
-│   ├── parentId (optional FK to folders._id)
-│   └── createdAt, updatedAt
-│
-├── 🏷️ tags
-│   ├── _id: Id<"tags">
-│   ├── organizationId (FK)
-│   ├── workspaceId (FK)
-│   ├── userId (FK)
-│   ├── name, color
-│   ├── count (denormalized)
-│   └── createdAt, updatedAt
-│
-├── 🗂️ artifactTemplates
-│   ├── _id: Id<"artifactTemplates">
-│   ├── organizationId (FK)
-│   ├── workspaceId (FK)
-│   ├── userId (FK)
-│   ├── name, description, icon
-│   ├── type (document/data-table/checklist/chart)
-│   ├── data (JSON stringified)
-│   ├── category, tags (array of tag IDs)
-│   ├── isSystem
-│   ├── visibility (private|workspace|organization)
-│   ├── usageCount
-│   └── createdAt, updatedAt
-│
-├── 📜 artifactVersions
-│   ├── _id: Id<"artifactVersions">
-│   ├── organizationId (FK)
-│   ├── workspaceId (FK)
-│   ├── artifactId (FK)
-│   ├── version, timestamp, author, changeDescription, changeType
-│   ├── changedFields (optional)
-│   ├── previousVersionId (optional FK)
-│   ├── data (JSON stringified snapshot)
-│   └── createdAt
-│
-├── 📋 templates
-│   ├── _id: Id<"templates">
-│   ├── organizationId (FK)
-│   ├── workspaceId (FK)
-│   ├── userId (FK)
-│   ├── name, description, category
-│   ├── agents { name, roleId, personaId, frameworkId }
-│   ├── topic, conversationType
-│   ├── suggestedQuestions
-│   ├── isCustom, popularity
-│   ├── usageCount
-│   ├── lastUsed
-│   ├── tags, author
-│   ├── visibility (private|workspace|organization)
-│   └── createdAt, updatedAt
-│
-├── 🤖 agentTeamPresets
-│   ├── _id: Id<"agentTeamPresets">
-│   ├── organizationId (FK)
-│   ├── workspaceId (FK)
-│   ├── userId (optional FK)
-│   ├── name, description, icon, category
-│   ├── agents { name, roleId, personaId, frameworkId }
-│   ├── useCases
-│   ├── isSystem
-│   ├── usageCount
-│   ├── lastUsed
-│   └── createdAt, updatedAt
-│
-├── 📝 quickStartScenarios
-│   ├── _id: Id<"quickStartScenarios">
-│   ├── organizationId (FK)
-│   ├── workspaceId (FK)
-│   ├── userId (optional FK)
-│   ├── name, description, icon, category
-│   ├── presetId (FK to agentTeamPresets)
-│   ├── suggestedTopic, suggestedQuestions
-│   ├── isSystem
-│   ├── usageCount
-│   ├── lastUsed
-│   └── createdAt, updatedAt
-│
-├── 📊 sessionComparisons
-│   ├── _id: Id<"sessionComparisons">
-│   ├── organizationId (FK)
-│   ├── workspaceId (FK)
-│   ├── userId (FK)
-│   ├── name (optional)
-│   ├── sessionIds (FK)
-│   └── createdAt, updatedAt
-│
-├── 🧠 workingMemory
-│   ├── _id: Id<"workingMemory">
-│   ├── organizationId (FK)
-│   ├── workspaceId (FK)
-│   ├── scope (chat|user|workspace|organization)
-│   ├── chatId (optional FK)
-│   ├── userId (optional FK)
-│   ├── title, category, content, tags
-│   ├── source (manual|document|url|agent|chat|artifact|debate_result)
-│   ├── sourceUrl (optional)
-│   ├── sourceDocument (optional)
-│   ├── sourceChatId (optional FK)
-│   ├── sourceArtifactId (optional)
-│   ├── sourceDebateId (optional FK)
-│   ├── createdBy (User ID)
-│   ├── usageCount
-│   ├── lastUsedAt (optional)
-│   └── createdAt, updatedAt
-│
-├── 🤝 collaborationEvents
-│   ├── _id: Id<"collaborationEvents">
-│   ├── organizationId (FK)
-│   ├── workspaceId (FK)
-│   ├── sessionId (FK)
-│   ├── artifactId (FK)
-│   ├── userId (optional FK)
-│   ├── agentId (optional FK)
-│   ├── eventType (edit|comment|cursor|view|create|delete)
-│   ├── description
-│   ├── metadata { field, oldValue, newValue, position {x, y}, color }
-│   ├── timestamp
-│   └── createdAt
-│
-├── ✉️ invitations
-│   ├── _id: Id<"invitations">
-│   ├── organizationId (FK)
-│   ├── workspaceId (FK)
-│   ├── email: string
-│   ├── role: "admin" | "member"
-│   ├── inviterId (FK)
-│   ├── status: "pending" | "accepted" | "revoked"
-│   ├── token (unique)
-│   ├── expiresAt: number
-│   ├── createdAt: number
-│   └── acceptedAt: number (optional)
-│
-└── 🔑 apiKeys
-    ├── _id: Id<"apiKeys">
-    ├── organizationId (FK)
-    ├── workspaceId (FK)
-    ├── userId (FK)
-    ├── name: string
-    ├── keyPreview: string
-    ├── secretHash: string (unique)
-    ├── scopes: string[]
-    ├── lastUsedAt: number (optional)
-    ├── expiresAt: number (optional)
-    ├── createdAt: number
-    └── revokedAt: number (optional)
-\`\`\`
-
-### Key Relationships
-
-1. **Organization → Workspaces**: One-to-many
-   - Workspaces are contained within organizations.
-   - Filtered by `organizationId`.
-
-2. **Workspace → WorkspaceMemberships**: One-to-many
-   - Users are associated with workspaces through memberships.
-   - Filtered by `workspaceId`.
-
-3. **Organization → Users**: One-to-many
-   - Users belong to an organization.
-   - Filtered by `organizationId`.
-
-4. **Workspace → Sessions**: One-to-many
-   - All sessions belong to a workspace.
-   - Filtered by `workspaceId`.
-
-5. **Session → Messages**: One-to-many
-   - Messages belong to a session.
-   - Ordered by `createdAt`.
-
-6. **Workspace → Agents**: One-to-many
-   - Agents belong to a workspace.
-   - Filtered by `workspaceId`.
-
-7. **Workspace → Artifacts**: One-to-many
-   - Artifacts generated within a workspace.
-   - Linked to sessions and optionally messages.
-   - Artifacts can be organized by `folderId` and `tags`.
-
-8. **Artifact → Artifact Versions**: One-to-many
-   - Each artifact can have multiple versions.
-   - Linked via `artifactId`.
-
-9. **Workspace → Folders**: One-to-many
-   - Folders belong to a workspace and are used to organize artifacts.
-   - Can be nested via `parentId`.
-
-10. **Workspace → Tags**: One-to-many
-    - Tags belong to a workspace and categorize artifacts.
-
-11. **Workspace → Artifact Templates**: One-to-many
-    - Artifact templates belong to a workspace.
-    - Used to create new artifacts.
-
-12. **Workspace → Templates**: One-to-many
-    - Templates belong to a workspace.
-    - Filtered by `workspaceId`.
-
-13. **Workspace → Agent Team Presets**: One-to-many
-    - Agent team presets belong to a workspace.
-    - Used to quickly configure agent teams.
-
-14. **Agent Team Presets → Quick Start Scenarios**: One-to-many
-    - Quick start scenarios reference agent team presets.
-
-15. **Workspace → Projects**: One-to-many
-    - Projects belong to a workspace.
-    - Filtered by `workspaceId`.
-
-16. **Workspace → Bookmarks**: One-to-many
-    - Bookmarks belong to a workspace.
-    - Filtered by `workspaceId`.
-
-17. **Workspace → Bookmark Collections**: One-to-many
-    - Bookmark collections belong to a workspace.
-    - Filtered by `workspaceId`.
-
-18. **Workspace → Activities**: One-to-many
-    - Activities belong to a workspace.
-    - Filtered by `workspaceId`.
-
-19. **Workspace → Session Comparisons**: One-to-many
-    - Session comparisons belong to a workspace.
-    - Filtered by `workspaceId`.
-
-20. **Workspace → Working Memory**: One-to-many
-    - Working memory entries belong to a workspace.
-    - Can be scoped to chat, user, workspace, or organization level.
-    - Filtered by `workspaceId` and `scope`.
-
-21. **Organization → Subscriptions**: One-to-one
-    - Each organization has one subscription.
-    - Subscription tracks billing and credits.
-
-22. **Organization → Credit Balances**: One-to-one
-    - Each organization has one credit balance entry.
-
-23. **Organization → Invoices**: One-to-many
-    - Invoices are linked to organizations for payment history.
-
-24. **Organization → Usage Tracking**: One-to-many
-    - Usage tracking records belong to an organization.
-    - Filtered by `organizationId`.
-
-25. **Organization/Workspace → Roles**: One-to-many
-    - Roles can be system-wide, organization-specific, or workspace-specific.
-
-26. **Organization/Workspace → Personas**: One-to-many
-    - Personas can be system-wide, organization-specific, or workspace-specific.
-
-27. **Organization/Workspace → Frameworks**: One-to-many
-    - Frameworks can be system-wide, organization-specific, or workspace-specific.
-
-28. **Workspace → Collaboration Events**: One-to-many
-    - Collaboration events are tied to a workspace and an artifact.
-    - Filtered by `workspaceId` and `artifactId`.
-
-29. **Organization → Invitations**: One-to-many
-    - Invitations are scoped to an organization and a workspace.
-
-30. **Workspace → API Keys**: One-to-many
-    - API keys are associated with a workspace, user, and organization.
-
----
-
-## Index Strategy
-
-### Performance Optimization
-
-All indexes are designed for common query patterns:
-
-1. **Organization-scoped queries** (most common):
-   \`\`\`typescript
-   .index('by_organization', ['organizationId'])
-   \`\`\`
-
-2. **Workspace-scoped queries**:
-   \`\`\`typescript
-   .index('by_workspace', ['workspaceId'])
-   \`\`\`
-
-3. **Organization + User queries**:
-   \`\`\`typescript
-   .index('by_organization_and_user', ['organizationId', 'userId'])
-   \`\`\`
-
-4. **Workspace + User queries**:
-   \`\`\`typescript
-   .index('by_workspace_and_user', ['workspaceId', 'userId'])
-   \`\`\`
-
-5. **Organization + Workspace queries**:
-   \`\`\`typescript
-   .index('by_organization_and_workspace', ['organizationId', 'workspaceId'])
-   \`\`\`
-
-6. **Session-based queries**:
-   \`\`\`typescript
-   .index('by_session', ['sessionId'])
-   .index('by_status', ['status'])
-   .index('by_organization_and_status', ['organizationId', 'status'])
-   \`\`\`
-
-7. **Message-based queries**:
-   \`\`\`typescript
-   .index('by_organization_and_session', ['organizationId', 'sessionId'])
-   .index('by_workspace_and_session', ['workspaceId', 'sessionId'])
-   \`\`\`
-
-8. **Agent-based queries**:
-   \`\`\`typescript
-   .index('by_organization_and_visibility', ['organizationId', 'visibility'])
-   .index('by_workspace_and_visibility', ['workspaceId', 'visibility'])
-   \`\`\`
-
-9. **Artifact-based queries**:
-   \`\`\`typescript
-   .index('by_organization_and_type', ['organizationId', 'type'])
-   .index('by_workspace_and_type', ['workspaceId', 'type'])
-   // New indexes for artifact library features:
-   .index('by_folder', ['folderId'])
-   .index('by_workspace_and_folder', ['workspaceId', 'folderId'])
-   .index('by_favorite', ['workspaceId', 'isFavorite'])
-   .index('by_pinned', ['workspaceId', 'isPinned'])
-   .index('by_last_accessed', ['workspaceId', 'lastAccessedAt'])
-   \`\`\`
-
-10. **Artifact Template-based queries**:
-    \`\`\`typescript
-    .index('by_workspace_and_type', ['workspaceId', 'type'])
-    .index('by_workspace_and_category', ['workspaceId', 'category'])
-    .index('by_system', ['isSystem'])
-    \`\`\`
-
-11. **Artifact Version queries**:
-    \`\`\`typescript
-    .index('by_artifact_and_version', ['artifactId', 'version'])
-    \`\`\`
-
-12. **Template-based queries**:
-    \`\`\`typescript
-    .index('by_organization_and_category', ['organizationId', 'category'])
-    .index('by_workspace_and_category', ['workspaceId', 'category'])
-    .index('by_visibility', ['organizationId', 'visibility'])
-    .index('by_workspace_and_visibility', ['workspaceId', 'visibility'])
-    // New indexes for usage tracking:
-    .index('by_usage', ['organizationId', 'usageCount'])
-    .index('by_workspace_and_usage', ['workspaceId', 'usageCount'])
-    \`\`\`
-
-13. **Agent Team Preset queries**:
-    \`\`\`typescript
-    .index('by_category', ['organizationId', 'category'])
-    .index('by_system', ['organizationId', 'isSystem'])
-    .index('by_usage', ['organizationId', 'usageCount'])
-    \`\`\`
-
-14. **Quick Start Scenario queries**:
-    \`\`\`typescript
-    .index('by_preset', ['presetId'])
-    .index('by_category', ['organizationId', 'category'])
-    .index('by_system', ['organizationId', 'isSystem'])
-    .index('by_usage', ['organizationId', 'usageCount'])
-    \`\`\`
-
-15. **Project-based queries**:
-    \`\`\`typescript
-    .index('by_organization', ['organizationId'])
-    .index('by_workspace', ['workspaceId'])
-    \`\`\`
-
-16. **Bookmark-based queries**:
-    \`\`\`typescript
-    .index('by_collection', ['collectionId'])
-    .index('by_workspace_and_collection', ['workspaceId', 'collectionId'])
-    \`\`\`
-
-17. **Activity-based queries**:
-    \`\`\`typescript
-    .index('by_organization', ['organizationId'])
-    .index('by_workspace', ['workspaceId'])
-    .index('by_user', ['userId'])
-    .index('by_type', ['type'])
-    .index('by_created_at', ['createdAt'])
-    .index('by_organization_and_created_at', ['organizationId', 'createdAt'])
-    \`\`\`
-
-18. **Session Comparison queries**:
-    \`\`\`typescript
-    .index('by_organization', ['organizationId'])
-    .index('by_workspace', ['workspaceId'])
-    .index('by_user', ['userId'])
-    .index('by_created_at', ['createdAt'])
-    \`\`\`
-
-19. **Subscription-based queries**:
-    \`\`\`typescript
-    .index('by_organization', ['organizationId'])
-    .index('by_polar_subscription_id', ['polarSubscriptionId'])
-    .index('by_polar_product_id', ['polarProductId'])
-    .index('by_status', ['status'])
-    \`\`\`
-    
-20. **Credit Balance queries**:
-    \`\`\`typescript
-    .index('by_organization', ['organizationId'])
-    \`\`\`
-
-21. **Invoice queries**:
-    \`\`\`typescript
-    .index('by_organization', ['organizationId'])
-    .index('by_polar_invoice_id', ['polarInvoiceId'])
-    .index('by_subscription', ['subscriptionId'])
-    .index('by_status', ['status'])
-    .index('by_invoice_date', ['invoiceDate'])
-    .index('by_organization_and_status', ['organizationId', 'status'])
-    \`\`\`
-
-22. **Usage Tracking queries**:
-    \`\`\`typescript
-    .index('by_organization_and_billing_period', ['organizationId', 'billingPeriod'])
-    .index('by_workspace_and_billing_period', ['workspaceId', 'billingPeriod'])
-    \`\`\`
-    
-23. **Folder-based queries**:
-    \`\`\`typescript
-    .index('by_parent', ['parentId'])
-    .index('by_workspace_and_parent', ['workspaceId', 'parentId'])
-    \`\`\`
-
-24. **Tag-based queries**:
-    \`\`\`typescript
-    .index('by_workspace_and_name', ['workspaceId', 'name'])
-    \`\`\`
-
-25. **Collaboration Event queries**:
-    \`\`\`typescript
-    .index('by_organization_and_artifact', ['organizationId', 'artifactId'])
-    .index('by_workspace_and_artifact', ['workspaceId', 'artifactId'])
-    .index('by_session_and_artifact', ['sessionId', 'artifactId'])
-    .index('by_timestamp', ['organizationId', 'timestamp'])
-    \`\`\`
-
-26. **Working Memory queries**:
-    \`\`\`typescript
-    .index('by_scope_chat', ['scope', 'chatId'])
-    .index('by_scope_user', ['scope', 'userId'])
-    .index('by_scope_workspace', ['scope', 'workspaceId'])
-    .index('by_scope_organization', ['scope', 'organizationId'])
-    .index('by_organization_and_workspace', ['organizationId', 'workspaceId'])
-    .index('by_source_chat', ['sourceChatId']) // Added for source linking
-    .index('by_source_artifact', ['sourceArtifactId']) // Added for source linking
-    .index('by_source_debate', ['sourceDebateId']) // Added for source linking
-    \`\`\`
-
-27. **Configuration Tables (Roles, Personas, Frameworks)**:
-    - Unique identifiers are primary for direct lookups.
-    - `organizationId` and `workspaceId` for scoping custom configurations.
-    - `isSystem`, `isActive`, `category` for filtering.
-    \`\`\`typescript
-    // Roles
-    .index('by_id', ['id'])
-    .index('by_organization', ['organizationId'])
-    .index('by_workspace', ['workspaceId'])
-    .index('by_category', ['category'])
-    .index('by_is_system', ['isSystem'])
-    .index('by_is_active', ['isActive'])
-    
-    // Personas
-    .index('by_id', ['id'])
-    .index('by_organization', ['organizationId'])
-    .index('by_workspace', ['workspaceId'])
-    .index('by_is_system', ['isSystem'])
-    .index('by_is_active', ['isActive'])
-    
-    // Frameworks
-    .index('by_id', ['id'])
-    .index('by_organization', ['organizationId'])
-    .index('by_workspace', ['workspaceId'])
-    .index('by_is_system', ['isSystem'])
-    .index('by_is_active', ['isActive'])
-    \`\`\`
-
-28. **Invitation Table**:
-    - Indexing by `email`, `token`, and `workspaceId` for efficient lookup and management.
-    \`\`\`typescript
-    // Invitations
-    .index('by_email', ['email'])
-    .index('by_token', ['token'])
-    .index('by_workspace', ['workspaceId'])
-    \`\`\`
-
-29. **API Key Table**:
-    - Indexing by `workspaceId`, `userId`, and `secretHash` for secure and efficient access control.
-    \`\`\`typescript
-    // API Keys
-    .index('by_workspace', ['workspaceId'])
-    .index('by_user', ['userId'])
-    .index('by_hash', ['secretHash'])
-    \`\`\`
-
-### Index Usage Examples
-
-\`\`\`typescript
-// Get all active sessions for a workspace
-const sessions = await ctx.db
-  .query('sessions')
-  .withIndex('by_workspace_and_status', (q) =>
-    q.eq('workspaceId', workspaceId).eq('status', 'active')
-  )
-  .collect();
-
-// Get messages for a session within a workspace (ordered by time)
-const messages = await ctx.db
-  .query('messages')
-  .withIndex('by_workspace_and_session', (q) =>
-    q.eq('workspaceId', workspaceId).eq('sessionId', sessionId)
-  )
-  .order('desc')
-  .collect();
-
-// Get user's recent sessions in a workspace
-const recentSessions = await ctx.db
-  .query('sessions')
-  .withIndex('by_organization_and_user', (q) =>
-    q.eq('organizationId', orgId).eq('userId', userId)
-  )
-  .filter((q) => q.eq(q.field('workspaceId'), workspaceId))
-  .order('desc')
-  .take(10);
-
-// Get all available system roles
-const systemRoles = await ctx.db
-  .query('roles')
-  .withIndex('by_is_system', (q) => q.eq('isSystem', true))
-  .filter((q) => q.eq(q.field('isActive'), true))
-  .collect();
-
-// Get custom roles for a specific organization
-const orgRoles = await ctx.db
-  .query('roles')
-  .withIndex('by_organization', (q) => q.eq('organizationId', orgId))
-  .filter((q) => q.eq(q.field('isSystem'), false))
-  .collect();
-
-// Get artifacts in a specific folder within a workspace
-const folderArtifacts = await ctx.db
-  .query('artifacts')
-  .withIndex('by_workspace_and_folder', (q) =>
-    q.eq('workspaceId', workspaceId).eq('folderId', folderId)
-  )
-  .collect();
-
-// Get favorited artifacts in a workspace
-const favoritedArtifacts = await ctx.db
-  .query('artifacts')
-  .withIndex('by_favorite', (q) => q.eq('workspaceId', workspaceId).eq('isFavorite', true))
-  .collect();
-
-// Get all tags in a workspace
-const workspaceTags = await ctx.db
-  .query('tags')
-  .withIndex('by_workspace_and_name', (q) => q.eq('workspaceId', workspaceId))
-  .collect();
-
-// Get collaboration events for a specific artifact
-const artifactEvents = await ctx.db
-  .query('collaborationEvents')
-  .withIndex('by_organization_and_artifact', (q) =>
-    q.eq('organizationId', orgId).eq('artifactId', artifactId)
-  )
-  .collect();
-
-// Get all invoices for an organization
-const orgInvoices = await ctx.db
-  .query('invoices')
-  .withIndex('by_organization', (q) => q.eq('organizationId', orgId))
-  .collect();
-
-// Get all unpaid invoices for an organization
-const unpaidInvoices = await ctx.db
-  .query('invoices')
-  .withIndex('by_organization_and_status', (q) =>
-    q.eq('organizationId', orgId).eq('status', 'open')
-  )
-  .collect();
-
-// Find pending invitations for a workspace
-const pendingInvitations = await ctx.db
-  .query('invitations')
-  .withIndex('by_workspace', (q) => q.eq('workspaceId', workspaceId))
-  .filter((q) => q.eq(q.field('status'), 'pending'))
-  .collect();
-
-// Find API keys for a user in a workspace
-const userApiKeys = await ctx.db
-  .query('apiKeys')
-  .withIndex('by_workspace', (q) => q.eq('workspaceId', workspaceId))
-  .filter((q) => q.eq(q.field('userId'), userId))
-  .collect();
-\`\`\`
-
----
-
-## Multi-Tenancy and Workspace Implementation
-
-### Data Isolation Pattern
-
-**Every query MUST filter by organizationId and workspaceId**:
-
-\`\`\`typescript
-// ✅ CORRECT - Tenant and Workspace isolated
-export const getSessions = query({
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error('Unauthenticated');
-    
-    const orgId = identity.org_id;
-    const workspaceId = await ctx.auth.getWorkspaceId(); // Assuming auth helper for workspace
-    
-    if (!workspaceId) throw new Error('Workspace not selected');
-    
-    return await ctx.db
-      .query('sessions')
-      .withIndex('by_workspace_and_status', (q) =>
-        q.eq('workspaceId', workspaceId).eq('status', 'active')
-      )
-      .collect();
+// Get all active roles for a workspace
+export const getRoles = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system roles + organization roles + workspace roles
+    // Filtered by category if provided
+    // Sorted by usageCount descending
   },
 });
 
-// ❌ WRONG - No tenant or workspace isolation
-export const getSessions = query({
-  handler: async (ctx) => {
-    return await ctx.db.query('sessions').collect(); // SECURITY RISK!
+// Get single role by ID
+export const getRole = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns role details
+  },
+});
+
+// Search roles
+export const searchRoles = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, expertise
   },
 });
 \`\`\`
 
-### Permission Checks
-
+**Mutations:**
 \`\`\`typescript
-// Check organization and workspace membership
-const membership = await ctx.db.query('workspaceMemberships').withIndex('by_workspace_and_user', (q) =>
-  q.eq('workspaceId', resource.workspaceId).eq('userId', identity.userId)
-).unique();
+// Create custom role
+export const createRole = mutation({
+  args: {
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom role
+    // Validates uniqueness within scope
+  },
+});
 
-if (!membership) {
-  throw new Error('Unauthorized - not a member of this workspace');
-}
+// Update role
+export const updateRole = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    expertise: v.optional(v.array(v.string())),
+    systemPrompt: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates role
+    // Only allows updating custom roles (not system roles)
+  },
+});
 
-// Check admin role within the workspace for sensitive operations
-if (resource.workspaceId !== workspaceId && membership.role !== 'admin') {
-  throw new Error('Unauthorized - insufficient workspace permissions');
-}
+// Delete role
+export const deleteRole = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+    // Checks if role is in use by agents
+  },
+});
+
+// Increment usage count
+export const incrementRoleUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount when role is used in agent
+  },
+});
 \`\`\`
 
-### Best Practices
+#### Personas
 
-1. **Always validate auth**: Check `ctx.auth.getUserIdentity()` first.
-2. **Always filter by organization and workspace**: Use `organizationId` and `workspaceId` in every query.
-3. **Verify ownership and roles**: Use `workspaceMemberships` to check user roles and permissions.
-4. **Use appropriate indexes**: Always use organization- and workspace-based indexes for performance.
-5. **Handle custom configurations**: For roles, personas, and frameworks, check `organizationId` and `workspaceId` for custom entries, falling back to system-wide defaults if necessary.
-6. **Manage Artifacts with Folders and Tags**: Ensure `folderId` and `tags` are correctly managed for artifact organization and retrieval.
-7. **Log Collaboration Events**: Record all significant collaboration actions for auditing and real-time synchronization.
-8. **Manage Artifact Versions**: Implement logic to create, store, and retrieve artifact versions.
-9. **Manage Working Memory**: Implement logic for creating, retrieving, and scoping working memory entries based on context.
-10. **Billing and Payment Management**: Implement logic for handling subscriptions, credit balances, and invoice retrieval via Polar webhooks and APIs.
-11. **Manage Invitations**: Implement logic for creating, accepting, revoking, and expiring workspace invitations.
-12. **Manage API Keys**: Implement logic for generating, storing, and validating API keys with defined scopes.
-
----
-
-### Implementation Notes (Frontend Mapping)
-- **`ChatMessage` Interface (`lib/chat/types.ts`)**:
-  - The frontend `sender` object (`{ id, name, type, avatar }`) is constructed by joining `messages` with `users` or `agents` tables.
-  - `timestamp` (Date) maps to `createdAt` (number).
-  - `reactions` array in DB is flattened to `{ likes, dislikes }` for the current UI, but the DB supports rich reactions for future features.
-
-- **`Agent` Interface (`types/dashboard.ts` / `lib/agent-config/types.ts`)**:
-  - Frontend types often use nested objects (e.g., `role: Role`), whereas the DB stores IDs (`roleId`) and denormalized names (`role`).
-  - `provider` and `parameters` are stored in the DB but currently abstracted in some frontend views.
-
-- **`DebateSession` Interface (`types/dashboard.ts`)**:
-  - `agents` array in frontend corresponds to `agentIds` in DB.
-  - `status` in DB includes `"completed"`, which covers the terminal state of a debate.
-
----
-
-## Migration from Current State
-
-### Current State Analysis
-
-The app currently uses:
-- **No database**: All data in memory/localStorage
-- **Demo mode**: Simulated data for landing page
-- **TypeScript types**: Defined in `lib/chat/modes.ts` and `types/dashboard.ts`
-
-### Migration Strategy
-
-**Phase 1: Parallel Operation** (Week 1)
-- Deploy Convex schema including workspaces
-- Keep existing localStorage code
-- Write to both Convex and localStorage
-- Read from localStorage (fallback to Convex)
-
-**Phase 2: Gradual Migration** (Week 2)
-- Migrate existing localStorage data to Convex, organizing into default workspaces
-- Switch reads to Convex (fallback to localStorage)
-- Monitor for issues
-
-**Phase 3: Convex Only** (Week 3)
-- Remove localStorage code
-- Convex is single source of truth
-- Clean up migration code
-
-### Data Migration Script
-
+**Queries:**
 \`\`\`typescript
-// Migration utility to move localStorage to Convex
-export async function migrateLocalStorageToConvex(
-  userId: string,
-  orgId: string,
-  defaultWorkspaceId: string // ID of the default workspace created for the org
-) {
-  // 1. Read from localStorage
-  const localSessions = JSON.parse(
-    localStorage.getItem('sessions') || '[]'
-  );
-  
-  // 2. Transform to Convex format
-  const convexSessions = localSessions.map(session => ({
-    organizationId: orgId,
-    workspaceId: defaultWorkspaceId, // Assign to default workspace
-    userId: userId,
-    title: session.title,
-    mode: session.mode,
-    status: 'active', // Default status
-    config: session.config || {},
-    metadata: {
-      ...session.metadata,
-      visibility: session.metadata?.visibility || 'private', // Default visibility
-    },
-    messageCount: session.messageCount || 0,
-    tokensUsed: 0,
-    duration: session.duration || 0,
-    lastActivityAt: Date.now(),
-    createdAt: new Date(session.createdAt).getTime(),
-    updatedAt: Date.now(),
-  }));
-  
-  // 3. Batch insert to Convex
-  for (const session of convexSessions) {
-    await createSession(session); // Assume createSession is a Convex mutation
-  }
-  
-  // 4. Clear localStorage (after confirmation)
-  // localStorage.removeItem('sessions');
-}
+// Get all active personas
+export const getPersonas = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system personas + organization personas + workspace personas
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single persona by ID
+export const getPersona = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns persona details
+  },
+});
+
+// Search personas
+export const searchPersonas = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, traits
+  },
+});
 \`\`\`
 
-### Zero Data Loss Guarantee
+**Mutations:**
+\`\`\`typescript
+// Create custom persona
+export const createPersona = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom persona
+  },
+});
 
-1. **Backup localStorage**: Export all data before migration.
-2. **Parallel writes**: Write to both systems during transition.
-3. **Validation**: Verify data integrity after migration.
-4. **Rollback plan**: Keep localStorage backup for 30 days.
+// Update persona
+export const updatePersona = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    traits: v.optional(v.array(v.string())),
+    communicationStyle: v.optional(v.string()),
+    decisionMaking: v.optional(v.string()),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates persona
+  },
+});
 
----
+// Delete persona
+export const deletePersona = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
 
-## Summary
+// Increment usage count
+export const incrementPersonaUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
 
-This schema provides:
+#### Frameworks
 
-✅ **Multi-tenancy**: Organization-based isolation.
-✅ **Workspaces**: Hierarchical data organization within organizations.
-✅ **Three chat modes**: Compare, Debate, Auto-Debate.
-✅ **Real-time updates**: Convex subscriptions.
-✅ **Usage tracking**: Token credits and billing.
-✅ **File storage**: Artifacts and exports.
-✅ **Agent Configuration**: Robust definition of roles, personas, and frameworks.
-✅ **Artifact Management**: Comprehensive features for organizing and managing artifacts (folders, tags, templates, version history).
-✅ **Real-time Collaboration Tracking**: Events for auditing and synchronization.
-✅ **Quick Start Features**: Agent team presets and scenarios for faster onboarding.
-✅ **Persistent AI Memory**: Flexible working memory for agents across multiple scopes.
-✅ **Billing and Payment Management**: Comprehensive tracking of subscriptions, credit balances, and invoices.
-✅ **Workspace Invitations**: Streamlined process for adding users to workspaces.
-✅ **Programmatic Access**: Secure and granular API keys for external integrations.
-✅ **Performance**: Optimized indexes for organization and workspace queries.
-✅ **Security**: Mandatory auth and permission checks using workspace memberships.
-✅ **Scalability**: Designed for growth with robust data structuring.
+**Queries:**
+\`\`\`typescript
+// Get all active frameworks
+export const getFrameworks = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system frameworks + organization frameworks + workspace frameworks
+    // Sorted by usageCount descending
+  },
+});
 
-**Next Steps**:
-1. Review and approve schema design.
-2. Implement Convex schema in `convex/schema.ts`.
-3. Create queries and mutations for organization and workspace management.
-4. Set up Clerk integration for user and organization management.
-5. Begin migration from current state, ensuring data is properly placed within workspaces.
-6. Implement CRUD operations for roles, personas, and frameworks, including management of system vs. custom configurations.
-7. Develop features for artifact organization (folders, tags, templates) and version management.
-8. Implement real-time collaboration tracking using the `collaborationEvents` table.
-9. Develop features for agent team presets and quick start scenarios for enhanced user onboarding.
-10. Implement session comparison features, including migration from localStorage.
-11. Develop and integrate the working memory system for persistent AI knowledge.
-12. Integrate Polar webhooks for subscriptions, credit balances, and invoices.
-13. Implement invitation management for workspace access control.
-14. Develop API key management for programmatic access.
+// Get single framework by ID
+export const getFramework = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns framework details
+  },
+});
 
----
+// Search frameworks
+export const searchFrameworks = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, methodology
+  },
+});
+\`\`\`
 
-**Document Status**: ✅ Ready for Review  
-**Estimated Implementation**: 20-28 hours (Phase 4)
+**Mutations:**
+\`\`\`typescript
+// Create custom framework
+export const createFramework = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    methodology: v.string(),
+    bestFor: v.array(v.string()),
+    steps: v.array(v.string()),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom framework
+  },
+});
 
+// Update framework
+export const updateFramework = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    methodology: v.optional(v.string()),
+    bestFor: v.optional(v.array(v.string())),
+    steps: v.optional(v.array(v.string())),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates framework
+  },
+});
 
----
+// Delete framework
+export const deleteFramework = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
 
-**Document Status**: ✅ Ready for Review  
-**Estimated Implementation**: 20-28 hours (Phase 4)
+// Increment usage count
+export const incrementFrameworkUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+### Agent Composition
+
+When creating an agent, the system:
+1. Fetches the selected role, persona, and framework modules
+2. Combines their system prompts:
+   \`\`\`
+   finalSystemPrompt = role.systemPrompt + "\n\n" + persona.systemPromptModifier + "\n\n" + framework.systemPromptModifier
+   \`\`\`
+3. Stores the composed prompt in `agents.systemPrompt`
+4. Increments usage counts for all three modules
+5. Stores module IDs for future reference and updates
+
+### Module Reusability
+
+Modules can be:
+- **Reused across multiple agents**: Same role/persona/framework in different combinations
+- **Updated globally**: Changes to a module affect all agents using it (if they regenerate their system prompt)
+- **Shared within scope**: System modules available to all, organization modules to all workspaces, workspace modules to all members
+- **Versioned**: Future enhancement to track module versions and agent compatibility
+
+### Module Queries and Mutations
+
+#### Roles
+
+**Queries:**
+\`\`\`typescript
+// Get all active roles for a workspace
+export const getRoles = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system roles + organization roles + workspace roles
+    // Filtered by category if provided
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single role by ID
+export const getRole = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns role details
+  },
+});
+
+// Search roles
+export const searchRoles = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, expertise
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom role
+export const createRole = mutation({
+  args: {
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom role
+    // Validates uniqueness within scope
+  },
+});
+
+// Update role
+export const updateRole = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    expertise: v.optional(v.array(v.string())),
+    systemPrompt: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates role
+    // Only allows updating custom roles (not system roles)
+  },
+});
+
+// Delete role
+export const deleteRole = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+    // Checks if role is in use by agents
+  },
+});
+
+// Increment usage count
+export const incrementRoleUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount when role is used in agent
+  },
+});
+\`\`\`
+
+#### Personas
+
+**Queries:**
+\`\`\`typescript
+// Get all active personas
+export const getPersonas = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system personas + organization personas + workspace personas
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single persona by ID
+export const getPersona = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns persona details
+  },
+});
+
+// Search personas
+export const searchPersonas = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, traits
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom persona
+export const createPersona = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom persona
+  },
+});
+
+// Update persona
+export const updatePersona = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    traits: v.optional(v.array(v.string())),
+    communicationStyle: v.optional(v.string()),
+    decisionMaking: v.optional(v.string()),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates persona
+  },
+});
+
+// Delete persona
+export const deletePersona = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementPersonaUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+#### Frameworks
+
+**Queries:**
+\`\`\`typescript
+// Get all active frameworks
+export const getFrameworks = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system frameworks + organization frameworks + workspace frameworks
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single framework by ID
+export const getFramework = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns framework details
+  },
+});
+
+// Search frameworks
+export const searchFrameworks = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, methodology
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom framework
+export const createFramework = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    methodology: v.string(),
+    bestFor: v.array(v.string()),
+    steps: v.array(v.string()),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom framework
+  },
+});
+
+// Update framework
+export const updateFramework = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    methodology: v.optional(v.string()),
+    bestFor: v.optional(v.array(v.string())),
+    steps: v.optional(v.array(v.string())),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates framework
+  },
+});
+
+// Delete framework
+export const deleteFramework = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementFrameworkUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+### Agent Composition
+
+When creating an agent, the system:
+1. Fetches the selected role, persona, and framework modules
+2. Combines their system prompts:
+   \`\`\`
+   finalSystemPrompt = role.systemPrompt + "\n\n" + persona.systemPromptModifier + "\n\n" + framework.systemPromptModifier
+   \`\`\`
+3. Stores the composed prompt in `agents.systemPrompt`
+4. Increments usage counts for all three modules
+5. Stores module IDs for future reference and updates
+
+### Module Reusability
+
+Modules can be:
+- **Reused across multiple agents**: Same role/persona/framework in different combinations
+- **Updated globally**: Changes to a module affect all agents using it (if they regenerate their system prompt)
+- **Shared within scope**: System modules available to all, organization modules to all workspaces, workspace modules to all members
+- **Versioned**: Future enhancement to track module versions and agent compatibility
+
+### Module Queries and Mutations
+
+#### Roles
+
+**Queries:**
+\`\`\`typescript
+// Get all active roles for a workspace
+export const getRoles = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system roles + organization roles + workspace roles
+    // Filtered by category if provided
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single role by ID
+export const getRole = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns role details
+  },
+});
+
+// Search roles
+export const searchRoles = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, expertise
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom role
+export const createRole = mutation({
+  args: {
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom role
+    // Validates uniqueness within scope
+  },
+});
+
+// Update role
+export const updateRole = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    expertise: v.optional(v.array(v.string())),
+    systemPrompt: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates role
+    // Only allows updating custom roles (not system roles)
+  },
+});
+
+// Delete role
+export const deleteRole = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+    // Checks if role is in use by agents
+  },
+});
+
+// Increment usage count
+export const incrementRoleUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount when role is used in agent
+  },
+});
+\`\`\`
+
+#### Personas
+
+**Queries:**
+\`\`\`typescript
+// Get all active personas
+export const getPersonas = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system personas + organization personas + workspace personas
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single persona by ID
+export const getPersona = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns persona details
+  },
+});
+
+// Search personas
+export const searchPersonas = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, traits
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom persona
+export const createPersona = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom persona
+  },
+});
+
+// Update persona
+export const updatePersona = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    traits: v.optional(v.array(v.string())),
+    communicationStyle: v.optional(v.string()),
+    decisionMaking: v.optional(v.string()),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates persona
+  },
+});
+
+// Delete persona
+export const deletePersona = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementPersonaUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+#### Frameworks
+
+**Queries:**
+\`\`\`typescript
+// Get all active frameworks
+export const getFrameworks = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system frameworks + organization frameworks + workspace frameworks
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single framework by ID
+export const getFramework = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns framework details
+  },
+});
+
+// Search frameworks
+export const searchFrameworks = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, methodology
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom framework
+export const createFramework = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    methodology: v.string(),
+    bestFor: v.array(v.string()),
+    steps: v.array(v.string()),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom framework
+  },
+});
+
+// Update framework
+export const updateFramework = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    methodology: v.optional(v.string()),
+    bestFor: v.optional(v.array(v.string())),
+    steps: v.optional(v.array(v.string())),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates framework
+  },
+});
+
+// Delete framework
+export const deleteFramework = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementFrameworkUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+### Agent Composition
+
+When creating an agent, the system:
+1. Fetches the selected role, persona, and framework modules
+2. Combines their system prompts:
+   \`\`\`
+   finalSystemPrompt = role.systemPrompt + "\n\n" + persona.systemPromptModifier + "\n\n" + framework.systemPromptModifier
+   \`\`\`
+3. Stores the composed prompt in `agents.systemPrompt`
+4. Increments usage counts for all three modules
+5. Stores module IDs for future reference and updates
+
+### Module Reusability
+
+Modules can be:
+- **Reused across multiple agents**: Same role/persona/framework in different combinations
+- **Updated globally**: Changes to a module affect all agents using it (if they regenerate their system prompt)
+- **Shared within scope**: System modules available to all, organization modules to all workspaces, workspace modules to all members
+- **Versioned**: Future enhancement to track module versions and agent compatibility
+
+### Module Queries and Mutations
+
+#### Roles
+
+**Queries:**
+\`\`\`typescript
+// Get all active roles for a workspace
+export const getRoles = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system roles + organization roles + workspace roles
+    // Filtered by category if provided
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single role by ID
+export const getRole = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns role details
+  },
+});
+
+// Search roles
+export const searchRoles = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, expertise
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom role
+export const createRole = mutation({
+  args: {
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom role
+    // Validates uniqueness within scope
+  },
+});
+
+// Update role
+export const updateRole = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    expertise: v.optional(v.array(v.string())),
+    systemPrompt: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates role
+    // Only allows updating custom roles (not system roles)
+  },
+});
+
+// Delete role
+export const deleteRole = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+    // Checks if role is in use by agents
+  },
+});
+
+// Increment usage count
+export const incrementRoleUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount when role is used in agent
+  },
+});
+\`\`\`
+
+#### Personas
+
+**Queries:**
+\`\`\`typescript
+// Get all active personas
+export const getPersonas = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system personas + organization personas + workspace personas
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single persona by ID
+export const getPersona = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns persona details
+  },
+});
+
+// Search personas
+export const searchPersonas = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, traits
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom persona
+export const createPersona = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom persona
+  },
+});
+
+// Update persona
+export const updatePersona = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    traits: v.optional(v.array(v.string())),
+    communicationStyle: v.optional(v.string()),
+    decisionMaking: v.optional(v.string()),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates persona
+  },
+});
+
+// Delete persona
+export const deletePersona = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementPersonaUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+#### Frameworks
+
+**Queries:**
+\`\`\`typescript
+// Get all active frameworks
+export const getFrameworks = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system frameworks + organization frameworks + workspace frameworks
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single framework by ID
+export const getFramework = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns framework details
+  },
+});
+
+// Search frameworks
+export const searchFrameworks = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, methodology
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom framework
+export const createFramework = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    methodology: v.string(),
+    bestFor: v.array(v.string()),
+    steps: v.array(v.string()),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom framework
+  },
+});
+
+// Update framework
+export const updateFramework = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    methodology: v.optional(v.string()),
+    bestFor: v.optional(v.array(v.string())),
+    steps: v.optional(v.array(v.string())),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates framework
+  },
+});
+
+// Delete framework
+export const deleteFramework = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementFrameworkUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+### Agent Composition
+
+When creating an agent, the system:
+1. Fetches the selected role, persona, and framework modules
+2. Combines their system prompts:
+   \`\`\`
+   finalSystemPrompt = role.systemPrompt + "\n\n" + persona.systemPromptModifier + "\n\n" + framework.systemPromptModifier
+   \`\`\`
+3. Stores the composed prompt in `agents.systemPrompt`
+4. Increments usage counts for all three modules
+5. Stores module IDs for future reference and updates
+
+### Module Reusability
+
+Modules can be:
+- **Reused across multiple agents**: Same role/persona/framework in different combinations
+- **Updated globally**: Changes to a module affect all agents using it (if they regenerate their system prompt)
+- **Shared within scope**: System modules available to all, organization modules to all workspaces, workspace modules to all members
+- **Versioned**: Future enhancement to track module versions and agent compatibility
+
+### Module Queries and Mutations
+
+#### Roles
+
+**Queries:**
+\`\`\`typescript
+// Get all active roles for a workspace
+export const getRoles = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system roles + organization roles + workspace roles
+    // Filtered by category if provided
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single role by ID
+export const getRole = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns role details
+  },
+});
+
+// Search roles
+export const searchRoles = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, expertise
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom role
+export const createRole = mutation({
+  args: {
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom role
+    // Validates uniqueness within scope
+  },
+});
+
+// Update role
+export const updateRole = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    expertise: v.optional(v.array(v.string())),
+    systemPrompt: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates role
+    // Only allows updating custom roles (not system roles)
+  },
+});
+
+// Delete role
+export const deleteRole = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+    // Checks if role is in use by agents
+  },
+});
+
+// Increment usage count
+export const incrementRoleUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount when role is used in agent
+  },
+});
+\`\`\`
+
+#### Personas
+
+**Queries:**
+\`\`\`typescript
+// Get all active personas
+export const getPersonas = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system personas + organization personas + workspace personas
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single persona by ID
+export const getPersona = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns persona details
+  },
+});
+
+// Search personas
+export const searchPersonas = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, traits
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom persona
+export const createPersona = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom persona
+  },
+});
+
+// Update persona
+export const updatePersona = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    traits: v.optional(v.array(v.string())),
+    communicationStyle: v.optional(v.string()),
+    decisionMaking: v.optional(v.string()),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates persona
+  },
+});
+
+// Delete persona
+export const deletePersona = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementPersonaUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+#### Frameworks
+
+**Queries:**
+\`\`\`typescript
+// Get all active frameworks
+export const getFrameworks = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system frameworks + organization frameworks + workspace frameworks
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single framework by ID
+export const getFramework = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns framework details
+  },
+});
+
+// Search frameworks
+export const searchFrameworks = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, methodology
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom framework
+export const createFramework = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    methodology: v.string(),
+    bestFor: v.array(v.string()),
+    steps: v.array(v.string()),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom framework
+  },
+});
+
+// Update framework
+export const updateFramework = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    methodology: v.optional(v.string()),
+    bestFor: v.optional(v.array(v.string())),
+    steps: v.optional(v.array(v.string())),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates framework
+  },
+});
+
+// Delete framework
+export const deleteFramework = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementFrameworkUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+### Agent Composition
+
+When creating an agent, the system:
+1. Fetches the selected role, persona, and framework modules
+2. Combines their system prompts:
+   \`\`\`
+   finalSystemPrompt = role.systemPrompt + "\n\n" + persona.systemPromptModifier + "\n\n" + framework.systemPromptModifier
+   \`\`\`
+3. Stores the composed prompt in `agents.systemPrompt`
+4. Increments usage counts for all three modules
+5. Stores module IDs for future reference and updates
+
+### Module Reusability
+
+Modules can be:
+- **Reused across multiple agents**: Same role/persona/framework in different combinations
+- **Updated globally**: Changes to a module affect all agents using it (if they regenerate their system prompt)
+- **Shared within scope**: System modules available to all, organization modules to all workspaces, workspace modules to all members
+- **Versioned**: Future enhancement to track module versions and agent compatibility
+
+### Module Queries and Mutations
+
+#### Roles
+
+**Queries:**
+\`\`\`typescript
+// Get all active roles for a workspace
+export const getRoles = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system roles + organization roles + workspace roles
+    // Filtered by category if provided
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single role by ID
+export const getRole = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns role details
+  },
+});
+
+// Search roles
+export const searchRoles = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, expertise
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom role
+export const createRole = mutation({
+  args: {
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom role
+    // Validates uniqueness within scope
+  },
+});
+
+// Update role
+export const updateRole = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    expertise: v.optional(v.array(v.string())),
+    systemPrompt: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates role
+    // Only allows updating custom roles (not system roles)
+  },
+});
+
+// Delete role
+export const deleteRole = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+    // Checks if role is in use by agents
+  },
+});
+
+// Increment usage count
+export const incrementRoleUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount when role is used in agent
+  },
+});
+\`\`\`
+
+#### Personas
+
+**Queries:**
+\`\`\`typescript
+// Get all active personas
+export const getPersonas = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system personas + organization personas + workspace personas
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single persona by ID
+export const getPersona = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns persona details
+  },
+});
+
+// Search personas
+export const searchPersonas = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, traits
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom persona
+export const createPersona = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom persona
+  },
+});
+
+// Update persona
+export const updatePersona = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    traits: v.optional(v.array(v.string())),
+    communicationStyle: v.optional(v.string()),
+    decisionMaking: v.optional(v.string()),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates persona
+  },
+});
+
+// Delete persona
+export const deletePersona = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementPersonaUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+#### Frameworks
+
+**Queries:**
+\`\`\`typescript
+// Get all active frameworks
+export const getFrameworks = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system frameworks + organization frameworks + workspace frameworks
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single framework by ID
+export const getFramework = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns framework details
+  },
+});
+
+// Search frameworks
+export const searchFrameworks = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, methodology
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom framework
+export const createFramework = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    methodology: v.string(),
+    bestFor: v.array(v.string()),
+    steps: v.array(v.string()),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom framework
+  },
+});
+
+// Update framework
+export const updateFramework = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    methodology: v.optional(v.string()),
+    bestFor: v.optional(v.array(v.string())),
+    steps: v.optional(v.array(v.string())),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates framework
+  },
+});
+
+// Delete framework
+export const deleteFramework = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementFrameworkUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+### Agent Composition
+
+When creating an agent, the system:
+1. Fetches the selected role, persona, and framework modules
+2. Combines their system prompts:
+   \`\`\`
+   finalSystemPrompt = role.systemPrompt + "\n\n" + persona.systemPromptModifier + "\n\n" + framework.systemPromptModifier
+   \`\`\`
+3. Stores the composed prompt in `agents.systemPrompt`
+4. Increments usage counts for all three modules
+5. Stores module IDs for future reference and updates
+
+### Module Reusability
+
+Modules can be:
+- **Reused across multiple agents**: Same role/persona/framework in different combinations
+- **Updated globally**: Changes to a module affect all agents using it (if they regenerate their system prompt)
+- **Shared within scope**: System modules available to all, organization modules to all workspaces, workspace modules to all members
+- **Versioned**: Future enhancement to track module versions and agent compatibility
+
+### Module Queries and Mutations
+
+#### Roles
+
+**Queries:**
+\`\`\`typescript
+// Get all active roles for a workspace
+export const getRoles = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system roles + organization roles + workspace roles
+    // Filtered by category if provided
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single role by ID
+export const getRole = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns role details
+  },
+});
+
+// Search roles
+export const searchRoles = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, expertise
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom role
+export const createRole = mutation({
+  args: {
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom role
+    // Validates uniqueness within scope
+  },
+});
+
+// Update role
+export const updateRole = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    expertise: v.optional(v.array(v.string())),
+    systemPrompt: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates role
+    // Only allows updating custom roles (not system roles)
+  },
+});
+
+// Delete role
+export const deleteRole = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+    // Checks if role is in use by agents
+  },
+});
+
+// Increment usage count
+export const incrementRoleUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount when role is used in agent
+  },
+});
+\`\`\`
+
+#### Personas
+
+**Queries:**
+\`\`\`typescript
+// Get all active personas
+export const getPersonas = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system personas + organization personas + workspace personas
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single persona by ID
+export const getPersona = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns persona details
+  },
+});
+
+// Search personas
+export const searchPersonas = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, traits
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom persona
+export const createPersona = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom persona
+  },
+});
+
+// Update persona
+export const updatePersona = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    traits: v.optional(v.array(v.string())),
+    communicationStyle: v.optional(v.string()),
+    decisionMaking: v.optional(v.string()),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates persona
+  },
+});
+
+// Delete persona
+export const deletePersona = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementPersonaUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+#### Frameworks
+
+**Queries:**
+\`\`\`typescript
+// Get all active frameworks
+export const getFrameworks = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system frameworks + organization frameworks + workspace frameworks
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single framework by ID
+export const getFramework = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns framework details
+  },
+});
+
+// Search frameworks
+export const searchFrameworks = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, methodology
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom framework
+export const createFramework = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    methodology: v.string(),
+    bestFor: v.array(v.string()),
+    steps: v.array(v.string()),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom framework
+  },
+});
+
+// Update framework
+export const updateFramework = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    methodology: v.optional(v.string()),
+    bestFor: v.optional(v.array(v.string())),
+    steps: v.optional(v.array(v.string())),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates framework
+  },
+});
+
+// Delete framework
+export const deleteFramework = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementFrameworkUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+### Agent Composition
+
+When creating an agent, the system:
+1. Fetches the selected role, persona, and framework modules
+2. Combines their system prompts:
+   \`\`\`
+   finalSystemPrompt = role.systemPrompt + "\n\n" + persona.systemPromptModifier + "\n\n" + framework.systemPromptModifier
+   \`\`\`
+3. Stores the composed prompt in `agents.systemPrompt`
+4. Increments usage counts for all three modules
+5. Stores module IDs for future reference and updates
+
+### Module Reusability
+
+Modules can be:
+- **Reused across multiple agents**: Same role/persona/framework in different combinations
+- **Updated globally**: Changes to a module affect all agents using it (if they regenerate their system prompt)
+- **Shared within scope**: System modules available to all, organization modules to all workspaces, workspace modules to all members
+- **Versioned**: Future enhancement to track module versions and agent compatibility
+
+### Module Queries and Mutations
+
+#### Roles
+
+**Queries:**
+\`\`\`typescript
+// Get all active roles for a workspace
+export const getRoles = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system roles + organization roles + workspace roles
+    // Filtered by category if provided
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single role by ID
+export const getRole = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns role details
+  },
+});
+
+// Search roles
+export const searchRoles = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, expertise
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom role
+export const createRole = mutation({
+  args: {
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom role
+    // Validates uniqueness within scope
+  },
+});
+
+// Update role
+export const updateRole = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    expertise: v.optional(v.array(v.string())),
+    systemPrompt: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates role
+    // Only allows updating custom roles (not system roles)
+  },
+});
+
+// Delete role
+export const deleteRole = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+    // Checks if role is in use by agents
+  },
+});
+
+// Increment usage count
+export const incrementRoleUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount when role is used in agent
+  },
+});
+\`\`\`
+
+#### Personas
+
+**Queries:**
+\`\`\`typescript
+// Get all active personas
+export const getPersonas = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system personas + organization personas + workspace personas
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single persona by ID
+export const getPersona = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns persona details
+  },
+});
+
+// Search personas
+export const searchPersonas = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, traits
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom persona
+export const createPersona = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom persona
+  },
+});
+
+// Update persona
+export const updatePersona = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    traits: v.optional(v.array(v.string())),
+    communicationStyle: v.optional(v.string()),
+    decisionMaking: v.optional(v.string()),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates persona
+  },
+});
+
+// Delete persona
+export const deletePersona = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementPersonaUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+#### Frameworks
+
+**Queries:**
+\`\`\`typescript
+// Get all active frameworks
+export const getFrameworks = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system frameworks + organization frameworks + workspace frameworks
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single framework by ID
+export const getFramework = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns framework details
+  },
+});
+
+// Search frameworks
+export const searchFrameworks = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, methodology
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom framework
+export const createFramework = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    methodology: v.string(),
+    bestFor: v.array(v.string()),
+    steps: v.array(v.string()),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom framework
+  },
+});
+
+// Update framework
+export const updateFramework = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    methodology: v.optional(v.string()),
+    bestFor: v.optional(v.array(v.string())),
+    steps: v.optional(v.array(v.string())),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates framework
+  },
+});
+
+// Delete framework
+export const deleteFramework = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementFrameworkUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+### Agent Composition
+
+When creating an agent, the system:
+1. Fetches the selected role, persona, and framework modules
+2. Combines their system prompts:
+   \`\`\`
+   finalSystemPrompt = role.systemPrompt + "\n\n" + persona.systemPromptModifier + "\n\n" + framework.systemPromptModifier
+   \`\`\`
+3. Stores the composed prompt in `agents.systemPrompt`
+4. Increments usage counts for all three modules
+5. Stores module IDs for future reference and updates
+
+### Module Reusability
+
+Modules can be:
+- **Reused across multiple agents**: Same role/persona/framework in different combinations
+- **Updated globally**: Changes to a module affect all agents using it (if they regenerate their system prompt)
+- **Shared within scope**: System modules available to all, organization modules to all workspaces, workspace modules to all members
+- **Versioned**: Future enhancement to track module versions and agent compatibility
+
+### Module Queries and Mutations
+
+#### Roles
+
+**Queries:**
+\`\`\`typescript
+// Get all active roles for a workspace
+export const getRoles = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system roles + organization roles + workspace roles
+    // Filtered by category if provided
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single role by ID
+export const getRole = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns role details
+  },
+});
+
+// Search roles
+export const searchRoles = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, expertise
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom role
+export const createRole = mutation({
+  args: {
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom role
+    // Validates uniqueness within scope
+  },
+});
+
+// Update role
+export const updateRole = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    expertise: v.optional(v.array(v.string())),
+    systemPrompt: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates role
+    // Only allows updating custom roles (not system roles)
+  },
+});
+
+// Delete role
+export const deleteRole = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+    // Checks if role is in use by agents
+  },
+});
+
+// Increment usage count
+export const incrementRoleUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount when role is used in agent
+  },
+});
+\`\`\`
+
+#### Personas
+
+**Queries:**
+\`\`\`typescript
+// Get all active personas
+export const getPersonas = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system personas + organization personas + workspace personas
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single persona by ID
+export const getPersona = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns persona details
+  },
+});
+
+// Search personas
+export const searchPersonas = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, traits
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom persona
+export const createPersona = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom persona
+  },
+});
+
+// Update persona
+export const updatePersona = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    traits: v.optional(v.array(v.string())),
+    communicationStyle: v.optional(v.string()),
+    decisionMaking: v.optional(v.string()),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates persona
+  },
+});
+
+// Delete persona
+export const deletePersona = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementPersonaUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+#### Frameworks
+
+**Queries:**
+\`\`\`typescript
+// Get all active frameworks
+export const getFrameworks = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system frameworks + organization frameworks + workspace frameworks
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single framework by ID
+export const getFramework = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns framework details
+  },
+});
+
+// Search frameworks
+export const searchFrameworks = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, methodology
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom framework
+export const createFramework = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    methodology: v.string(),
+    bestFor: v.array(v.string()),
+    steps: v.array(v.string()),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom framework
+  },
+});
+
+// Update framework
+export const updateFramework = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    methodology: v.optional(v.string()),
+    bestFor: v.optional(v.array(v.string())),
+    steps: v.optional(v.array(v.string())),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates framework
+  },
+});
+
+// Delete framework
+export const deleteFramework = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementFrameworkUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+### Agent Composition
+
+When creating an agent, the system:
+1. Fetches the selected role, persona, and framework modules
+2. Combines their system prompts:
+   \`\`\`
+   finalSystemPrompt = role.systemPrompt + "\n\n" + persona.systemPromptModifier + "\n\n" + framework.systemPromptModifier
+   \`\`\`
+3. Stores the composed prompt in `agents.systemPrompt`
+4. Increments usage counts for all three modules
+5. Stores module IDs for future reference and updates
+
+### Module Reusability
+
+Modules can be:
+- **Reused across multiple agents**: Same role/persona/framework in different combinations
+- **Updated globally**: Changes to a module affect all agents using it (if they regenerate their system prompt)
+- **Shared within scope**: System modules available to all, organization modules to all workspaces, workspace modules to all members
+- **Versioned**: Future enhancement to track module versions and agent compatibility
+
+### Module Queries and Mutations
+
+#### Roles
+
+**Queries:**
+\`\`\`typescript
+// Get all active roles for a workspace
+export const getRoles = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system roles + organization roles + workspace roles
+    // Filtered by category if provided
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single role by ID
+export const getRole = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns role details
+  },
+});
+
+// Search roles
+export const searchRoles = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, expertise
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom role
+export const createRole = mutation({
+  args: {
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom role
+    // Validates uniqueness within scope
+  },
+});
+
+// Update role
+export const updateRole = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    expertise: v.optional(v.array(v.string())),
+    systemPrompt: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates role
+    // Only allows updating custom roles (not system roles)
+  },
+});
+
+// Delete role
+export const deleteRole = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+    // Checks if role is in use by agents
+  },
+});
+
+// Increment usage count
+export const incrementRoleUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount when role is used in agent
+  },
+});
+\`\`\`
+
+#### Personas
+
+**Queries:**
+\`\`\`typescript
+// Get all active personas
+export const getPersonas = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system personas + organization personas + workspace personas
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single persona by ID
+export const getPersona = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns persona details
+  },
+});
+
+// Search personas
+export const searchPersonas = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, traits
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom persona
+export const createPersona = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom persona
+  },
+});
+
+// Update persona
+export const updatePersona = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    traits: v.optional(v.array(v.string())),
+    communicationStyle: v.optional(v.string()),
+    decisionMaking: v.optional(v.string()),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates persona
+  },
+});
+
+// Delete persona
+export const deletePersona = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementPersonaUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+#### Frameworks
+
+**Queries:**
+\`\`\`typescript
+// Get all active frameworks
+export const getFrameworks = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system frameworks + organization frameworks + workspace frameworks
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single framework by ID
+export const getFramework = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns framework details
+  },
+});
+
+// Search frameworks
+export const searchFrameworks = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, methodology
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom framework
+export const createFramework = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    methodology: v.string(),
+    bestFor: v.array(v.string()),
+    steps: v.array(v.string()),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom framework
+  },
+});
+
+// Update framework
+export const updateFramework = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    methodology: v.optional(v.string()),
+    bestFor: v.optional(v.array(v.string())),
+    steps: v.optional(v.array(v.string())),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates framework
+  },
+});
+
+// Delete framework
+export const deleteFramework = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementFrameworkUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+### Agent Composition
+
+When creating an agent, the system:
+1. Fetches the selected role, persona, and framework modules
+2. Combines their system prompts:
+   \`\`\`
+   finalSystemPrompt = role.systemPrompt + "\n\n" + persona.systemPromptModifier + "\n\n" + framework.systemPromptModifier
+   \`\`\`
+3. Stores the composed prompt in `agents.systemPrompt`
+4. Increments usage counts for all three modules
+5. Stores module IDs for future reference and updates
+
+### Module Reusability
+
+Modules can be:
+- **Reused across multiple agents**: Same role/persona/framework in different combinations
+- **Updated globally**: Changes to a module affect all agents using it (if they regenerate their system prompt)
+- **Shared within scope**: System modules available to all, organization modules to all workspaces, workspace modules to all members
+- **Versioned**: Future enhancement to track module versions and agent compatibility
+
+### Module Queries and Mutations
+
+#### Roles
+
+**Queries:**
+\`\`\`typescript
+// Get all active roles for a workspace
+export const getRoles = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system roles + organization roles + workspace roles
+    // Filtered by category if provided
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single role by ID
+export const getRole = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns role details
+  },
+});
+
+// Search roles
+export const searchRoles = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, expertise
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom role
+export const createRole = mutation({
+  args: {
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom role
+    // Validates uniqueness within scope
+  },
+});
+
+// Update role
+export const updateRole = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    expertise: v.optional(v.array(v.string())),
+    systemPrompt: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates role
+    // Only allows updating custom roles (not system roles)
+  },
+});
+
+// Delete role
+export const deleteRole = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+    // Checks if role is in use by agents
+  },
+});
+
+// Increment usage count
+export const incrementRoleUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount when role is used in agent
+  },
+});
+\`\`\`
+
+#### Personas
+
+**Queries:**
+\`\`\`typescript
+// Get all active personas
+export const getPersonas = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system personas + organization personas + workspace personas
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single persona by ID
+export const getPersona = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns persona details
+  },
+});
+
+// Search personas
+export const searchPersonas = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, traits
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom persona
+export const createPersona = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom persona
+  },
+});
+
+// Update persona
+export const updatePersona = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    traits: v.optional(v.array(v.string())),
+    communicationStyle: v.optional(v.string()),
+    decisionMaking: v.optional(v.string()),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates persona
+  },
+});
+
+// Delete persona
+export const deletePersona = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementPersonaUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+#### Frameworks
+
+**Queries:**
+\`\`\`typescript
+// Get all active frameworks
+export const getFrameworks = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system frameworks + organization frameworks + workspace frameworks
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single framework by ID
+export const getFramework = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns framework details
+  },
+});
+
+// Search frameworks
+export const searchFrameworks = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, methodology
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom framework
+export const createFramework = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    methodology: v.string(),
+    bestFor: v.array(v.string()),
+    steps: v.array(v.string()),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom framework
+  },
+});
+
+// Update framework
+export const updateFramework = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    methodology: v.optional(v.string()),
+    bestFor: v.optional(v.array(v.string())),
+    steps: v.optional(v.array(v.string())),
+    systemPromptModifier: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates framework
+  },
+});
+
+// Delete framework
+export const deleteFramework = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+  },
+});
+
+// Increment usage count
+export const incrementFrameworkUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount
+  },
+});
+\`\`\`
+
+### Agent Composition
+
+When creating an agent, the system:
+1. Fetches the selected role, persona, and framework modules
+2. Combines their system prompts:
+   \`\`\`
+   finalSystemPrompt = role.systemPrompt + "\n\n" + persona.systemPromptModifier + "\n\n" + framework.systemPromptModifier
+   \`\`\`
+3. Stores the composed prompt in `agents.systemPrompt`
+4. Increments usage counts for all three modules
+5. Stores module IDs for future reference and updates
+
+### Module Reusability
+
+Modules can be:
+- **Reused across multiple agents**: Same role/persona/framework in different combinations
+- **Updated globally**: Changes to a module affect all agents using it (if they regenerate their system prompt)
+- **Shared within scope**: System modules available to all, organization modules to all workspaces, workspace modules to all members
+- **Versioned**: Future enhancement to track module versions and agent compatibility
+
+### Module Queries and Mutations
+
+#### Roles
+
+**Queries:**
+\`\`\`typescript
+// Get all active roles for a workspace
+export const getRoles = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system roles + organization roles + workspace roles
+    // Filtered by category if provided
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single role by ID
+export const getRole = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns role details
+  },
+});
+
+// Search roles
+export const searchRoles = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, expertise
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom role
+export const createRole = mutation({
+  args: {
+    name: v.string(),
+    category: v.string(),
+    description: v.string(),
+    expertise: v.array(v.string()),
+    systemPrompt: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom role
+    // Validates uniqueness within scope
+  },
+});
+
+// Update role
+export const updateRole = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    expertise: v.optional(v.array(v.string())),
+    systemPrompt: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    // Updates role
+    // Only allows updating custom roles (not system roles)
+  },
+});
+
+// Delete role
+export const deleteRole = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Soft delete (sets isActive = false)
+    // Checks if role is in use by agents
+  },
+});
+
+// Increment usage count
+export const incrementRoleUsage = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Increments usageCount when role is used in agent
+  },
+});
+\`\`\`
+
+#### Personas
+
+**Queries:**
+\`\`\`typescript
+// Get all active personas
+export const getPersonas = query({
+  args: {
+    workspaceId: v.optional(v.id("workspaces")),
+    organizationId: v.optional(v.string()),
+    includeSystem: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Returns system personas + organization personas + workspace personas
+    // Sorted by usageCount descending
+  },
+});
+
+// Get single persona by ID
+export const getPersona = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    // Returns persona details
+  },
+});
+
+// Search personas
+export const searchPersonas = query({
+  args: {
+    query: v.string(),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Full-text search across name, description, traits
+  },
+});
+\`\`\`
+
+**Mutations:**
+\`\`\`typescript
+// Create custom persona
+export const createPersona = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    traits: v.array(v.string()),
+    communicationStyle: v.string(),
+    decisionMaking: v.string(),
+    systemPromptModifier: v.string(),
+    icon: v.string(),
+    organizationId: v.optional(v.string()),
+    workspaceId: v.optional(v.id("workspaces")),
+  },
+  handler: async (ctx, args) => {
+    // Creates new custom persona
+  },
+});
+
+// Update persona
+export const updatePersona = mutation({
+  args: {
+    id: v.string(),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),

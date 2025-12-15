@@ -21,6 +21,10 @@ interface ModuleCardProps {
 export function ModuleCard({ type, module, onRemove, onEdit, isSelected, isCustom }: ModuleCardProps) {
   const { isMobile } = useDevice()
 
+  if (!module) {
+    return null
+  }
+
   const getModuleDetails = () => {
     if (type === "role" && "expertise" in module) {
       return module.expertise.slice(0, 3).join(", ")
@@ -43,17 +47,17 @@ export function ModuleCard({ type, module, onRemove, onEdit, isSelected, isCusto
       } ${isMobile ? "active:scale-[0.98]" : "hover:shadow-md"}`}
     >
       <CardContent className="p-4 flex items-start gap-3">
-        <span className="text-2xl flex-shrink-0 mt-0.5">{module.icon}</span>
+        <span className="text-2xl flex-shrink-0 mt-0.5">{module.icon || "📝"}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-medium text-sm truncate">{module.name}</h4>
+            <h4 className="font-medium text-sm truncate">{module.name || "Unnamed Module"}</h4>
             {isCustom && (
               <Badge variant="secondary" className="text-xs flex-shrink-0">
                 CUSTOM
               </Badge>
             )}
           </div>
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{module.description}</p>
+          <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{module.description || ""}</p>
           {details && (
             <p className="text-xs text-muted-foreground/80 font-medium truncate">
               {type === "role" && "Expertise: "}

@@ -68,6 +68,10 @@ export default defineSchema({
       language: v.string(),
       notifications: v.boolean(),
       defaultAgents: v.array(v.string()), // Agent IDs
+      tooltips: v.object({
+        enabled: v.boolean(),
+        delay: v.number(), // milliseconds
+      }),
     }),
 
     // Activity

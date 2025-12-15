@@ -55,6 +55,11 @@ export function ModuleSelector({
       module.description.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
+  console.log("[v0] ModuleSelector render - moduleType:", moduleType)
+  console.log("[v0] Total modules:", modules.length)
+  console.log("[v0] Filtered modules:", filteredModules.length)
+  console.log("[v0] First 3 modules:", modules.slice(0, 3))
+
   const handleSelect = (id: string) => {
     onSelect(id)
     onClose()
@@ -113,18 +118,27 @@ export function ModuleSelector({
 
           <ScrollArea className="flex-1">
             <div className="space-y-2 pr-4">
-              {filteredModules.map((module) => (
-                <div key={module.id} onClick={() => handleSelect(module.id)} className="cursor-pointer">
-                  <ModuleCard
-                    type={moduleType}
-                    icon={module.icon}
-                    name={module.name}
-                    description={module.description}
-                    badge={module.badge}
-                    isSelected={selectedId === module.id}
-                  />
+              {filteredModules.length === 0 ? (
+                <div className="flex items-center justify-center py-12 text-center">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">No modules found</p>
+                    <p className="text-xs text-muted-foreground">Try adjusting your search</p>
+                  </div>
                 </div>
-              ))}
+              ) : (
+                filteredModules.map((module) => (
+                  <div key={module.id} onClick={() => handleSelect(module.id)} className="cursor-pointer">
+                    <ModuleCard
+                      type={moduleType}
+                      icon={module.icon}
+                      name={module.name}
+                      description={module.description}
+                      badge={module.badge}
+                      isSelected={selectedId === module.id}
+                    />
+                  </div>
+                ))
+              )}
             </div>
           </ScrollArea>
 

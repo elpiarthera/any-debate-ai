@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   MessageSquare,
   Plus,
@@ -20,6 +21,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useDevice } from "@/contexts/DeviceProvider"
+import { useTooltipPreferences } from "@/contexts/TooltipPreferencesContext"
 import { ExportButton } from "@/components/export/ExportButton"
 import { EditSessionDialog } from "./edit-session-dialog"
 import { DeleteConfirmationDialog } from "@/components/shared/delete-confirmation-dialog"
@@ -76,6 +78,7 @@ export function ChatSidebar({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [selectedSession, setSelectedSession] = useState<string | null>(null)
   const { toast } = useToast()
+  const { tooltipPreferences } = useTooltipPreferences()
 
   const formatTimestamp = (date: Date) => {
     const now = new Date()
@@ -137,80 +140,123 @@ export function ChatSidebar({
   }
 
   return (
-    <motion.div
-      className={cn(
-        "h-full bg-sidebar border-r border-sidebar-border flex flex-col",
-        isMobile && "border-r-0", // No border on mobile when in modal
-      )}
-      animate={{ width: getWidth() }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-      style={{ width: isMobile ? "100%" : undefined }} // Override for mobile
-    >
-      {/* Header */}
-      <div className="p-4 border-b border-sidebar-border shrink-0">
-        <div className="flex items-center justify-between">
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="flex items-center gap-2"
-              >
-                <History className="h-5 w-5 text-sidebar-foreground" />
-                <h2 className="font-semibold text-sidebar-foreground">Chat History</h2>
-              </motion.div>
+    <TooltipProvider delayDuration={tooltipPreferences.delay}>
+      <motion.div
+        className={cn("h-full bg-sidebar border-r border-sidebar-border flex flex-col", isMobile && "border-r-0")}
+        animate={{ width: getWidth() }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        style={{ width: isMobile ? "100%" : undefined }}
+      >
+        {/* Header */}
+        <div className="p-4 border-b border-sidebar-border shrink-0">
+          <div className="flex items-center justify-between">
+            <AnimatePresence mode="wait">
+              {!isCollapsed && (
+                <motion.div
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="flex items-center gap-2 overflow-hidden"
+                >
+                  <History className="h-5 w-5 text-sidebar-foreground shrink-0" />
+                  <h2 className="font-semibold text-sidebar-foreground whitespace-nowrap">Chat History</h2>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {!isMobile && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onToggleCollapse}
+                    className="h-8 w-8 p-0 hover:bg-sidebar-accent shrink-0"
+                  >
+                    {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>{isCollapsed ? "Expand sidebar" : "Collapse sidebar"}</p>
+                </TooltipContent>
+              </Tooltip>
             )}
-          </AnimatePresence>
+          </div>
 
-          {!isMobile && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onToggleCollapse}
-              className="h-8 w-8 p-0 hover:bg-sidebar-accent"
-            >
-              {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            </Button>
+          {isCollapsed && tooltipPreferences.enabled && (
+            <div className="mt-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onNewSession()
+                    }}
+                    size="sm"
+                    className="w-full h-10 p-0 bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>
+                  <p>New Debate</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           )}
-        </div>
 
-        <AnimatePresence>
-          {!isCollapsed && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-3 space-y-2"
-            >
+          {isCollapsed && !tooltipPreferences.enabled && (
+            <div className="mt-3">
               <Button
                 onClick={(e) => {
                   e.stopPropagation()
                   onNewSession()
                 }}
-                className="w-full justify-start gap-2 bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
+                size="sm"
+                className="w-full h-10 p-0 bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
               >
                 <Plus className="h-4 w-4" />
-                New Debate
               </Button>
-              <Button
-                onClick={() => (window.location.href = "/quick-start")}
-                variant="outline"
-                className="w-full justify-start gap-2 bg-transparent"
-              >
-                <Sparkles className="h-4 w-4" />
-                Start from Template
-              </Button>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
-      </div>
 
-      {/* Sessions List - Fixed height calculation for proper scrolling */}
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full">
-          <div className="p-2">
-            <AnimatePresence>
+          <AnimatePresence mode="wait">
+            {!isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="mt-3 space-y-2 overflow-hidden"
+              >
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onNewSession()
+                  }}
+                  className="w-full justify-start gap-2 bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
+                >
+                  <Plus className="h-4 w-4" />
+                  New Debate
+                </Button>
+                <Button
+                  onClick={() => (window.location.href = "/quick-start")}
+                  variant="outline"
+                  className="w-full justify-start gap-2 bg-transparent"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Start from Template
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Sessions List - Fixed height calculation for proper scrolling */}
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="p-2">
               {sessions.map((session, index) => (
                 <motion.div
                   key={session.id}
@@ -224,7 +270,23 @@ export function ChatSidebar({
                   )}
                   onClick={() => onSessionSelect(session.id)}
                 >
-                  {isCollapsed ? (
+                  {isCollapsed && tooltipPreferences.enabled ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center justify-center">
+                          <MessageSquare className="h-5 w-5 text-sidebar-foreground" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" sideOffset={8}>
+                        <div className="max-w-[200px]">
+                          <p className="font-medium">{session.title}</p>
+                          <p className="text-xs opacity-70 mt-1">
+                            {session.messageCount} messages • {formatTimestamp(session.timestamp)}
+                          </p>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : isCollapsed ? (
                     <div className="flex items-center justify-center">
                       <MessageSquare className="h-5 w-5 text-sidebar-foreground" />
                     </div>
@@ -292,54 +354,73 @@ export function ChatSidebar({
                   )}
                 </motion.div>
               ))}
-            </AnimatePresence>
-          </div>
-        </ScrollArea>
-      </div>
+            </div>
+          </ScrollArea>
+        </div>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-sidebar-border shrink-0">
-        <AnimatePresence>
-          {!isCollapsed ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-2 text-sidebar-foreground hover:bg-sidebar-accent"
+        {/* Footer */}
+        <div className="p-4 border-t border-sidebar-border shrink-0">
+          <AnimatePresence mode="wait">
+            {!isCollapsed ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
               >
-                <Settings className="h-4 w-4" />
-                Settings
-              </Button>
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex justify-center"
-            >
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-sidebar-accent">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2 text-sidebar-foreground hover:bg-sidebar-accent"
+                >
+                  <Settings className="h-4 w-4" />
+                  Settings
+                </Button>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex justify-center"
+              >
+                {tooltipPreferences.enabled ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-sidebar-accent">
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" sideOffset={8}>
+                      <p>Settings</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-sidebar-accent">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-      {/* Dialogs */}
-      <EditSessionDialog
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-        sessionId={selectedSession}
-        currentTitle={sessions.find((s) => s.id === selectedSession)?.title}
-        onSave={handleSaveSessionTitle}
-      />
-      <DeleteConfirmationDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        onConfirm={confirmDeleteSession}
-        itemName={sessions.find((s) => s.id === selectedSession)?.title || "session"}
-        itemType="Session"
-      />
-    </motion.div>
+        {/* Dialogs */}
+        <EditSessionDialog
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          sessionId={selectedSession}
+          currentTitle={sessions.find((s) => s.id === selectedSession)?.title}
+          onSave={handleSaveSessionTitle}
+        />
+        <DeleteConfirmationDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          onConfirm={confirmDeleteSession}
+          itemName={sessions.find((s) => s.id === selectedSession)?.title || "session"}
+          itemType="Session"
+        />
+      </motion.div>
+    </TooltipProvider>
   )
 }

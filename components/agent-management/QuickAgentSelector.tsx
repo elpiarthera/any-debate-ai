@@ -128,8 +128,8 @@ export function QuickAgentSelector({
   )
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide max-w-full">
+    <div className="flex items-center gap-2 min-w-0 flex-1">
+      <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1 min-w-0">
         <AnimatePresence>
           {models.map((model) => {
             const quickModel = QUICK_MODELS.find((qm) => qm.type === model.type)
@@ -142,16 +142,18 @@ export function QuickAgentSelector({
                 className="group flex-shrink-0"
               >
                 <Card className="relative overflow-hidden">
-                  <CardContent className={`${isMobile ? "p-2" : "p-3"}`}>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${quickModel?.color || "bg-gray-500"}`} />
+                  <CardContent className={`${isMobile ? "p-1.5" : "p-3"}`}>
+                    <div className="flex items-center gap-1.5">
+                      <div
+                        className={`${isMobile ? "w-1.5 h-1.5" : "w-2 h-2"} rounded-full ${quickModel?.color || "bg-gray-500"} flex-shrink-0`}
+                      />
                       <span className={`font-medium whitespace-nowrap ${isMobile ? "text-xs" : "text-sm"}`}>
                         {isMobile ? model.type.split("-")[0] : model.name}
                       </span>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={`h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity ${isMobile ? "opacity-100" : ""}`}
+                        className={`${isMobile ? "h-5 w-5" : "h-4 w-4"} p-0 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ${isMobile ? "opacity-100" : ""}`}
                         onClick={() => handleRemoveModel(model.id)}
                       >
                         <X className="h-3 w-3" />
@@ -171,11 +173,11 @@ export function QuickAgentSelector({
             ref={buttonRef}
             variant="outline"
             size="sm"
-            className="flex items-center gap-2 bg-transparent"
+            className={`flex items-center gap-2 bg-transparent ${isMobile ? "min-h-[44px] min-w-[44px] p-2" : ""}`}
             onClick={() => setIsOpen(!isOpen)}
           >
             <Plus className="h-4 w-4" />
-            {!isMobile && "Add Agent"}
+            {!isMobile && <span className="whitespace-nowrap">Add Agent</span>}
           </Button>
 
           {!isMobile && isOpen && (

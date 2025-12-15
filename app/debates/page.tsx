@@ -214,7 +214,7 @@ export default function DebatesPage() {
   const { isMobile } = useDevice()
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       {!isMobile && (
         <DashboardSidebar
           isCollapsed={isDashboardSidebarOpen}
@@ -232,13 +232,13 @@ export default function DebatesPage() {
         />
       )}
 
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
         <motion.header
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-40"
         >
-          <div className={`flex items-center justify-between ${isMobile ? "p-3" : "p-4"}`}>
+          <div className={`flex items-center justify-between ${isMobile ? "p-3" : "p-4"} min-w-0`}>
             <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
               {isMobile && (
                 <>
@@ -271,9 +271,9 @@ export default function DebatesPage() {
                 </Link>
               )}
 
-              <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
+              <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1 overflow-hidden">
                 {!isMobile && <h1 className="text-lg font-semibold flex-shrink-0">AI Debate</h1>}
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 overflow-hidden">
                   <QuickAgentSelector
                     models={models}
                     onAddModel={addModel}
@@ -321,14 +321,14 @@ export default function DebatesPage() {
 
         <div className="flex-1 min-h-0 overflow-hidden">
           {!hasStartedSession && messages.length === 0 && models.length === 0 ? (
-            <div className="h-full flex items-center justify-center p-8">
-              <div className="text-center space-y-4 max-w-md">
+            <div className="h-full flex items-center justify-center p-4">
+              <div className="text-center space-y-4 w-full max-w-md mx-auto px-4">
                 <Sparkles className="h-12 w-12 text-primary mx-auto" />
                 <h2 className="text-2xl font-bold">Start Your Debate</h2>
-                <p className="text-muted-foreground">
+                <p className="text-base text-muted-foreground">
                   Add agents to begin, or use Quick Start for pre-configured setups
                 </p>
-                <Button size="lg" onClick={() => router.push("/quick-start")} className="min-h-[48px]">
+                <Button size="lg" onClick={() => router.push("/quick-start")} className="min-h-[48px] w-full px-6">
                   <Sparkles className="h-4 w-4 mr-2" />
                   Open Quick Start
                 </Button>

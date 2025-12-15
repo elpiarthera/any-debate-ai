@@ -68,9 +68,11 @@ export function LandingBenefitsDesktop() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="h-full bg-card/50 border-border/50 hover:bg-card/80 hover:border-primary/50 transition-all p-8">
-                <benefit.icon className="h-12 w-12 text-primary mb-6" />
-                <h3 className="text-xl font-semibold mb-4">{benefit.benefit}</h3>
+              <Card className="h-full bg-card/50 border-border/50 hover:bg-card/80 hover:border-primary transition-all p-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <benefit.icon className="h-10 w-10 text-primary flex-shrink-0" />
+                  <h3 className="text-xl font-semibold text-balance">{benefit.benefit}</h3>
+                </div>
                 <p className="text-base text-muted-foreground text-pretty mb-4">{benefit.description}</p>
                 <Badge variant="secondary" className="text-xs">
                   <TrendingUp className="h-3 w-3 mr-1" />

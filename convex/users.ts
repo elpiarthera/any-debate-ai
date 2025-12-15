@@ -33,6 +33,10 @@ export const store = mutation({
         language: "en",
         notifications: true,
         defaultAgents: [],
+        tooltips: {
+          enabled: true,
+          delay: 300,
+        },
       },
       totalSessions: 0,
       lastActiveAt: Date.now(),
@@ -54,5 +58,40 @@ export const getUser = query({
       .query("users")
       .withIndex("by_clerk_id", (q) => q.eq("clerkUserId", userId))
       .unique()
+  },
+})
+
+export const updateTooltipPreferences = mutation({
+  args: {
+    enabled: v.boolean(),
+    delay: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) {
+      throw new Error("Not authenticated")
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkUserId", identity.subject))
+      .unique()
+
+    if (!user) {
+      throw new Error("User not found")
+    }
+
+    await ctx.db.patch(user._id, {
+      preferences: {
+        ...user.preferences,
+        tooltips: {
+          enabled: args.enabled,
+          delay: args.delay,
+        },
+      },
+      updatedAt: Date.now(),
+    })
+
+    return user._id
   },
 })

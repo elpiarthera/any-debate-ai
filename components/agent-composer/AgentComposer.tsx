@@ -106,6 +106,10 @@ export function AgentComposer({ onSave, editMode = false, initialData }: AgentCo
     badge: framework.bestFor[0],
   }))
 
+  console.log("[v0] Role modules count:", roleModules.length)
+  console.log("[v0] Persona modules count:", personaModules.length)
+  console.log("[v0] Framework modules count:", frameworkModules.length)
+
   const composerProps = {
     agentName,
     onAgentNameChange: setAgentName,
@@ -138,6 +142,7 @@ export function AgentComposer({ onSave, editMode = false, initialData }: AgentCo
         modules={roleModules}
         selectedId={selectedRoleId}
         onSelect={setSelectedRoleId}
+        moduleType="role"
       />
 
       <ModuleSelector
@@ -148,6 +153,7 @@ export function AgentComposer({ onSave, editMode = false, initialData }: AgentCo
         modules={personaModules}
         selectedId={selectedPersonaId}
         onSelect={setSelectedPersonaId}
+        moduleType="persona"
       />
 
       <ModuleSelector
@@ -158,6 +164,7 @@ export function AgentComposer({ onSave, editMode = false, initialData }: AgentCo
         modules={frameworkModules}
         selectedId={selectedFrameworkId}
         onSelect={setSelectedFrameworkId}
+        moduleType="framework"
       />
     </>
   )

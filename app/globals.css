@@ -139,8 +139,18 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  /* Added overflow control to prevent scrollbar flickering */
+  html {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+    min-height: 100%;
   }
 
   /* Added sophisticated grid pattern background */

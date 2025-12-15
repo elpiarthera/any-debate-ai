@@ -36,7 +36,7 @@ export function DashboardLayout({
   breadcrumbs,
   actions,
 }: DashboardLayoutProps) {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true)
   const { isMobile } = useDevice()
 
   return (
@@ -81,18 +81,18 @@ export function DashboardLayout({
                   <Breadcrumb className="hidden md:block mt-1">
                     <BreadcrumbList>
                       {breadcrumbs.map((crumb, index) => (
-                        <BreadcrumbItem key={index}>
-                          {index < breadcrumbs.length - 1 ? (
-                            <>
+                        <>
+                          <BreadcrumbItem key={`item-${index}`}>
+                            {index < breadcrumbs.length - 1 ? (
                               <BreadcrumbLink asChild>
                                 <Link href={crumb.href || "#"}>{crumb.label}</Link>
                               </BreadcrumbLink>
-                              <BreadcrumbSeparator />
-                            </>
-                          ) : (
-                            <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-                          )}
-                        </BreadcrumbItem>
+                            ) : (
+                              <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                            )}
+                          </BreadcrumbItem>
+                          {index < breadcrumbs.length - 1 && <BreadcrumbSeparator key={`separator-${index}`} />}
+                        </>
                       ))}
                     </BreadcrumbList>
                   </Breadcrumb>

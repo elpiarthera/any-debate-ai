@@ -89,24 +89,26 @@ export function LandingFeaturesDesktop() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="h-full bg-card/50 border-border/50 hover:bg-card/80 hover:border-primary/50 transition-all p-8 flex flex-col">
-                <div className="flex items-start justify-between mb-6">
-                  <feature.icon className="h-12 w-12 text-primary flex-shrink-0" />
+              <Card className="h-full bg-card/50 border-border/50 hover:border-primary transition-all p-8 flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between gap-4 mb-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <feature.icon className="h-8 w-8 text-primary flex-shrink-0" />
+                    <h3 className="text-xl font-semibold break-words">{feature.title}</h3>
+                  </div>
                   {feature.badge && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs flex-shrink-0">
                       {feature.badge}
                     </Badge>
                   )}
                 </div>
 
-                <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
-                <p className="text-base text-muted-foreground text-pretty mb-6">{feature.description}</p>
+                <p className="text-base text-muted-foreground text-pretty mb-6 break-words">{feature.description}</p>
 
                 <ul className="space-y-3 mb-8 flex-grow">
                   {feature.benefits.map((benefit, idx) => (
                     <li key={idx} className="flex items-start gap-2 text-sm">
                       <ArrowRight className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                      <span>{benefit}</span>
+                      <span className="break-words">{benefit}</span>
                     </li>
                   ))}
                 </ul>

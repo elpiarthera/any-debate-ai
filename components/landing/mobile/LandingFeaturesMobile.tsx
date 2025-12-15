@@ -94,24 +94,26 @@ export function LandingFeaturesMobile() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="h-full bg-card/50 border-border/50 active:bg-card/80 active:border-primary/50 transition-all p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <feature.icon className="h-10 w-10 text-primary flex-shrink-0" />
+              <Card className="h-full bg-card/50 border-border/50 hover:border-primary transition-all p-6 overflow-hidden">
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <feature.icon className="h-7 w-7 text-primary flex-shrink-0" />
+                    <h3 className="text-lg font-semibold break-words">{feature.title}</h3>
+                  </div>
                   {feature.badge && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs flex-shrink-0">
                       {feature.badge}
                     </Badge>
                   )}
                 </div>
 
-                <h3 className="text-lg font-semibold mb-3">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground text-pretty mb-4">{feature.description}</p>
+                <p className="text-sm text-muted-foreground text-pretty mb-4 break-words">{feature.description}</p>
 
                 <ul className="space-y-2 mb-6">
                   {feature.benefits.map((benefit, idx) => (
                     <li key={idx} className="flex items-start gap-2 text-sm">
                       <ArrowRight className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                      <span>{benefit}</span>
+                      <span className="break-words">{benefit}</span>
                     </li>
                   ))}
                 </ul>
