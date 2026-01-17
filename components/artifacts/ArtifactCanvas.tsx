@@ -2,16 +2,17 @@
 import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useDevice } from "@/contexts/DeviceProvider"
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
+import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { FileText, X, Maximize2, Minimize2, Users, Sparkles, SlidersHorizontal } from "lucide-react"
+import { FileText, X, Maximize2, Minimize2, Users, Sparkles, SlidersHorizontal, GripVertical } from "lucide-react"
 import { ArtifactRenderer } from "./ArtifactRenderer"
 import { ArtifactToolbar } from "./ArtifactToolbar"
 import { ArtifactSearch } from "./search/ArtifactSearch"
 import { ArtifactFilter, type ArtifactFilters } from "./search/ArtifactFilter"
+import { cn } from "@/lib/utils"
 
 interface ArtifactCanvasProps {
   className?: string
@@ -193,9 +194,9 @@ export function ArtifactCanvas({ className, isCanvasOpen, onCloseCanvas }: Artif
                 </Card>
               </motion.div>
             ) : (
-              <ResizablePanelGroup direction="horizontal" className="h-full">
+              <PanelGroup direction="horizontal" className="h-full">
                 {/* Left Panel - Artifact List/Navigator with Search & Filter */}
-                <ResizablePanel defaultSize={25} minSize={20} maxSize={40}>
+                <Panel defaultSize={25} minSize={20} maxSize={40}>
                   <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="h-full p-4">
                     <Card className="h-full bg-gradient-to-br from-muted/20 to-background border-border/50 flex flex-col">
                       <div className="p-4 border-b border-border/50">
@@ -278,12 +279,22 @@ export function ArtifactCanvas({ className, isCanvasOpen, onCloseCanvas }: Artif
                       </div>
                     </Card>
                   </motion.div>
-                </ResizablePanel>
+                </Panel>
 
-                <ResizableHandle withHandle />
+                <PanelResizeHandle
+                  className={cn(
+                    "bg-border relative flex w-px items-center justify-center",
+                    "after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2",
+                    "focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-hidden",
+                  )}
+                >
+                  <div className="bg-border z-10 flex h-4 w-3 items-center justify-center rounded-sm border">
+                    <GripVertical className="h-2.5 w-2.5" />
+                  </div>
+                </PanelResizeHandle>
 
                 {/* Right Panel - Active Artifact */}
-                <ResizablePanel defaultSize={75}>
+                <Panel defaultSize={75}>
                   <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="h-full p-4">
                     <Card className="h-full bg-gradient-to-br from-background to-muted/20 border-border/50">
                       <div className="h-full flex flex-col">
@@ -294,8 +305,8 @@ export function ArtifactCanvas({ className, isCanvasOpen, onCloseCanvas }: Artif
                       </div>
                     </Card>
                   </motion.div>
-                </ResizablePanel>
-              </ResizablePanelGroup>
+                </Panel>
+              </PanelGroup>
             )}
           </div>
         </div>
