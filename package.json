@@ -88,9 +88,5 @@
     "tw-animate-css": "1.3.3",
     "typescript": "^5"
   },
-  "pnpm": {
-    "overrides": {
-      "dompurify": "3.4.17"
-    }
-  }
+  "packageManager": "pnpm@10.34.8"
 }
