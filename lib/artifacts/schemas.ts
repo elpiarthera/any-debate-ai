@@ -49,7 +49,7 @@ export const TableArtifact = artifact(
     formatting: z
       .object({
         columnWidths: z.array(z.number()).default([]),
-        cellStyles: z.record(z.string()).default({}),
+        cellStyles: z.record(z.string(), z.string()).default({}),
       })
       .optional(),
   }),
